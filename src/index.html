@@ -1,8 +1,39 @@
 <html>
 <head>
     <title>{{title}}</title>
+    <meta name="description" content="{{description}}"></meta>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+        integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer" />
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/js/all.min.js"
+        integrity="sha512-uKQ39gEGiyUJl4AI6L+ekBdGKpGw4xJ55+xyJG7YFlJokPNYegn9KwQ3P8A7aFQAUtUsAQHep+d/lrGqrbPIDQ=="
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer"></script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .svg {
+                @apply w-10 h-10;
+            }
+        }
+    </style>
 </head>
-<body>
-    hello world {{ templates }}
+<body class="w-screen h-screen bg-slate-900 text-amber-50 font-mono">
+        <main class="grid w-full h-full">
+            <div class="grid place-self-center w-1/2">
+                <p class="text-2xl my-4 hover:text-teal-500 cursor-default place-self-center">yo</p>
+                <div class="w-full flex flex-row justify-center space-x-6">
+                    <a class='hover:text-teal-500' aria-label='github' href="{{github}}">
+                        <i class="svg fab fa-github"></i>
+                    </a>
+                    <a class='hover:text-teal-500' aria-label='gitlab' href="{{gitlab}}">
+                        <i class="svg fab fa-gitlab"></i>
+                    </a>
+                </div>
+            </div>
+        </main>
 </body>
 </html>

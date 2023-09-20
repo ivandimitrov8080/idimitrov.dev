@@ -26,7 +26,10 @@
         lib.mapAttrsToList (name: value: "export ${name}=\"${value}\"") vars
       );
       environment = {
-        title = "yo";
+        title = "Ivan Dimitrov";
+        description = "Software Developer";
+        github = "https://github.com/ivandimitrov8080";
+        gitlab = "https://gitlab.com/ivandimitrov8080";
       };
       environmentString = envVarsToStr environment;
     in
@@ -40,7 +43,7 @@
           ${environmentString}
           mkdir -p $out/
           . ./lib/mo
-          for f in ./src/*; do mo "$f" > $out/$(basename $f) ; done
+          for f in ./src/*.html; do mo "$f" > $out/$(basename $f) ; done
         '';
         installPhase = ''
           echo "install phase"
