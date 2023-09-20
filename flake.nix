@@ -40,13 +40,10 @@
       packages.${system}.default = pkgs.stdenv.mkDerivation rec {
         inherit buildInputs pname version src;
         buildPhase = ''
+          mkdir -p $out
           ${environmentString}
-          mkdir -p $out/
           . ./lib/mo
           for f in ./src/*.html; do mo "$f" > $out/$(basename $f) ; done
-        '';
-        installPhase = ''
-          echo "install phase"
         '';
       };
     };
