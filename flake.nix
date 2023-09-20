@@ -86,24 +86,14 @@
                   # This might create errors
                   proxy_cookie_path / "/; secure; HttpOnly; SameSite=strict";
                 '';
-                virtualHosts =
-                  let
-                    base = locations: {
-                      inherit locations;
-
-                      forceSSL = true;
-                      enableACME = true;
-                    };
-                    proxy = port: base {
-                      "/".proxyPass = "http://127.0.0.1:" + toString (port) + "/";
-                    };
-                    static = base {
-                      root = self.packages.${system}.default;
-                    };
-                  in
-                  {
-                    "idimitrov.dev" = static // { default = true; };
+                virtualHosts = {
+                  "idimitrov.dev" = {
+                    forceSSL = true;
+                    enableACME = true;
+                    root = self.packages.${system}.default;
+                    default = true;
                   };
+                };
               };
             };
             networking.firewall = {
