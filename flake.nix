@@ -25,23 +25,35 @@
       envVarsToStr = vars: lib.concatStringsSep "\n" (
         lib.mapAttrsToList (name: value: "export ${name}=\"${value}\"") vars
       );
-      environment = {
+      environmentTable = {
         title = "Ivan Dimitrov";
         description = "Software Developer";
         github = "https://github.com/ivandimitrov8080";
         gitlab = "https://gitlab.com/ivandimitrov8080";
       };
-      environmentString = envVarsToStr environment;
+      environment = envVarsToStr environmentTable;
+      tmuxConfig = ''
+        tmux new-session -s my_session -d
+        tmux new-window -t my_session:1
+        tmux new-window -t my_session:2
+        tmux split-window -h -t my_session:2
+        tmux send-keys -t my_session:1.0 'vi' C-m
+        tmux attach-session -t my_session
+      '';
     in
     {
       devShell.${system} = pkgs.mkShell {
         inherit buildInputs;
+        shellHook = ''
+          ${environment}
+          ${tmuxConfig} 
+        '';
       };
       packages.${system}.default = pkgs.stdenv.mkDerivation rec {
         inherit buildInputs pname version src;
         buildPhase = ''
           mkdir -p $out
-          ${environmentString}
+          ${environment}
           . ./lib/mo
           for f in ./src/*.html; do mo "$f" > $out/$(basename $f) ; done
         '';
