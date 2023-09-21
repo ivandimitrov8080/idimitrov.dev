@@ -16,48 +16,14 @@
       lib = pkgs.lib;
       stdenv = pkgs.stdenv;
       pname = "idimitrov-dev";
-      version = "0.1.0";
+      version = "1.0.0";
       src = ./.;
       buildInputs = with pkgs; [
         coreutils-full
-        nodePackages_latest.tailwindcss
-        font-awesome
-        (pkgs.buildEnv { name = "moe"; paths = [ ./. ]; })
       ];
       envVarsToStr = vars: lib.concatStringsSep "\n" (
         lib.mapAttrsToList (name: value: "export ${name}=\"${value}\"") vars
       );
-      htmlDocument = content: ''
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <title>{{title}}</title>
-            <meta name="description" content="{{description}}"></meta>
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <meta charset="UTF-8">
-            <link rel="stylesheet"
-                href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
-                integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
-                crossorigin="anonymous"
-                referrerpolicy="no-referrer" />
-            <style type="text/tailwindcss">
-                .svg {
-                    width: 2.5rem;
-                    height: 2.5rem;
-                }
-            </style>
-        </head>
-            <body class="w-screen h-screen bg-slate-900 text-amber-50 font-mono">
-                ${content}
-                <script
-                    src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/js/all.min.js"
-                    integrity="sha512-uKQ39gEGiyUJl4AI6L+ekBdGKpGw4xJ55+xyJG7YFlJokPNYegn9KwQ3P8A7aFQAUtUsAQHep+d/lrGqrbPIDQ=="
-                    crossorigin="anonymous"
-                    async
-                    referrerpolicy="no-referrer"></script>
-            </body>
-        </html>
-      '';
       environmentTable = {
         title = "Ivan Dimitrov";
         description = "Software Developer";
@@ -85,15 +51,11 @@
       packages.${system}.default = pkgs.stdenv.mkDerivation rec {
         inherit buildInputs pname version src;
         buildPhase = ''
-            mkdir -p $out
-            ${environment}
-            . ./lib/mo
-            for f in ./src/*.html;
-            do
-                content=$(cat $f)
-                htmlDocument=""
-                mo "$f" > $out/$(basename $f);
-            done
+          mkdir -p $out
+          ${environment}
+          . ./lib/mo
+          f="./index.html"
+          mo "$f" > $out/$(basename $f);
         '';
       };
       nixosModules.default = { config, pkgs, ... }:
