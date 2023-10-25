@@ -21,16 +21,17 @@
       buildInputs = with pkgs; [
         coreutils-full
       ];
-      envVarsToStr = vars: lib.concatStringsSep "\n" (
-        lib.mapAttrsToList (name: value: "export ${name}=\"${value}\"") vars
-      );
-      environmentTable = {
+      getPartial = name: builtins.readFile ./src/partials/${name}.html;
+      env = {
         title = "Ivan Dimitrov";
         description = "Software Developer";
-        github = "https://github.com/ivandimitrov8080";
-        gitlab = "https://gitlab.com/ivandimitrov8080";
+        intro = "yo";
+        head = getPartial "head";
+        githubSvg = getPartial "svg/github-svg";
+        gitlabSvg = getPartial "svg/gitlab-svg";
+        githubUrl = "https://github.com/ivandimitrov8080";
+        gitlabUrl = "https://gitlab.com/ivandimitrov8080";
       };
-      environment = envVarsToStr environmentTable;
       tmuxConfig = ''
         tmux new-session -s my_session -d
         tmux new-window -t my_session:1
@@ -44,17 +45,16 @@
       devShell.${system} = pkgs.mkShell {
         inherit buildInputs;
         shellHook = ''
-          ${environment}
           ${tmuxConfig} 
         '';
       };
       packages.${system}.default = pkgs.stdenv.mkDerivation rec {
-        inherit buildInputs pname version src;
+        inherit buildInputs pname version src env;
         buildPhase = ''
           mkdir -p $out
-          ${environment}
           . ./lib/mo
-          f="./index.html"
+          f="./src/index.html"
+          head=$(echo "$head" | mo)
           mo "$f" > $out/$(basename $f);
         '';
       };
