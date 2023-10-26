@@ -39,9 +39,9 @@
         in
         builtins.foldl' (res: entry: res // processEntry entry (builtins.getAttr entry files)) { } (builtins.attrNames files);
       partials = readDirRecursively partialsDir "";
-      readPartial = name: replaceStrings ["\n"] [""] (readFile (partialsDir + "/${name}"));
+      readPartial = name: replaceStrings [ "\n" ] [ "" ] (readFile (partialsDir + "/${name}"));
       partialsEnv = builtins.listToAttrs (map (name: { name = builtins.replaceStrings [ ".html" "/" ] [ "" "_" ] name; value = "${readPartial name}"; }) (builtins.attrNames partials));
-      env = partialsEnv // {
+      env = {
         title = "Ivan Dimitrov";
         description = "Software Developer";
         intro = "yo";
@@ -67,11 +67,16 @@
       packages.${system}.default = pkgs.stdenv.mkDerivation rec {
         inherit buildInputs pname version src env;
         buildPhase = ''
-          mkdir -p $out
-          echo '${builtins.toJSON env}' | ${pkgs.jq}/bin/jq
           . ./lib/mo
+          mkdir -p $out
+          partials_json=$(echo '${builtins.toJSON partialsEnv}')
+          keys=$(echo "$partials_json" | ${pkgs.jq}/bin/jq -r 'keys[]')
+          for key in $keys
+          do
+              value="$(echo "$partials_json" | ${pkgs.jq}/bin/jq -r --arg key "$key" '.[$key]')"
+              export $key="$(echo "$value" | mo)"
+          done
           f="./src/index.html"
-          head=$(echo "$head" | mo)
           mo "$f" > $out/$(basename $f);
         '';
       };
