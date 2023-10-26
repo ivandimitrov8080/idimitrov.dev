@@ -10,7 +10,7 @@
   };
 
   outputs = { self, nixpkgs }:
-    let
+    with builtins; let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
       lib = pkgs.lib;
@@ -21,14 +21,30 @@
       buildInputs = with pkgs; [
         coreutils-full
       ];
-      getPartial = name: builtins.readFile ./src/partials/${name}.html;
-      env = {
+      partialsDir = ./src/partials;
+      readDirRecursively = dir: prefix:
+        let
+          files = builtins.readDir dir;
+          processEntry = name: type:
+            let
+              fullPath = "${dir}/${name}";
+              fullPrefix = if prefix != "" then "${prefix}/${name}" else name;
+            in
+            if type == "directory" then
+              readDirRecursively fullPath fullPrefix
+            else if type == "regular" then
+              { "${fullPrefix}" = builtins.readFile fullPath; }
+            else
+              { };
+        in
+        builtins.foldl' (res: entry: res // processEntry entry (builtins.getAttr entry files)) { } (builtins.attrNames files);
+      partials = readDirRecursively partialsDir "";
+      readPartial = name: replaceStrings ["\n"] [""] (readFile (partialsDir + "/${name}"));
+      partialsEnv = builtins.listToAttrs (map (name: { name = builtins.replaceStrings [ ".html" "/" ] [ "" "_" ] name; value = "${readPartial name}"; }) (builtins.attrNames partials));
+      env = partialsEnv // {
         title = "Ivan Dimitrov";
         description = "Software Developer";
         intro = "yo";
-        head = getPartial "head";
-        githubSvg = getPartial "svg/github-svg";
-        gitlabSvg = getPartial "svg/gitlab-svg";
         githubUrl = "https://github.com/ivandimitrov8080";
         gitlabUrl = "https://gitlab.com/ivandimitrov8080";
       };
@@ -52,6 +68,7 @@
         inherit buildInputs pname version src env;
         buildPhase = ''
           mkdir -p $out
+          echo '${builtins.toJSON env}' | ${pkgs.jq}/bin/jq
           . ./lib/mo
           f="./src/index.html"
           head=$(echo "$head" | mo)
