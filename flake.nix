@@ -52,7 +52,6 @@
         tmux new-session -s my_session -d
         tmux new-window -t my_session:1
         tmux new-window -t my_session:2
-        tmux split-window -h -t my_session:2
         tmux send-keys -t my_session:1.0 'vi' C-m
         tmux attach-session -t my_session
       '';
