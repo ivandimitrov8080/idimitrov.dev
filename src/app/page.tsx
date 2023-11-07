@@ -6,10 +6,10 @@ export default function Home() {
   return (
     <main className="place-content-center text-center">
       <div className="flex flex-row space-x-4">
-        <Link href={process.env.NEXT_PUBLIC_GITHUB_URL!} target="_blank">
+        <Link aria-label="GitHub" href={process.env.NEXT_PUBLIC_GITHUB_URL!} target="_blank">
           <GithubSvg />
         </Link>
-        <Link href={process.env.NEXT_PUBLIC_GITLAB_URL!} target="_blank">
+        <Link aria-label="GitLab" href={process.env.NEXT_PUBLIC_GITLAB_URL!} target="_blank">
           <GitlabSvg />
         </Link>
       </div>
