@@ -14,3 +14,7 @@ main {
   @apply grid w-full h-full
 }
 
+svg {
+  @apply w-14 h-14 hover:text-cyan-500 hover:animate-bounce
+}
+
