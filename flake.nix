@@ -3,7 +3,7 @@
   '';
 
   inputs = {
-    nixpkgs.url = "nixpkgs";
+    nixpkgs.url = "github:NixOS/nixpkgs";
   };
 
   outputs = { self, nixpkgs }:
@@ -13,6 +13,7 @@
       buildInputs = with pkgs; [
         coreutils-full
         nodejs_20
+        nodePackages_latest.npm-check-updates
         bun
       ];
       tmuxConfig = ''
