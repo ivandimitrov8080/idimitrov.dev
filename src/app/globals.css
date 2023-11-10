@@ -11,6 +11,6 @@ main {
 }
 
 svg {
-  @apply w-14 h-14 hover:text-cyan-500 hover:animate-bounce
+  @apply w-14 h-14 text-amber-100 hover:text-cyan-500
 }
 
