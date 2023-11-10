@@ -6,10 +6,10 @@ export default function Links() {
 
   return (
     <div className={`grid grid-cols-2 gap-4`}>
-      <Link key="github" aria-label="GitHub" href={process.env.NEXT_PUBLIC_GITHUB_URL!} target="_blank">
+      <Link aria-label="GitHub" href={process.env.NEXT_PUBLIC_GITHUB_URL!} target="_blank">
         <FontAwesomeIcon icon={faGithub} />
       </Link>
-      <Link key="gitlab" aria-label="GitLab" href={process.env.NEXT_PUBLIC_GITLAB_URL!} target="_blank">
+      <Link aria-label="GitLab" href={process.env.NEXT_PUBLIC_GITLAB_URL!} target="_blank">
         <FontAwesomeIcon icon={faGitlab} />
       </Link>
     </div>
