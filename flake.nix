@@ -1,5 +1,6 @@
 {
   description = ''
+    NextJS flake
   '';
 
   inputs = {
@@ -13,7 +14,6 @@
       buildInputs = with pkgs; [
         coreutils-full
         nodejs_20
-        nodePackages_latest.npm-check-updates
         bun
       ];
       tmuxConfig = ''
