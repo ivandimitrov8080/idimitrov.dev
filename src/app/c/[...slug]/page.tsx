@@ -4,6 +4,8 @@ import remarkGfm from "remark-gfm";
 import remarkFrontmatter from "remark-frontmatter";
 import styles from "./content.module.css"
 import Image from "next/image";
+import rehypeRaw from "rehype-raw";
+import rehypeHighlight from "rehype-highlight";
 
 type Params = {
   slug: string[]
@@ -20,20 +22,61 @@ export async function generateStaticParams(): Promise<Params[]> {
 export default function Content({ params }: Props) {
   const imgSize = 1024;
   const { data, content } = getContent(params.slug);
+
+  const title = () => {
+    return (
+      <span className="text-3xl">
+        {data.title}
+      </span>
+    )
+  }
+  const goal = () => {
+    const g = data.goal
+    return g ?
+      (
+        <div>
+          <h2>The goal</h2>
+          {g}
+        </div>
+      ) :
+      ""
+  }
+  const role = () => {
+    const r = data.role
+    return r ?
+      (
+        <div>
+          <h2>My role</h2>
+          {r}
+        </div>
+      ) :
+      ""
+  }
+
+  const ctnt = () => {
+    return (
+      <Markdown
+        className={styles.md}
+        remarkPlugins={[remarkGfm, remarkFrontmatter]}
+        rehypePlugins={[rehypeRaw, rehypeHighlight]}
+        components={{
+          img({ height, width, src, alt }) {
+            return (<Image alt={alt!} height={Number(height) || imgSize} width={Number(width) || imgSize} src={src!}></Image>)
+          }
+        }}
+      >
+        {content}
+      </Markdown>
+    )
+  }
   return (
     <div className="w-full h-full p-20 space-y-20">
       <div className="flex flex-col gap-4 text-center">
-        <span className="text-3xl">
-          {data.title}
-        </span>
-        <span>Goal: {data.goal}</span>
-        <span>My role: {data.role}</span>
+        {title()}
+        {goal()}
+        {role()}
       </div>
-      <Markdown className={styles.md} remarkPlugins={[remarkGfm, remarkFrontmatter]} components={{
-        img({ height, width, src, alt }) {
-          return (<Image alt={alt!} height={Number(height) || imgSize} width={Number(width) || imgSize} src={src!}></Image>)
-        }
-      }}>{content}</Markdown>
+      {ctnt()}
     </div>
   )
 }
