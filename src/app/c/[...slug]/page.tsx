@@ -61,7 +61,11 @@ export default function Content({ params }: Props) {
         rehypePlugins={[rehypeRaw, rehypeHighlight]}
         components={{
           img({ height, width, src, alt }) {
-            return (<Image alt={alt!} height={Number(height) || imgSize} width={Number(width) || imgSize} src={src!}></Image>)
+            return (
+              <span className="w-full h-max p-20">
+                <Image className="w-full h-full" alt={alt!} height={Number(height) || imgSize} width={Number(width) || imgSize} src={`${data.slug}${src}`}></Image>
+              </span>
+            )
           }
         }}
       >
@@ -70,13 +74,15 @@ export default function Content({ params }: Props) {
     )
   }
   return (
-    <div className="w-full h-full p-20 space-y-20">
+    <div className="w-full h-full p-20 overflow-x-hidden overflow-scroll">
       <div className="flex flex-col gap-4 text-center">
         {title()}
         {goal()}
         {role()}
       </div>
-      {ctnt()}
+      <div className="w-3/4 m-auto">
+        {ctnt()}
+      </div>
     </div>
   )
 }

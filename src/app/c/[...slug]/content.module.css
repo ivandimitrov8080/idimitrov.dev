@@ -13,6 +13,13 @@
   @apply before:content-['"'] after:content-['"']
 }
 
+.md details {
+  @apply p-20
+}
+
+.md details * {
+  @apply p-2
+}
 
 .md h1 {
   @apply text-6xl
