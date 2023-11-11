@@ -1,7 +1,8 @@
 ---
 title: Multi-tenant knowledge base website integrated with Google Drive
 goal: Implement a modern multi-tenant web app that interfaces with the Google API and lets users connect their Google Drive so that the content inside can be viewed in a wiki page
-role: The developer who designed and implemented the entire project
+role: Design and implement the technical aspects
+date: Jul 29, 2023 - Nov 5, 2023
 ---
 
 A typical flow would look like this:
@@ -24,5 +25,4 @@ Some server-side processing to interface with the Google Drive API, the database
 Client:
 Dashboard page for admins to create, read, update and delete wikis, spaces and permissions together with all related pages and forms.
 Reader page for anyone with the right permissions can go through a space and read the content in a wiki-like page complete with modern styles. less
-
 

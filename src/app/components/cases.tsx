@@ -1,18 +1,25 @@
+import { GrayMatterFile } from "gray-matter";
 import Link from "next/link";
+import { getCases } from "../lib/content";
 
 export default function Cases() {
-  const cases: any = [] as any
+  const cases: GrayMatterFile<string>[] = getCases()
   return (
-    <ul className="menu min-h-[95vh] h-max space-y-4 m-auto">
-      {cases.map((project: any) => (
-        <li className="m-auto" key={project.id}>
-          <Link className="rounded-3xl" href={`project/${project.id}`}>
-            <div>
-              hehe
-            </div>
-          </Link>
-        </li>
-      ))}
-    </ul>
+    <div className="p-20">
+      {cases.map((c) => {
+        const d = c.data;
+        const date = d.date.split("-")
+        const from = date[0]?.trim()
+        const to = date[1]?.trim()
+        return (
+          <div key={d.slug} className="w-full h-max flex justify-center">
+            <Link className="btn flex flex-col w-max text-center" href={d.slug}>
+              <span className="text-lg px-6">{d.title}</span>
+              {from} {to ? `- ${to}` : ""}
+            </Link>
+          </div>
+        )
+      })}
+    </div>
   )
 }

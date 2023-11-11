@@ -2,7 +2,6 @@ import { getAllPaths, getContent } from "$lib/content";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkFrontmatter from "remark-frontmatter";
-import matter from "gray-matter"
 import styles from "./content.module.css"
 import Image from "next/image";
 
@@ -19,16 +18,16 @@ export async function generateStaticParams(): Promise<Params[]> {
 }
 
 export default function Content({ params }: Props) {
-const imgSize = 1024
-  const { data, content } = matter(getContent(params.slug))
+  const imgSize = 1024;
+  const { data, content } = getContent(params.slug);
   return (
     <div className="w-full h-full p-20 space-y-20">
-      <div className="space-y-4">
-        <h1 className="text-6xl">
+      <div className="flex flex-col gap-4 text-center">
+        <span className="text-3xl">
           {data.title}
-        </h1>
-        <h2>Project goal: {data.goal}</h2>
-        <h2>My role: {data.goal}</h2>
+        </span>
+        <span>Goal: {data.goal}</span>
+        <span>My role: {data.role}</span>
       </div>
       <Markdown className={styles.md} remarkPlugins={[remarkGfm, remarkFrontmatter]} components={{
         img({ height, width, src, alt }) {
