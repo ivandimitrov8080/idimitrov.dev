@@ -6,6 +6,7 @@ import styles from "./content.module.css"
 import Image from "next/image";
 import rehypeRaw from "rehype-raw";
 import rehypeHighlight from "rehype-highlight";
+import { notFound } from "next/navigation";
 
 type Params = {
   slug: string[]
@@ -23,10 +24,12 @@ export default function Content({ params }: Props) {
   const imgSize = 1024;
   const { data, content } = getContent(params.slug);
 
-  const title = () =>
-    <span className="text-3xl">
-      {data.title}
-    </span>
+  if (data.draft) {
+    notFound()
+  }
+
+  const title = () => <span className="text-3xl">{data.title}</span>
+
   const goal = () =>
     data.goal ?
       (
@@ -35,7 +38,8 @@ export default function Content({ params }: Props) {
           {data.goal}
         </div>
       ) :
-      ""
+      "";
+
   const role = () =>
     data.role ?
       (
@@ -44,7 +48,9 @@ export default function Content({ params }: Props) {
           {data.role}
         </div>
       ) :
-      ""
+      "";
+
+  const date = () => data.date ? (<span>{data.date}</span>) : ""
 
   const ctnt = () =>
     <Markdown
@@ -70,6 +76,7 @@ export default function Content({ params }: Props) {
         {title()}
         {goal()}
         {role()}
+        {date()}
       </div>
       <div className="w-3/4 m-auto">
         {ctnt()}

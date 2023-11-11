@@ -30,4 +30,3 @@ if (fs.existsSync(filePath)) {
 }
 
 fs.writeFileSync(filePath, meta(), { flag: "w+" })
-
