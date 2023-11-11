@@ -7,10 +7,10 @@ export default function Navbar() {
   return (
     <div className="w-full h-max p-2 grid place-content-center">
       <div className="flex flex-row gap-6">
-        <Link className={`btn ${path === "/" ? "btn-current" : ""}`} aria-label="Home" href="/">
+        <Link aria-selected={path === "/"} className="btn" aria-label="Home" href="/">
           Home
         </Link>
-        <Link className={`btn ${path === "/cases" ? "btn-current" : ""}`} aria-label="Cases" href="/cases">
+        <Link aria-selected={path === "/cases"} className="btn" aria-label="Cases" href="/cases">
           Cases
         </Link>
       </div>
