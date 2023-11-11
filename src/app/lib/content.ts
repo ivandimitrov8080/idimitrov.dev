@@ -2,7 +2,7 @@ import fs from "fs";
 import matter, { GrayMatterFile } from "gray-matter";
 import path from "path";
 
-const baseDir = "./_content/"
+export const baseDir = "./_content/"
 
 export const getContent = (slug: string[]): GrayMatterFile<string> => {
   let p = path.join(baseDir)
@@ -17,13 +17,10 @@ export const getContent = (slug: string[]): GrayMatterFile<string> => {
 
 const getAllPathsRecursive = (base = baseDir): string[] => {
   let results = [] as string[];
-
   const files = fs.readdirSync(base);
-
   for (const file of files) {
     const filePath = path.join(base, file);
     const stat = fs.statSync(filePath);
-
     if (stat.isDirectory()) {
       results = results.concat(getAllPathsRecursive(filePath));
     } else if (path.extname(filePath) === '.md') {
@@ -33,11 +30,9 @@ const getAllPathsRecursive = (base = baseDir): string[] => {
   return results;
 }
 
-export const getAllPaths = (base = baseDir): string[] => {
-  return getAllPathsRecursive(base).map(p => p.substring(9))
-}
+export const getAllPaths = (base = baseDir): string[] => getAllPathsRecursive(base).map(p => p.substring(9))
 
-export const getCases = (): GrayMatterFile<string>[] => {
-  return getAllPaths(`${baseDir}cases/`).map(s => s.split("/")).map(getContent)
-}
+export const getCases = (): GrayMatterFile<string>[] => getAllPaths(`${baseDir}cases/`).map(s => s.split("/")).map(getContent)
+
+export const getAllContent = (): GrayMatterFile<string>[] => getAllPaths().map(s => s.split("/")).map(getContent)
 

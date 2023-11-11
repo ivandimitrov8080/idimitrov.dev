@@ -1,7 +1,5 @@
 import Cases from "$components/cases";
 
-export default function CasesPage() {
-  return (
-    <Cases />
-  )
-}
+const CasesPage = () => <Cases />
+
+export default CasesPage
