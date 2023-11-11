@@ -7,7 +7,7 @@ body {
 }
 
 main {
-  @apply grid w-full h-full
+  @apply flex flex-col w-full h-full
 }
 
 svg {
