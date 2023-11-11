@@ -24,5 +24,10 @@ draft: true
 ---
 `
 
-fs.writeFileSync(`${baseDir}${path}.md`, meta(), {flag: "w+"})
+const filePath = `${baseDir}${path}.md`
+if (fs.existsSync(filePath)) {
+  throw new Error("File already exists!")
+}
+
+fs.writeFileSync(filePath, meta(), { flag: "w+" })
 
