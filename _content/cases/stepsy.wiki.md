@@ -6,8 +6,17 @@ date: Jul 29, 2023 - Nov 5, 2023
 z: 5
 ---
 
-<details>
-<summary>Solution</summary>
+This project aims to be a Google Drive frontend. It uses the Google APIs to fetch document data and display that data in a wiki-style web page.
+
+
+![thumbnail](/thumbnail.png)
+
+
+It supports Google Docs, Google Sheets, Google Slides, PDFs and regular files.
+
+---
+
+### Technical overview
 
 I chose NextJS as the backbone for this project as it offers the greatest amount of flexibility while still being very powerful both on the client as well as on the server with an active community and thriving ecosystem.
 
@@ -31,12 +40,29 @@ The UI/UX uses TailwindCSS and DaisyUI to make everything a fast, modern, optimi
 React was used with TypeScript to provide a nice modern client-side experience between transitions and interactions.
 This setup supports maximum optimization as you can see in the screenshots below allowing the app to reach a lighthouse score of 100 on all but one (it has 99) pages.
 Both mobile and desktop is supported.
-</details>
-
-This project aims to be a Google Drive frontend. It uses the Google APIs to fetch document data and display that data in a wiki-style web page.
 
 
-![thumbnail](/thumbnail.png)
+---
 
 
-It supports Google Docs, Google Sheets, Google Slides, PDFs and regular files.
+### Technical details
+
+First install [googleapis](https://www.npmjs.com/package/googleapis)
+
+```bash
+bun i googleapis
+```
+
+
+
+```ts
+let authClient: Auth.GoogleAuth | Auth.OAuth2Client = new google.auth.OAuth2(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET
+);
+authClient.setCredentials({
+  access_token: jwt.accessToken?.value,
+  refresh_token: jwt.user?.refreshToken,
+});
+```
+

@@ -1,8 +1,16 @@
+.md * {
+  @apply py-2
+}
+
 .md ol {
   @apply list-decimal list-inside
 }
 .md ul {
   @apply list-disc list-inside
+}
+
+.md hr {
+  @apply m-4
 }
 
 .md blockquote {
@@ -17,8 +25,8 @@
   @apply p-20
 }
 
-.md details * {
-  @apply p-2
+.md code {
+  @apply rounded-lg
 }
 
 .md h1 {

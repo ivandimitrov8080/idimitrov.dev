@@ -1,12 +1,14 @@
+import "highlight.js/styles/github-dark.css"
+import styles from "./content.module.css"
 import { getAllPaths, getContent } from "$lib/content";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkFrontmatter from "remark-frontmatter";
-import styles from "./content.module.css"
 import Image from "next/image";
 import rehypeRaw from "rehype-raw";
 import rehypeHighlight from "rehype-highlight";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 
 type Params = {
   slug: string[]
@@ -61,9 +63,17 @@ export default function Content({ params }: Props) {
         img({ height, width, src, alt }) {
           return (
             <span className="w-full h-max p-20">
-              <Image className="w-full h-full" alt={alt!} height={Number(height) || imgSize} width={Number(width) || imgSize} src={`${data.slug}${src}`}></Image>
+              <Image className="w-full h-full border-2 px-2" alt={alt!} height={Number(height) || imgSize} width={Number(width) || imgSize} src={`${data.slug}${src}`}></Image>
             </span>
           )
+        },
+        a({ href, children }) {
+          return (
+            <Link aria-label={href} href={href!} target="_blank">{children}</Link>
+          )
+        },
+        pre({ children, className }) {
+          return <div><pre className={`${className}`}>{children}</pre>test</div>
         }
       }}
     >
@@ -72,7 +82,7 @@ export default function Content({ params }: Props) {
 
   return (
     <div className="w-full h-full p-20 overflow-x-hidden overflow-scroll">
-      <div className="flex flex-col gap-4 text-center">
+      <div className="flex flex-col gap-4 text-center border-amber-50 border-2 p-2 m-2 rounded-full">
         {title()}
         {goal()}
         {role()}
