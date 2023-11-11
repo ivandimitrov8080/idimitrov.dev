@@ -1,14 +1,13 @@
 "use client"
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ReactNode } from "react";
 
 export default function Navbar() {
   const path = usePathname()
 
-  const link = (text: ReactNode, href: string) => {
+  const link = (text: string, href: string) => {
     return (
-      <Link aria-selected={path === href} className="btn" aria-label="Home" href={href}>
+      <Link data-selected={path === href} className="btn" aria-label={text} href={href}>
         {text}
       </Link>
     )
