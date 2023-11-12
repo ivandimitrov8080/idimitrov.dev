@@ -11,7 +11,11 @@ main {
 }
 
 svg {
-  @apply w-14 h-14 text-amber-100 hover:text-cyan-500
+  @apply hover:text-cyan-500
+}
+
+.svg-link {
+  @apply w-14 h-14
 }
 
 .btn {

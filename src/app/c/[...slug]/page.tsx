@@ -9,7 +9,8 @@ import rehypeRaw from "rehype-raw";
 import rehypeHighlight from "rehype-highlight";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import CodeBlock from "$components/code-block";
+import CopyButton from "$components/copy-button";
+import { getText } from "@/app/lib/react";
 
 type Params = {
   slug: string[]
@@ -75,7 +76,10 @@ export default function Content({ params }: Props) {
         },
         pre({ children, className }) {
           return (
-            <CodeBlock className={className}>{children}</CodeBlock>
+            <div className="relative">
+              <CopyButton text={getText(children)} />
+              <pre className={`${className || ""}`}>{children}</pre>
+            </div>
           )
         }
       }}
