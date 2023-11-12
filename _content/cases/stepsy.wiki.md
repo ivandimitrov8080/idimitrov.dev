@@ -45,24 +45,92 @@ Both mobile and desktop is supported.
 ---
 
 
-### Technical details
+### Google API details
 
-First install [googleapis](https://www.npmjs.com/package/googleapis)
-
-```bash
-bun i googleapis
-```
-
-
+Configure NextAuth for Google:
 
 ```ts
-let authClient: Auth.GoogleAuth | Auth.OAuth2Client = new google.auth.OAuth2(
+export default NextAuth({
+...
+  providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          access_type: "offline",
+          prompt: "consent",
+          scope: "openid profile email https://www.googleapis.com/auth/drive",
+        },
+      },
+    }),
+  ],
+...
+```
+
+Create an auth client for logged in users
+
+```ts
+let authClient = new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
-    process.env.GOOGLE_CLIENT_SECRET
+    process.env.GOOGLE_CLIENT_SECRET,
 );
 authClient.setCredentials({
-  access_token: jwt.accessToken?.value,
-  refresh_token: jwt.user?.refreshToken,
+  access_token: accessToken, // this comes from the logged in user info
+  refresh_token: refreshToken, // same for this
 });
+```
+
+or one for anonymous users using a Google service account
+
+```ts
+authClient = new google.auth.JWT({
+  email: serviceAccount.client_email,
+  key: serviceAccount.private_key,
+  scopes: ["https://www.googleapis.com/auth/drive"],
+});
+```
+
+Create the drive client
+
+```ts
+const drive = google.drive({
+    version: "v3",
+    auth: authClient,
+});
+```
+
+You can now use this client to query the API
+
+```ts
+const folderContents = (await drive.files.list({ q: `'${folderId}' in parents` }))
+  .data.files;
+```
+
+```ts
+const googleDocHtml = await (drive.files.export({
+  fileId: googleDocId,
+  mimeType: "text/html",
+})).data;
+```
+
+```ts
+const shortcutTarget = await drive.files.get({
+    fileId,
+    fields: "shortcutDetails/targetId",
+});
+const targetId = shortcutTarget.data.shortcutDetails?.targetId
+```
+
+Google doesn't export everything to HTML. They provide document renderers as iFrames.
+
+```tsx
+// doc.type is either "spreadsheets" or "presentation"
+<iframe src={`https://docs.google.com/${doc.type}/d/${doc.id}/preview`}></iframe>
+```
+
+```tsx
+// This is used for PDFs or regular text files
+<iframe src={`https://drive.google.com/file/d/${doc.id}/preview`}></iframe>
 ```
 
