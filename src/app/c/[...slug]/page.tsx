@@ -9,6 +9,7 @@ import rehypeRaw from "rehype-raw";
 import rehypeHighlight from "rehype-highlight";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import CodeBlock from "$components/code-block";
 
 type Params = {
   slug: string[]
@@ -60,20 +61,22 @@ export default function Content({ params }: Props) {
       remarkPlugins={[remarkGfm, remarkFrontmatter]}
       rehypePlugins={[rehypeRaw, rehypeHighlight]}
       components={{
-        img({ height, width, src, alt }) {
+        img({ height, width, src, alt, className }) {
           return (
             <span className="w-full h-max p-20">
-              <Image className="w-full h-full border-2 px-2" alt={alt!} height={Number(height) || imgSize} width={Number(width) || imgSize} src={`${data.slug}${src}`}></Image>
+              <Image className={`w-full h-full border-2 px-2 ${className || ""}`} alt={alt!} height={Number(height) || imgSize} width={Number(width) || imgSize} src={`${data.slug}${src}`}></Image>
             </span>
           )
         },
-        a({ href, children }) {
+        a({ href, children, className }) {
           return (
-            <Link aria-label={href} href={href!} target="_blank">{children}</Link>
+            <Link className={className || ""} aria-label={href} href={href!} target="_blank">{children}</Link>
           )
         },
         pre({ children, className }) {
-          return <div><pre className={`${className}`}>{children}</pre>test</div>
+          return (
+            <CodeBlock className={className} children={children} />
+          )
         }
       }}
     >
