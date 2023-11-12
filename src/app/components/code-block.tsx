@@ -14,7 +14,7 @@ const getText = (node: any) => {
     return node
   }
   const c = props.children
-  return typeof node === "string" ? node : typeof c === "string" ? c : c.map(getText).join("")
+  return typeof c === "string" ? c : c.map(getText).join("")
 }
 
 const CodeBlock = ({ className, children }: Props) => {

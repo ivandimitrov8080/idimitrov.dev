@@ -103,12 +103,16 @@ const drive = google.drive({
 You can now use this client to query the API
 
 ```ts
+const file = (await drive.files.get({fileId})).data;
+```
+
+```ts
 const folderContents = (await drive.files.list({ q: `'${folderId}' in parents` }))
   .data.files;
 ```
 
 ```ts
-const googleDocHtml = await (drive.files.export({
+const googleDocHtml = (await drive.files.export({
   fileId: googleDocId,
   mimeType: "text/html",
 })).data;
@@ -125,12 +129,11 @@ const targetId = shortcutTarget.data.shortcutDetails?.targetId
 Google doesn't export everything to HTML. They provide document renderers as iFrames.
 
 ```tsx
-// doc.type is either "spreadsheets" or "presentation"
-<iframe src={`https://docs.google.com/${doc.type}/d/${doc.id}/preview`}></iframe>
+<iframe src={`https://docs.google.com/{{"spreadsheets" or "presentation"}}/d/${docId}/preview`}></iframe>
 ```
 
 ```tsx
 // This is used for PDFs or regular text files
-<iframe src={`https://drive.google.com/file/d/${doc.id}/preview`}></iframe>
+<iframe src={`https://drive.google.com/file/d/${docId}/preview`}></iframe>
 ```
 
