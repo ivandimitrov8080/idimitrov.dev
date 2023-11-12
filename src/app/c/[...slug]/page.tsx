@@ -75,7 +75,7 @@ export default function Content({ params }: Props) {
         },
         pre({ children, className }) {
           return (
-            <CodeBlock className={className} children={children} />
+            <CodeBlock className={className}>{children}</CodeBlock>
           )
         }
       }}
@@ -84,14 +84,14 @@ export default function Content({ params }: Props) {
     </Markdown>
 
   return (
-    <div className="w-full h-full p-20 overflow-x-hidden overflow-scroll">
-      <div className="flex flex-col gap-4 text-center border-amber-50 border-2 p-2 m-2 rounded-full">
+    <div className="w-full h-full p-4 lg:p-20 overflow-x-hidden overflow-scroll">
+      <div className="flex flex-col gap-4 text-center border-amber-50 border-2 p-2 m-2 lg:rounded-full">
         {title()}
         {goal()}
         {role()}
         {date()}
       </div>
-      <div className="w-3/4 m-auto">
+      <div className="w-full m-auto lg:w-3/4">
         {ctnt()}
       </div>
     </div>
