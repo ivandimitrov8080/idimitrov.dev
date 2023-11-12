@@ -6,8 +6,17 @@ date: Jul 29, 2023 - Nov 5, 2023
 z: 5
 ---
 
-<details>
-<summary>Solution</summary>
+This project aims to be a Google Drive frontend. It uses the Google APIs to fetch document data and display that data in a wiki-style web page.
+
+
+![thumbnail](/thumbnail.png)
+
+
+It supports Google Docs, Google Sheets, Google Slides, PDFs and regular files.
+
+---
+
+### Technical overview
 
 I chose NextJS as the backbone for this project as it offers the greatest amount of flexibility while still being very powerful both on the client as well as on the server with an active community and thriving ecosystem.
 
@@ -31,12 +40,100 @@ The UI/UX uses TailwindCSS and DaisyUI to make everything a fast, modern, optimi
 React was used with TypeScript to provide a nice modern client-side experience between transitions and interactions.
 This setup supports maximum optimization as you can see in the screenshots below allowing the app to reach a lighthouse score of 100 on all but one (it has 99) pages.
 Both mobile and desktop is supported.
-</details>
-
-This project aims to be a Google Drive frontend. It uses the Google APIs to fetch document data and display that data in a wiki-style web page.
 
 
-![thumbnail](/thumbnail.png)
+---
 
 
-It supports Google Docs, Google Sheets, Google Slides, PDFs and regular files.
+### Google API details
+
+Configure NextAuth for Google:
+
+```ts
+export default NextAuth({
+...
+  providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          access_type: "offline",
+          prompt: "consent",
+          scope: "openid profile email https://www.googleapis.com/auth/drive",
+        },
+      },
+    }),
+  ],
+...
+```
+
+Create an auth client for logged in users
+
+```ts
+let authClient = new google.auth.OAuth2(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+);
+authClient.setCredentials({
+  access_token: accessToken, // this comes from the logged in user info
+  refresh_token: refreshToken, // same for this
+});
+```
+
+or one for anonymous users using a Google service account
+
+```ts
+authClient = new google.auth.JWT({
+  email: serviceAccount.client_email,
+  key: serviceAccount.private_key,
+  scopes: ["https://www.googleapis.com/auth/drive"],
+});
+```
+
+Create the drive client
+
+```ts
+const drive = google.drive({
+    version: "v3",
+    auth: authClient,
+});
+```
+
+You can now use this client to query the API
+
+```ts
+const file = (await drive.files.get({fileId})).data;
+```
+
+```ts
+const folderContents = (await drive.files.list({ q: `'${folderId}' in parents` }))
+  .data.files;
+```
+
+```ts
+const googleDocHtml = (await drive.files.export({
+  fileId: googleDocId,
+  mimeType: "text/html",
+})).data;
+```
+
+```ts
+const shortcutTarget = await drive.files.get({
+    fileId,
+    fields: "shortcutDetails/targetId",
+});
+const targetId = shortcutTarget.data.shortcutDetails?.targetId
+```
+
+Google doesn't export everything to HTML. They provide document renderers as iFrames.
+
+```tsx
+<iframe src={`https://docs.google.com/{{"spreadsheets" or "presentation"}}/d/${docId}/preview`}></iframe>
+```
+
+```tsx
+// This is used for PDFs or regular text files
+<iframe src={`https://drive.google.com/file/d/${docId}/preview`}></iframe>
+```
+

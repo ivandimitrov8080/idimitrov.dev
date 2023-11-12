@@ -10,6 +10,10 @@ main {
   @apply flex flex-col w-full h-full
 }
 
+main * {
+  @apply border-amber-50
+}
+
 svg {
   @apply w-14 h-14 text-amber-100 hover:text-cyan-500
 }
