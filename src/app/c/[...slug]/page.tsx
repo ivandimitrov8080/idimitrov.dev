@@ -10,7 +10,7 @@ import rehypeHighlight from "rehype-highlight";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import CopyButton from "$components/copy-button";
-import { getText } from "@/app/lib/react";
+import { getText } from "$lib/react";
 
 type Params = {
   slug: string[]
@@ -95,7 +95,7 @@ export default function Content({ params }: Props) {
         {role()}
         {date()}
       </div>
-      <div className="w-full m-auto lg:w-3/4">
+      <div className="w-full m-auto lg:w-3/4 mt-10">
         {ctnt()}
       </div>
     </div>

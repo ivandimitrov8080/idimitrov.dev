@@ -53,3 +53,7 @@
   @apply text-xl
 }
 
+.md a {
+  @apply underline text-teal-200 hover:text-cyan-500
+}
+
