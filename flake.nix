@@ -5,16 +5,29 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs";
+    ide = {
+      url = "git+ssh://git@github.com/ivandimitrov8080/xin-ide";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs }:
+  outputs = { self, nixpkgs, ide, ... }:
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
+      nvim = ide.nvim.${system} {
+        plugins.lsp.servers = {
+          html.enable = true;
+          tsserver.enable = true;
+          jsonls.enable = true;
+          tailwindcss.enable = true;
+        };
+      };
       buildInputs = with pkgs; [
         coreutils-full
         nodejs_20
         bun
+        nvim
       ];
       tmuxConfig = ''
         tmux new-session -s my_session -d
