@@ -10,7 +10,7 @@ import rehypeHighlight from "rehype-highlight";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import CopyButton from "$components/copy-button";
-import { getText } from "@/app/lib/react";
+import { getText } from "$lib/react";
 
 type Params = {
   slug: string[]
