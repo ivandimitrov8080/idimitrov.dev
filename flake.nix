@@ -22,6 +22,7 @@
             tsserver.enable = true;
             jsonls.enable = true;
             tailwindcss.enable = true;
+            cssls.enable = true;
           };
           cmp-spell.enable = true;
         };
