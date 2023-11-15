@@ -5,6 +5,6 @@ export const getText = (node: ReactNode | any) => {
   if (!props) {
     return node
   }
-  const c = props.children
+  const c = props.children || ""
   return typeof c === "string" ? c : c.map(getText).join("")
 }

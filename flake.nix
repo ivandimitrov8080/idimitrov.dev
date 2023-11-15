@@ -16,11 +16,14 @@
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
       nvim = ide.nvim.${system} {
-        plugins.lsp.servers = {
-          html.enable = true;
-          tsserver.enable = true;
-          jsonls.enable = true;
-          tailwindcss.enable = true;
+        plugins = {
+          lsp.servers = {
+            html.enable = true;
+            tsserver.enable = true;
+            jsonls.enable = true;
+            tailwindcss.enable = true;
+          };
+          cmp-spell.enable = true;
         };
       };
       buildInputs = with pkgs; [

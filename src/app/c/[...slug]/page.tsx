@@ -95,7 +95,7 @@ export default function Content({ params }: Props) {
         {role()}
         {date()}
       </div>
-      <div className="w-full m-auto lg:w-3/4">
+      <div className="w-full m-auto lg:w-3/4 mt-10">
         {ctnt()}
       </div>
     </div>
