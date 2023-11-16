@@ -2,22 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  .btn {
+    @apply bg-gray-900 transition ease-in duration-200 text-gray-300 hover:bg-gray-700/60 rounded-md px-3 py-2 text-sm
+  }
+}
+
+@layer utilities {
+  .gradient {
+    @apply bg-gradient-to-br from-slate-950 via-red-700 to-yellow-400
+  }
+}
+
 body {
-  @apply bg-slate-950 text-slate-50 w-screen h-screen
+  @apply gradient text-slate-50 w-screen h-screen
 }
 
 main {
-  @apply flex flex-col w-full h-full
+  @apply flex flex-col w-full h-full bg-slate-950/95
 }
 
-svg {
-  @apply hover:text-cyan-500
-}
-
-.svg-link {
-  @apply w-14 h-14
-}
-
-.btn {
-  @apply bg-gray-900 text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium data-[selected=true]:bg-gray-600
-}

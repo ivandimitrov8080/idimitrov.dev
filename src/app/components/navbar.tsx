@@ -6,8 +6,10 @@ const Navbar = () => {
   const path = usePathname()
   const link = (text: string, href: string) => {
     return (
-      <Link data-selected={path === href} className="btn" aria-label={text} href={href}>
-        {text}
+      <Link data-selected={path === href} className="gradient w-full h-max rounded-md border-2" aria-label={text} href={href}>
+        <div className="btn">
+          {text}
+        </div>
       </Link>
     )
   }
