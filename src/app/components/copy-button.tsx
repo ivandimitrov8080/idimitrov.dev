@@ -19,7 +19,7 @@ const CopyButton = ({ text }: Props) => {
       }}
     >
       <span className={`${visible} absolute bottom-5 left-5`}><FontAwesomeIcon className="text-green-400" icon={faCheck} /></span>
-      <FontAwesomeIcon className="" icon={faCopy} />
+      <FontAwesomeIcon icon={faCopy} />
     </button>
   )
 }

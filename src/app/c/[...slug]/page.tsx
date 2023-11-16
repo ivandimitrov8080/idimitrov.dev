@@ -1,4 +1,3 @@
-import "highlight.js/styles/github-dark.css"
 import styles from "./content.module.css"
 import { getAllPaths, getContent } from "$lib/content";
 import Markdown from "react-markdown";
@@ -6,11 +5,12 @@ import remarkGfm from "remark-gfm";
 import remarkFrontmatter from "remark-frontmatter";
 import Image from "next/image";
 import rehypeRaw from "rehype-raw";
-import rehypeHighlight from "rehype-highlight";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import CopyButton from "$components/copy-button";
 import { getText } from "$lib/react";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
+import codeStyle from 'react-syntax-highlighter/dist/esm/styles/prism/coldark-dark'
 
 type Params = {
   slug: string[]
@@ -60,7 +60,7 @@ export default function Content({ params }: Props) {
     <Markdown
       className={styles.md}
       remarkPlugins={[remarkGfm, remarkFrontmatter]}
-      rehypePlugins={[rehypeRaw, rehypeHighlight]}
+      rehypePlugins={[rehypeRaw]}
       components={{
         img({ height, width, src, alt, className }) {
           return (
@@ -80,6 +80,21 @@ export default function Content({ params }: Props) {
               <CopyButton text={getText(children)} />
               <pre className={`${className || ""}`}>{children}</pre>
             </div>
+          )
+        },
+        code({ children, ref, className, node, ...rest }) {
+          const match = /language-(\w+)/.exec(className || '')
+          return match ? (
+            <SyntaxHighlighter
+              {...rest}
+              children={getText(children)}
+              language={match[1]}
+              style={codeStyle}
+            />
+          ) : (
+            <code {...rest} className={`${className} text-orange-400 font-black font-mono`}>
+              {children}
+            </code>
           )
         }
       }}
