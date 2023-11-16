@@ -87,10 +87,9 @@ export default function Content({ params }: Props) {
           return match ? (
             <SyntaxHighlighter
               {...rest}
-              children={getText(children)}
               language={match[1]}
               style={codeStyle}
-            />
+            >{getText(children)}</SyntaxHighlighter>
           ) : (
             <code {...rest} className={`${className} text-orange-400 font-black font-mono`}>
               {children}
