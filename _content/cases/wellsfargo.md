@@ -26,4 +26,6 @@ For that reason I will not go into too much detail about the use cases as I'm no
 One use case documented on their website is the API Keys endpoint.
 
 To generate an API key you need your client credentials with a key and a secret in this format `Authorization: Basic base64(consumerKey:consumerSecret)`
+as well as the scope in the form `grant_type=client_credentials&scope=accounts`. There are hundreds of scopes to configure.
+This gives you an `access_token` which is valid for 24 hours, has the scopes (permissions) you requested and is used for most API communications.
 
