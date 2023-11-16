@@ -22,3 +22,7 @@ main {
   @apply flex flex-col w-full h-full bg-slate-950/95
 }
 
+svg {
+  @apply hover:text-sky-400 transition duration-200 ease-in
+}
+
