@@ -130,11 +130,11 @@
         "systems": "systems_3"
       },
       "locked": {
-        "lastModified": 1700118562,
-        "narHash": "sha256-SNyiA074YNXOcTk6TtQd7DrxipKtknHQ/Qx5zVQ67QM=",
+        "lastModified": 1700132136,
+        "narHash": "sha256-N1H3ZBbHykvdV8I+svGFbBPgS4YNOJm1LS5xIenzrWY=",
         "ref": "refs/heads/master",
-        "rev": "b5f763b1339ed2098fa1bbb7d0970dd4cfc9c394",
-        "revCount": 23,
+        "rev": "d6305a6bccd53e743a1b625bd6534532155de679",
+        "revCount": 24,
         "type": "git",
         "url": "ssh://git@github.com/ivandimitrov8080/xin-ide"
       },
@@ -145,11 +145,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1700117003,
-        "narHash": "sha256-ACksF8LRWhQV36v2jEffqeRfPXngnsHDTxCCCorxNbQ=",
+        "lastModified": 1700130609,
+        "narHash": "sha256-pFtz286KaVHUmBOQztMNSgvT7hxcDe409vnDJxWQH7A=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "5049069a5cde3fcd165834b32fbfdc4a543b2bba",
+        "rev": "54f00576aa6139a9d54062d0edc2fb31423f0ffb",
         "type": "github"
       },
       "original": {
