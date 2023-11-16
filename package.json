@@ -10,21 +10,21 @@
     "new": "bun new.ts"
   },
   "dependencies": {
-    "@fortawesome/fontawesome-svg-core": "^6.4.2",
-    "@fortawesome/free-brands-svg-icons": "^6.4.2",
-    "@fortawesome/free-regular-svg-icons": "^6.4.2",
-    "@fortawesome/free-solid-svg-icons": "^6.4.2",
+    "@fortawesome/fontawesome-svg-core": "latest",
+    "@fortawesome/free-brands-svg-icons": "latest",
+    "@fortawesome/free-regular-svg-icons": "latest",
+    "@fortawesome/free-solid-svg-icons": "latest",
     "@fortawesome/react-fontawesome": "latest",
-    "@types/react-syntax-highlighter": "^15.5.10",
-    "gray-matter": "^4.0.3",
+    "@types/react-syntax-highlighter": "latest",
+    "gray-matter": "latest",
     "next": "latest",
     "react": "latest",
     "react-dom": "latest",
-    "react-markdown": "^9.0.0",
-    "react-syntax-highlighter": "^15.5.0",
-    "rehype-raw": "^7.0.0",
-    "remark-frontmatter": "^5.0.0",
-    "remark-gfm": "^4.0.0"
+    "react-markdown": "latest",
+    "react-syntax-highlighter": "latest",
+    "rehype-raw": "latest",
+    "remark-frontmatter": "latest",
+    "remark-gfm": "latest"
   },
   "devDependencies": {
     "typescript": "latest",
