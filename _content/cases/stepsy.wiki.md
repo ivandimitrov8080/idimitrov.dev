@@ -9,6 +9,11 @@ z: 3
 This project aims to be a Google Drive frontend. It uses the Google APIs to fetch document data and display that data in a wiki-style web page.
 
 
+### [Demo page](https://ivan.stepsy.wiki/space/spc)
+
+(website not live yet.. waiting for client)
+
+
 ![thumbnail](/thumbnail.png)
 
 
