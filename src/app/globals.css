@@ -14,8 +14,12 @@
   }
 }
 
+html * {
+  @apply scrollbar scrollbar-thin scrollbar-thumb-sky-400
+}
+
 body {
-  @apply gradient text-slate-50 w-screen h-screen
+  @apply gradient text-slate-50 w-screen h-screen overflow-hidden
 }
 
 main {

@@ -12,6 +12,7 @@ const CopyButton = ({ text }: Props) => {
   return (
     <button
       className="absolute top-5 right-5"
+      aria-label="copy"
       onClick={() => {
         navigator.clipboard.writeText(text)
         setVisible("visible")

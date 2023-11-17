@@ -71,7 +71,7 @@ export default function Content({ params }: Props) {
         },
         a({ href, children, className }) {
           return (
-            <Link className={className || ""} aria-label={href} href={href!} target="_blank">{children}</Link>
+            <Link className={className || ""} aria-label={getText(children)} href={href!} target="_blank">{children}</Link>
           )
         },
         pre({ children, className }) {

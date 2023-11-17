@@ -24,7 +24,8 @@
     "react-syntax-highlighter": "latest",
     "rehype-raw": "latest",
     "remark-frontmatter": "latest",
-    "remark-gfm": "latest"
+    "remark-gfm": "latest",
+    "tailwind-scrollbar": "latest"
   },
   "devDependencies": {
     "typescript": "latest",
