@@ -6,7 +6,7 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs";
     ide = {
-      url = "git+ssh://git@github.com/ivandimitrov8080/xin-ide";
+      url = "github:ivandimitrov8080/xin-ide";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };

@@ -130,26 +130,26 @@
         "systems": "systems_3"
       },
       "locked": {
-        "lastModified": 1700132136,
-        "narHash": "sha256-N1H3ZBbHykvdV8I+svGFbBPgS4YNOJm1LS5xIenzrWY=",
-        "ref": "refs/heads/master",
-        "rev": "d6305a6bccd53e743a1b625bd6534532155de679",
-        "revCount": 24,
-        "type": "git",
-        "url": "ssh://git@github.com/ivandimitrov8080/xin-ide"
+        "lastModified": 1700286077,
+        "narHash": "sha256-ke16ErBvDpDBU6stxJ+ySpP+KDy8Ox2yZze0Hgc4zVI=",
+        "owner": "ivandimitrov8080",
+        "repo": "xin-ide",
+        "rev": "0ea679d15b2ad868fcf16464ce1436601fbf2375",
+        "type": "github"
       },
       "original": {
-        "type": "git",
-        "url": "ssh://git@github.com/ivandimitrov8080/xin-ide"
+        "owner": "ivandimitrov8080",
+        "repo": "xin-ide",
+        "type": "github"
       }
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1700154568,
-        "narHash": "sha256-bUM4bNWysqKM9c/kv4Y7u0/sNCNCQ+1Nwvrpkvi1bPI=",
+        "lastModified": 1700284104,
+        "narHash": "sha256-oNsJfAyAuBCTkusesiK0LWuO59F6vEGcP4wwa7kc1ZA=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "577d7a69133459be2cbd7ee52b6965781a66cba4",
+        "rev": "005617587ee2b7c003388b4539b9120ebcc90e44",
         "type": "github"
       },
       "original": {
@@ -185,15 +185,15 @@
         "pre-commit-hooks": "pre-commit-hooks"
       },
       "locked": {
-        "lastModified": 1698504351,
-        "narHash": "sha256-/bj7Sy32j2HPtIuwjV94ZqF3A8A3CIouOngz8pdMn2I=",
-        "owner": "nix-community",
+        "lastModified": 1700216821,
+        "narHash": "sha256-c0W9HelclC4rACUAXTK8Q8+X0oKlLTTXnsheLJoA0iw=",
+        "owner": "ivandimitrov8080",
         "repo": "nixvim",
-        "rev": "9004ffe32f68bb9cc3e5907bdb55ceccddca44a0",
+        "rev": "5b615804cc96dcbc42b17b38d33264ade00976cc",
         "type": "github"
       },
       "original": {
-        "owner": "nix-community",
+        "owner": "ivandimitrov8080",
         "repo": "nixvim",
         "type": "github"
       }
