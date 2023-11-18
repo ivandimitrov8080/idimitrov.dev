@@ -6,7 +6,7 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs";
     ide = {
-      url = "github:ivandimitrov8080/xin-ide";
+      url = "github:ivandimitrov8080/flake-ide";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
