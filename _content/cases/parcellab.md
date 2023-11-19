@@ -7,33 +7,37 @@ z: 2
 draft: false
 ---
 
-> parcelLab is the only truly global enterprise post-purchase software provider, enabling brands to increase top-line revenue, decrease operational costs, and optimize the customer experience.
-
+> parcelLab is the only truly global enterprise post-purchase software provider, enabling brands to increase top-line
+> revenue, decrease operational costs, and optimize the customer experience.
 
 [Parcel Lab](https://parcellab.com/)
 
-
-Parcel lab takes care of the post-purchase operations like order tracking, email notifications, delivery status updates, data processing and more so that businesses don't have to.
-
+Parcel lab takes care of the post-purchase operations like order tracking, email notifications, delivery status updates,
+data processing and more so that businesses don't have to.
 
 ---
 
 ### Technical overview
 
-This integration is straightforward thanks to the [amazing documentation](https://how.parcellab.works/docs/) provided by the Parcel Lab team.
+This integration is straightforward thanks to the [amazing documentation](https://how.parcellab.works/docs/) provided by
+the Parcel Lab team.
 
 You really want to use the API even though there's more options to submit data to their platform.
 
-The data model is based on the [tracking](https://how.parcellab.works/docs/onboarding/data-model) - a data object having four fields for the delivery information. An order is composed of one or more trackings.
+The data model is based on the [tracking](https://how.parcellab.works/docs/onboarding/data-model) - a data object having
+four fields for the delivery information. An order is composed of one or more trackings.
 
-Once data is submitted, the platform starts an automated process where it groups the new trackings to their respective orders and starts listening for events like
-"dispatch", "payment received" etc. to run custom actions. Each business can configure these events and actions so that they best match their operations.
-For example an "order created" event could notify the customer that the order has started as well as deal with some other business logic in the background.
+Once data is submitted, the platform starts an automated process where it groups the new trackings to their respective
+orders and starts listening for events like "dispatch", "payment received" etc. to run custom actions. Each business can
+configure these events and actions so that they best match their operations. For example an "order created" event could
+notify the customer that the order has started as well as deal with some other business logic in the background.
 
-Their [order status page](https://how.parcellab.works/docs/track-and-communicate/order-status-page) is a convenient script that you can configure for your website.
-The script reads the URL to find an order number so that it can fetch the most up-to-date information for that order and display it in an iFrame.
+Their [order status page](https://how.parcellab.works/docs/track-and-communicate/order-status-page) is a convenient
+script that you can configure for your website. The script reads the URL to find an order number so that it can fetch
+the most up-to-date information for that order and display it in an iFrame.
 
-This system allows for a seamless, declarative event-based integration where the business takes care of the data and events (and sales) and parcelLab takes care of the rest.
+This system allows for a seamless, declarative event-based integration where the business takes care of the data and
+events (and sales) and parcelLab takes care of the rest.
 
 ---
 
@@ -176,23 +180,22 @@ All this can be viewed on the tracking page embedded anywhere.
 
 ```html
 <div id="parcellab-track-and-trace">
-<img src="https://cdn.parcellab.com/img/loading-spinner-1.gif" alt="loading" />
+  <img src="https://cdn.parcellab.com/img/loading-spinner-1.gif" alt="loading" />
 </div>
 
 <script>
   function plTrackAndTraceStart() {
-        window.parcelLabTrackAndTrace.initialize({
-          plUserId: TYPE_YOUR_USER_ID_HERE
-        });
-        var linkTag = document.createElement('link');
-        linkTag.rel = 'stylesheet';
-        linkTag.href = 'https://cdn.parcellab.com/css/v5/main.min.css';
-        document.getElementsByTagName('head')[0].appendChild(linkTag);
+    window.parcelLabTrackAndTrace.initialize({
+      plUserId: TYPE_YOUR_USER_ID_HERE,
+    });
+    var linkTag = document.createElement("link");
+    linkTag.rel = "stylesheet";
+    linkTag.href = "https://cdn.parcellab.com/css/v5/main.min.css";
+    document.getElementsByTagName("head")[0].appendChild(linkTag);
   }
 </script>
-<script async onload="plTrackAndTraceStart()"
-src="https://cdn.parcellab.com/js/v5/main.min.js"></script>
+<script async onload="plTrackAndTraceStart()" src="https://cdn.parcellab.com/js/v5/main.min.js"></script>
 ```
 
-This shows a nice UI that can be [customized](https://how.parcellab.works/docs/track-and-communicate/order-status-page/configuration#additional-options).
-
+This shows a nice UI that can be
+[customized](https://how.parcellab.works/docs/track-and-communicate/order-status-page/configuration#additional-options).

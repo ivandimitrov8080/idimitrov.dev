@@ -10,4 +10,3 @@ draft: true
 Repo: [github.com](https://github.com/hearts-of-iron-2/wiki)
 
 This project aims to revamp an old, unmaintained wiki website and bring it back to life.
-
