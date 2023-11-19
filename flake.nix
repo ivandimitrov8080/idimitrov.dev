@@ -23,7 +23,9 @@
             jsonls.enable = true;
             tailwindcss.enable = true;
             cssls.enable = true;
+            efm.enable = true;
           };
+          efmls-configs.enable = true;
         };
       };
       buildInputs = with pkgs; [

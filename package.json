@@ -37,5 +37,14 @@
     "tailwindcss": "latest",
     "eslint": "latest",
     "eslint-config-next": "latest"
+  },
+  "prettier": {
+    "tabWidth": 2,
+    "semi": true,
+    "singleQuote": false,
+    "printWidth": 120,
+    "bracketSameLine": true,
+    "arrowParens": "avoid",
+    "proseWrap": "always"
   }
 }
