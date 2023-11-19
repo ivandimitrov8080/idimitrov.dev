@@ -1,4 +1,4 @@
-import { baseDir, getAllContent } from "@/app/lib/content";
+import { baseDir, getAllContent } from "$lib/content";
 import fs from "fs"
 
 const args = process.argv.slice(2)
