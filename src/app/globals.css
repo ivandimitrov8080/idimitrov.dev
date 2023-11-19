@@ -4,29 +4,28 @@
 
 @layer components {
   .btn {
-    @apply bg-gray-900 transition ease-in duration-200 text-gray-300 hover:bg-gray-700/60 rounded-md px-3 py-2 text-sm
+    @apply bg-gray-900 transition ease-in duration-200 text-gray-300 hover:bg-gray-700/60 rounded-md px-3 py-2 text-sm;
   }
 }
 
 @layer utilities {
   .gradient {
-    @apply bg-gradient-to-br from-slate-950 via-red-700 to-yellow-400
+    @apply bg-gradient-to-br from-slate-950 via-red-700 to-yellow-400;
   }
 }
 
 html * {
-  @apply scrollbar scrollbar-thin scrollbar-thumb-sky-400
+  @apply scrollbar scrollbar-thin scrollbar-thumb-sky-400;
 }
 
 body {
-  @apply gradient text-slate-50 w-screen h-screen overflow-hidden
+  @apply gradient text-slate-50 w-screen h-screen overflow-hidden;
 }
 
 main {
-  @apply flex flex-col w-full h-full bg-slate-950/95
+  @apply flex flex-col w-full h-full bg-slate-950/95;
 }
 
 svg {
-  @apply hover:text-sky-400 transition duration-200 ease-in
+  @apply hover:text-sky-400 transition duration-200 ease-in;
 }
-

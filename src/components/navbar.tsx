@@ -1,9 +1,9 @@
-"use client"
+"use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const Navbar = () => {
-  const path = usePathname()
+  const path = usePathname();
   const link = (text: string, href: string) => {
     return (
       <Link className="gradient w-full h-max rounded-md border-2" aria-label={text} href={href}>
@@ -11,8 +11,8 @@ const Navbar = () => {
           {text}
         </div>
       </Link>
-    )
-  }
+    );
+  };
   return (
     <div className="w-max h-max px-6 py-2 mx-auto rounded-full bg-slate-900 grid place-content-center">
       <div className="flex flex-row gap-6">
@@ -21,8 +21,7 @@ const Navbar = () => {
         {link("Contact", "/contact")}
       </div>
     </div>
-  )
-}
+  );
+};
 
-
-export default Navbar
+export default Navbar;

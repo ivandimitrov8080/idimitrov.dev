@@ -1,17 +1,13 @@
-import './globals.css'
-import Navbar from '$components/navbar'
-import type { Metadata } from 'next'
+import "./globals.css";
+import Navbar from "$components/navbar";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Ivan Dimitrov",
   description: "Freelance Software Developer",
-}
+};
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body>
@@ -21,5 +17,5 @@ export default function RootLayout({
         </main>
       </body>
     </html>
-  )
+  );
 }
