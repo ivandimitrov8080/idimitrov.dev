@@ -4,7 +4,7 @@
   '';
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs";
+    nixpkgs.url = "nixpkgs";
     ide = {
       url = "github:ivandimitrov8080/flake-ide";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -15,7 +15,7 @@
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
-      nvim = ide.nvim.${system} {
+      nvim = ide.nvim.${system}.standalone {
         plugins = {
           lsp.servers = {
             html.enable = true;
@@ -23,6 +23,7 @@
             jsonls.enable = true;
             tailwindcss.enable = true;
             cssls.enable = true;
+            biome.enable = true;
           };
         };
       };
