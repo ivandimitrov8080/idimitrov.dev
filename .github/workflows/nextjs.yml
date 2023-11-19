@@ -29,14 +29,10 @@ jobs:
         uses: oven-sh/setup-bun@v1
       - name: Setup Pages
         uses: actions/configure-pages@v3
-        with:
-          static_site_generator: next
       - name: Install dependencies
         run: bun install
       - name: Build with Next.js
         run: bun run build
-      - name: Static HTML export with Next.js
-        run: bun run export
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
         with:
