@@ -23,7 +23,6 @@
             jsonls.enable = true;
             tailwindcss.enable = true;
             cssls.enable = true;
-            biome.enable = true;
           };
         };
       };
