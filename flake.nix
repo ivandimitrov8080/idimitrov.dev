@@ -52,7 +52,7 @@
         '';
       };
       packages.${system}.default = pkgs.buildNpmPackage rec {
-        inherit buildInputs;
+        buildInputs = with pkgs; [ nodejs_20 ];
         pname = "idimitrov.dev";
         version = "0.0.1";
         src = ./.;
