@@ -51,6 +51,22 @@
           ${tmuxConfig}
         '';
       };
+      packages.${system}.default = pkgs.buildNpmPackage rec {
+        inherit buildInputs;
+        pname = "idimitrov.dev";
+        version = "0.0.1";
+        src = ./.;
+        npmDepsHash = "sha256-DtnXn7/FP9Ccc5qXKQezi9StKOnhZnqVSbz0HJ3TQ0g=";
+        postInstall = ''
+          mkdir -p $out/bin/
+          cp -r ./.next/standalone/* $out/
+          cp -r ./.next/standalone/.* $out/
+          cp -r ./.next/static $out/.next/
+          cp -r ./public $out/
+          echo "${pkgs.nodejs_20}/bin/node $out/server.js" > $out/bin/$pname
+          chmod +x $out/bin/$pname
+        '';
+      };
     };
 }
 
