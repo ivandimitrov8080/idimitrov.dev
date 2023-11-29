@@ -63,6 +63,7 @@
           cp -r ./.next/standalone/.* $out/
           cp -r ./.next/static $out/.next/
           cp -r ./public $out/
+          rm -rf $out/lib
           echo "${pkgs.nodejs_20}/bin/node $out/server.js" > $out/bin/$pname
           chmod +x $out/bin/$pname
         '';
