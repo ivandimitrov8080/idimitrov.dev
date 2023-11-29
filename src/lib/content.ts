@@ -4,15 +4,21 @@ import path from "path";
 
 export const baseDir = "./_content/";
 
+const contentMap: Record<string, GrayMatterFile<string>> = {}
+
 export const getContent = (slug: string[]): GrayMatterFile<string> => {
-  let p = path.join(baseDir);
+  let p: string = path.join(baseDir);
   slug.forEach(s => {
     p = path.join(p, s);
   });
-  const file = fs.readFileSync(p, "utf8");
-  const m = matter(file);
-  m.data.slug = `/c/${slug.join("/")}`;
-  return m;
+  if (!contentMap[p]) {
+    const file = fs.readFileSync(p, "utf8");
+    const m = matter(file);
+    m.data.slug = `/c/${slug.join("/")}`;
+    contentMap[p] = m
+    return m;
+  }
+  return contentMap[p]
 };
 
 const getAllPathsRecursive = (base = baseDir): string[] => {
