@@ -1,5 +1,5 @@
-import { getAllContent } from "$lib/content"
-import { MetadataRoute } from "next"
+import { getAllContent } from "$lib/content";
+import { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
@@ -21,13 +21,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "weekly",
       priority: 0.5,
     },
-    ...getAllContent().map(c => c.data).map(d => {
-      return {
-        url: `https://idimitrov.dev${d.slug}`,
-        lastModified: new Date(),
-        changeFrequency: "weekly",
-        priority: d.priority || 0.8
-      } as any
-    })
-  ]
+    ...getAllContent()
+      .map(c => c.data)
+      .map(d => {
+        return {
+          url: `https://idimitrov.dev${d.slug}`,
+          lastModified: new Date(),
+          changeFrequency: "weekly",
+          priority: d.priority || 0.8,
+        } as any;
+      }),
+  ];
 }

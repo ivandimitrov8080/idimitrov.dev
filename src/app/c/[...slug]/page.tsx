@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: data.title,
     description: data.goal || "Software development notes",
-  }
+  };
 }
 
 export async function generateStaticParams(): Promise<Params[]> {

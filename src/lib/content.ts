@@ -4,7 +4,7 @@ import path from "path";
 
 export const baseDir = "./_content/";
 
-const contentMap: Record<string, GrayMatterFile<string>> = {}
+const contentMap: Record<string, GrayMatterFile<string>> = {};
 
 export const getContent = (slug: string[]): GrayMatterFile<string> => {
   let p: string = path.join(baseDir);
@@ -15,10 +15,10 @@ export const getContent = (slug: string[]): GrayMatterFile<string> => {
     const file = fs.readFileSync(p, "utf8");
     const m = matter(file);
     m.data.slug = `/c/${slug.join("/")}`;
-    contentMap[p] = m
+    contentMap[p] = m;
     return m;
   }
-  return contentMap[p]
+  return contentMap[p];
 };
 
 const getAllPathsRecursive = (base = baseDir): string[] => {
