@@ -1,7 +1,9 @@
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 DNS: idimitrov.dev
+
 I2P: s7zr3m6jvhiu6feourmgccxvxbrlnfbugxcn2m45ms44t24q2zgq.b32.i2p
+
 TOR: http://sxfx23zafag4lixkb4s6zwih7ga5jnzfgtgykcerd354bvb6u7alnkid.onion
 
 ## Getting Started
