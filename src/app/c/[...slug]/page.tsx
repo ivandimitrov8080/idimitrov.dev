@@ -11,6 +11,7 @@ import CopyButton from "$components/copy-button";
 import { getText } from "$lib/react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import codeStyle from "react-syntax-highlighter/dist/esm/styles/prism/coldark-dark";
+import { Metadata } from "next";
 
 type Params = {
   slug: string[];
@@ -19,6 +20,14 @@ type Params = {
 type Props = {
   params: Params;
 };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { data } = getContent(params.slug);
+  return {
+    title: data.title,
+    description: data.goal || "Software development notes",
+  };
+}
 
 export async function generateStaticParams(): Promise<Params[]> {
   return getAllPaths().map(p => ({ slug: p.split("/") }));

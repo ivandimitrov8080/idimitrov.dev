@@ -27,5 +27,9 @@ main {
 }
 
 svg {
-  @apply hover:text-sky-400 transition duration-200 ease-in;
+  @apply transition duration-200 ease-in;
+}
+svg:hover {
+  @apply text-sky-400;
+  filter: drop-shadow(0px 0px 20px #38bdf8);
 }
