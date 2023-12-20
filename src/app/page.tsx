@@ -1,5 +1,5 @@
 import GiteaSvg from "@/components/gitea-svg";
-import { faGithub, faGitlab, faGitter } from "@fortawesome/free-brands-svg-icons";
+import { faGithub, faGitlab } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Link from "next/link";
 
