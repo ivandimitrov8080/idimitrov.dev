@@ -56,7 +56,7 @@
         pname = "idimitrov.dev";
         version = "0.0.1";
         src = ./.;
-        npmDepsHash = "sha256-VErw2ddOe0AAstIlSU21mHX1hX2qGfSa09r5YLY9z0I=";
+        npmDepsHash = "sha256-dG/RcPV0VIkxS/+SGxsg9lVoyf9bYU8WXJusmsO7MY8=";
         postInstall = ''
           mkdir -p $out/bin/
           cp -r ./.next/standalone/* $out/
