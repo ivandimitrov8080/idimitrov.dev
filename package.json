@@ -10,6 +10,7 @@
     "new": "bun new.ts"
   },
   "dependencies": {
+    "@catppuccin/tailwindcss": "latest",
     "@fortawesome/fontawesome-svg-core": "latest",
     "@fortawesome/free-brands-svg-icons": "latest",
     "@fortawesome/free-regular-svg-icons": "latest",
