@@ -39,10 +39,10 @@
         version = "0.1.0";
         src = ./.;
         nativeBuildInputs = with pkgs; [ hugo tailwindcss ];
-        preBuild = "tailwindcss -i ./css/globals.css -o ./static/styles.css --minify";
         buildPhase = ''
           runHook preBuild
 
+          tailwindcss -i ./css/globals.css -o ./static/styles.css --minify
           hugo --minify
 
           runHook postBuild
