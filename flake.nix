@@ -1,30 +1,32 @@
 {
-  description = ''
-    NextJS flake
-  '';
-
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs";
     ide = {
       url = "github:ivandimitrov8080/flake-ide";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
-  outputs = { self, nixpkgs, ide, ... }:
+  outputs = { nixpkgs, ide, ... }:
     let
       system = "x86_64-linux";
-      pkgs = nixpkgs.legacyPackages.${system};
-      nvim = ide.nvim.${system}.standalone {
-        plugins = {
-          lsp.servers = {
-            html.enable = true;
-            tsserver.enable = true;
-            jsonls.enable = true;
-            tailwindcss.enable = true;
-            cssls.enable = true;
-          };
-        };
+      pkgs = import nixpkgs {
+        inherit system;
+        overlays = [
+          (final: prev: {
+            nvim = ide.nvim.${system}.standalone {
+              plugins = {
+                lsp.servers = {
+                  html.enable = true;
+                  tsserver.enable = true;
+                  jsonls.enable = true;
+                  tailwindcss.enable = true;
+                  cssls.enable = true;
+                };
+              };
+            };
+          })
+        ];
       };
       buildInputs = with pkgs; [
         coreutils-full
@@ -37,7 +39,7 @@
       devShell.${system} = pkgs.mkShell {
         inherit buildInputs;
       };
-      packages.${system}.default = pkgs.buildNpmPackage rec {
+      packages.${system}.default = pkgs.buildNpmPackage {
         buildInputs = with pkgs; [ nodejs_20 ];
         pname = "idimitrov.dev";
         version = "0.0.1";
@@ -56,4 +58,3 @@
       };
     };
 }
-
