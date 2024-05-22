@@ -52,6 +52,7 @@
 
           mkdir -p $out
           cp -r ./public/* $out
+          cp ./favicon.ico $out
 
           runHook postInstall
         '';
