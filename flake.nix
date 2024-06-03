@@ -1,6 +1,6 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
     ide = {
       url = "github:ivandimitrov8080/flake-ide";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -44,7 +44,7 @@
         pname = "idimitrov.dev";
         version = "0.0.1";
         src = ./.;
-        npmDepsHash = "sha256-JcCM8EygjCKq5qDA2g+Oe8wpm2kYH3x1DSp712I/d08=";
+        npmDepsHash = "sha256-vYksYHkjuVeqOD4BwS18nygod/2H6Be2Cia3/p6Psek=";
         postInstall = ''
           mkdir -p $out/bin/
           cp -r ./.next/standalone/* $out/
