@@ -286,11 +286,11 @@
         "systems": "systems_3"
       },
       "locked": {
-        "lastModified": 1716374315,
-        "narHash": "sha256-tgSiLFT0PRGKbypXPCcBCqDRPXXGOkfTpRm1IEiyFyM=",
+        "lastModified": 1716893760,
+        "narHash": "sha256-fI3Q8DpkSerjQ37pXBW9ZHKDQQVYfG5stDMw7n9No10=",
         "owner": "ivandimitrov8080",
         "repo": "flake-ide",
-        "rev": "41c6c4d63e0cb294ab19d0fd46fdb0d4c9c4d2a9",
+        "rev": "eb5e62023fcf8ccab169a313a66ccdc7ff8a3319",
         "type": "github"
       },
       "original": {
@@ -373,11 +373,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1716384343,
-        "narHash": "sha256-707vxiwcWrBGxZ28UY4t/n39SGrjJ5HA6BiaobT9Lkg=",
+        "lastModified": 1717399553,
+        "narHash": "sha256-gWlwJQnKj4UWHQIWC/TIYIeV59/VnLAMUgIjp4JB/9Q=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "da73f7432397795b2a1fe012478b11ae02ec30f5",
+        "rev": "0b2a090503b08d27bc82f923eb562805f35eb498",
         "type": "github"
       },
       "original": {
