@@ -44,15 +44,8 @@
         src = ./.;
         npmDepsHash = "sha256-+GgP+cilcphMZxns/EM2TTRDuQi8RE1PkxsDG3gXZEQ=";
         postInstall = ''
-          mkdir -p $out/bin/
-          cp -r ./.next/standalone/* $out/
-          cp -r ./.next/standalone/.* $out/
-          cp -r ./.next/static $out/.next/
-          cp -r ./public $out/
           rm -rf $out/lib
-
-          makeWrapper ${pkgs.lib.getExe pkgs.nodejs} $out/bin/${pname} \
-            --add-flags $out/server.js \
+          cp -r ./out/* $out/
         '';
       };
     };
