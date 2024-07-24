@@ -14,6 +14,19 @@ export const getContent = (slug: string[]): GrayMatterFile<string> => {
   if (!contentMap[p]) {
     const file = fs.readFileSync(p, "utf8");
     const m = matter(file);
+    const date = m.data.date;
+    if (date) {
+      m.data.date = "";
+      const d = date.split("-");
+      const from = d[0]?.trim();
+      const to = d[1]?.trim();
+      if (from) {
+        m.data.date += new Date(from).toDateString()
+      }
+      if (to) {
+        m.data.date += ` - ${new Date(to).toDateString()}`
+      }
+    }
     m.data.slug = `/c/${slug.join("/")}`;
     contentMap[p] = m;
     return m;
