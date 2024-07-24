@@ -38,9 +38,9 @@
       devShell.${system} = pkgs.mkShell {
         inherit buildInputs;
       };
-      packages.${system}.default = pkgs.buildNpmPackage rec {
+      packages.${system}.default = pkgs.buildNpmPackage {
         pname = "idimitrov.dev";
-        version = "0.0.1";
+        version = "0.1.1";
         src = ./.;
         npmDepsHash = "sha256-+GgP+cilcphMZxns/EM2TTRDuQi8RE1PkxsDG3gXZEQ=";
         postInstall = ''
