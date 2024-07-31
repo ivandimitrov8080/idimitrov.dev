@@ -9,6 +9,18 @@
 }
 
 @layer utilities {
+  @keyframes spinner {
+    100% {
+      transform: rotate(360deg)
+    }
+  }
+
+  @keyframes spinner-reverse {
+    100% {
+      transform: rotate(-360deg)
+    }
+  }
+
   .gradient {
     @apply bg-gradient-to-br from-slate-950 via-red-700 to-yellow-400;
   }
