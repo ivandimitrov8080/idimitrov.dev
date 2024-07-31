@@ -21,10 +21,10 @@ export const getContent = (slug: string[]): GrayMatterFile<string> => {
       const from = d[0]?.trim();
       const to = d[1]?.trim();
       if (from) {
-        m.data.date += new Date(from).toDateString()
+        m.data.date += new Date(from).toDateString();
       }
       if (to) {
-        m.data.date += ` - ${new Date(to).toDateString()}`
+        m.data.date += ` - ${new Date(to).toDateString()}`;
       }
     }
     m.data.slug = `/c/${slug.join("/")}`;

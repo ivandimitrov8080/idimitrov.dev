@@ -32,6 +32,7 @@
         coreutils-full
         nodejs
         nvim
+        nodePackages_latest.prettier
       ];
     in
     {
