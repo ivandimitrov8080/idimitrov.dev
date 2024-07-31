@@ -26,6 +26,11 @@ main {
   @apply flex flex-col w-full h-full bg-slate-950/95;
 }
 
+main div,
+svg {
+  @apply z-20;
+}
+
 svg {
   @apply transition duration-200 ease-in;
 }
