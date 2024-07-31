@@ -21,7 +21,7 @@ const Stars = ({ count }: Props) => {
   const star = (key?: number) => {
     const radius = `${Math.random() * 7}px`
     let style: CSSProperties = {
-      background: `radial-gradient(circle, ${randomRgba(1)} 0%, ${randomRgba(0)} 100%)`,
+      background: `radial-gradient(circle, ${randomRgba(0.6)} 0%, ${randomRgba(0)} 100%)`,
       width: radius,
       height: radius,
       transform: "translate(-50%)",
