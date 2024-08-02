@@ -1,6 +1,6 @@
 "use client";
 
-import { CSSProperties, HTMLAttributes, useEffect, useState } from "react";
+import { CSSProperties, useEffect, useState } from "react";
 
 type Props = {
   count: number;
