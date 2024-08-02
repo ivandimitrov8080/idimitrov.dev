@@ -24,8 +24,6 @@ const Stars = ({ count }: Props) => {
       background: `radial-gradient(circle, ${randomRgba(0.6)} 0%, ${randomRgba(0)} 100%)`,
       width: radius,
       height: radius,
-      transform: "translate(-50%)",
-      animation: "spinner 5s linear infinite"
     };
     if (key) {
       style = {
@@ -59,14 +57,14 @@ const Stars = ({ count }: Props) => {
           height: containerRadius,
           animation: `${animation} ${duration}s linear infinite`
         }}
-        className="absolute">
+        className="absolute z-10 max-w-full max-h-full">
         {star()}
       </div>
     )
   }
 
   return (
-    <div>
+    <div className="absolute w-screen h-screen overflow-hidden">
       {Array.from({ length: count }).map((_it, i) => {
         return i % 4 === 0 ? spinningStar(i) : star(i)
       })}
