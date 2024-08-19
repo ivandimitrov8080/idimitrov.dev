@@ -1,23 +1,31 @@
 "use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 
 const Navbar = () => {
-  const path = usePathname();
+  const home = (text: string, href: string) => {
+    return (
+      <Link className="text-2xl font-bold" aria-label={text} href={href}>
+        <span className="text-center">
+          [{text}]
+        </span>
+      </Link>
+    );
+  };
   const link = (text: string, href: string) => {
     return (
-      <Link className="gradient w-full h-max rounded-md border-2" aria-label={text} href={href}>
-        <div data-selected={path === href} className="btn data-[selected=true]:opacity-80">
+      <Link className="w-max py-2 px-10 rounded-full border-[1px] border-amber-50" aria-label={text} href={href}>
+        <span className="text-center">
           {text}
-        </div>
+        </span>
       </Link>
     );
   };
   return (
-    <div className="w-max h-max px-6 py-2 mx-auto rounded-full bg-slate-900 grid place-content-center">
-      <div className="flex flex-row gap-6">
-        {link("Home", "/")}
-        {link("Cases", "/cases")}
+    <div className="w-full h-8 px-14 py-8">
+      <div className="flex flex-row gap-6 float-left">
+        {home("idimitrov.dev", "/")}
+      </div>
+      <div className="flex flex-row gap-6 float-right">
         {link("Contact", "/contact")}
       </div>
     </div>
