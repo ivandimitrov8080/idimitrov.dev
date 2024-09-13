@@ -2,9 +2,11 @@ import GiteaSvg from "@/components/gitea-svg";
 import { faGithub, faLinkedin, faUpwork } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Link from "next/link";
+import FolderSvg from "./folder-svg";
 
 const Links = () => (
   <div className="grid w-max h-max grid-cols-2 grid-rows-2 gap-0 place-content-center absolute right-96 top-[35%] circle-gradient">
+    <FolderSvg />
     <Link className="p-5 mr-[1px] bg-slate-950" aria-label="GitHub" href={process.env.NEXT_PUBLIC_GITHUB_URL || "https://github.com/ivandimitrov8080"} target="_blank">
       <FontAwesomeIcon className="w-14 h-14" icon={faGithub} />
     </Link>

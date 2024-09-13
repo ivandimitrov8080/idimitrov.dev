@@ -1,10 +1,8 @@
-import FolderSvg from "@/components/folder-svg";
-import Links from "@/components/links";
+import Hero from "@/components/hero";
 
 const Home = () => (
   <div>
-    <FolderSvg />
-    <Links />
+    <Hero />
   </div>
 );
 
