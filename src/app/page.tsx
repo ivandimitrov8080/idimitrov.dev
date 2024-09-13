@@ -1,7 +1,9 @@
+import FolderSvg from "@/components/folder-svg";
 import Links from "@/components/links";
 
 const Home = () => (
-  <div className="grid w-full h-full place-content-center">
+  <div>
+    <FolderSvg />
     <Links />
   </div>
 );

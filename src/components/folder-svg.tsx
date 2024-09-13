@@ -1,6 +1,6 @@
 const FolderSvg = () => (
   <svg
-    className="absolute left-0 top-0 w-max"
+    className="absolute right-44 top-[21%] w-max"
     style={{ transform: "scaleX(-1)" }}
     width="592" height="447"
   >
