@@ -12,7 +12,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
-        <Stars count={40} />
+        <Stars count={400} />
         <main>
           <Navbar />
           {children}
