@@ -36,7 +36,7 @@
       ];
     in
     {
-      devShell.${system} = pkgs.mkShell {
+      devShells.${system}.default = pkgs.mkShell {
         inherit buildInputs;
       };
       packages.${system}.default = pkgs.buildNpmPackage {
