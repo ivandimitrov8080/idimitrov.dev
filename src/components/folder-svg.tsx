@@ -6,9 +6,9 @@ const FolderSvg = () => (
   >
     <defs>
       <linearGradient id="linear" x1="0%" y1="100%" x2="100%" y2="0%">
-        <stop offset="0%" stop-color="#facc15" />
-        <stop offset="50%" stop-color="#b91c1c" />
-        <stop offset="100%" stop-color="#020617" />
+        <stop offset="0%" stopColor="#facc15" />
+        <stop offset="50%" stopColor="#b91c1c" />
+        <stop offset="100%" stopColor="#020617" />
       </linearGradient>
     </defs>
     <path
