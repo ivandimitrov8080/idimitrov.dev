@@ -23,6 +23,7 @@
 
   .gradient {
     @apply bg-gradient-to-br from-transparent via-red-700 to-yellow-400;
+    background-attachment: fixed;
   }
 
   .circle-gradient {
