@@ -51,7 +51,7 @@ const SpinningStar = () => {
         animation: `${animation} ${duration}s linear infinite`
       }}
       className="absolute z-10 max-w-full max-h-full">
-      <Star key={-1} />
+      <Star />
     </div>
   )
 }
