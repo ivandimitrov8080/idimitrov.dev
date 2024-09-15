@@ -14,6 +14,16 @@ const Hero = () => (
         <CasesSvg />
       </Link>
       <div className="w-full h-[1px] circle-gradient"></div>
+      <div className="flex flex-row gap-12">
+        <div>
+          <p className="text-6xl text-white capitalize">80+</p>
+          <p className="text-xl text-white capitalize">Clients on work worldwide</p>
+        </div>
+        <div>
+          <p className="text-6xl text-white capitalize">100+</p>
+          <p className="text-xl text-white capitalize">Projects done</p>
+        </div>
+      </div>
     </div>
     <Links />
   </div>
