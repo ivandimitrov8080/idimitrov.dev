@@ -6,11 +6,10 @@ type Props = {
 
 
 type StarProps = {
-  key: number
   solo?: boolean;
 }
 
-const Star = ({ key, solo }: StarProps) => {
+const Star = ({ solo }: StarProps) => {
   const randomRgba = (alpha: number) => {
     return `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, ${alpha})`
   }
@@ -30,14 +29,13 @@ const Star = ({ key, solo }: StarProps) => {
   }
   return (
     <div
-      key={key}
       style={style}
       className="absolute z-10">
     </div>
   )
 }
 
-const SpinningStar = ({ key }: StarProps) => {
+const SpinningStar = () => {
   const r = .1 + Math.random() * 1337
   const containerRadius = `${r}px`
   const duration = Math.floor(r) / 100;
@@ -45,7 +43,6 @@ const SpinningStar = ({ key }: StarProps) => {
   const animation = Math.random() > .5 ? "spinner" : "spinner-reverse"
   return (
     <div
-      key={key}
       style={{
         left: `${x}%`,
         top: `${y}%`,
