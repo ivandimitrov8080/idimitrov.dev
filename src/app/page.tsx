@@ -1,7 +1,7 @@
 import Hero from "@/components/hero";
 
 const Home = () => (
-  <div>
+  <div className="w-full h-full">
     <Hero />
   </div>
 );

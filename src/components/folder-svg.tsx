@@ -1,8 +1,8 @@
 const FolderSvg = () => (
   <svg
-    className="absolute right-[-100%] top-[-60%] z-[-1]"
+    className="absolute bottom-0 left-[14%] h-full"
     style={{ transform: "scaleX(-1)" }}
-    width="592" height="447"
+    viewBox="0 0 580 435"
   >
     <defs>
       <linearGradient id="linear" x1="0%" y1="100%" x2="100%" y2="0%">
