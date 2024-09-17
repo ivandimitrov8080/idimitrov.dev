@@ -18,7 +18,7 @@
               plugins = {
                 lsp.servers = {
                   html.enable = true;
-                  tsserver.enable = true;
+                  ts-ls.enable = true;
                   jsonls.enable = true;
                   tailwindcss.enable = true;
                   cssls.enable = true;
