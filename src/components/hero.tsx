@@ -8,7 +8,7 @@ const Hero = () => (
       <div>
         <p className="text-3xl text-[#FB923C]">Software Developer</p>
         <p className="text-8xl text-white capitalize">Full stack web development</p>
-        <p className="text-8xl capitalize text-transparent font-bold bg-gradient-to-br from-transparent via-teal-400 to-yellow-400 bg-clip-text">optimized</p>
+        <p className="text-8xl capitalize text-transparent font-bold bg-gradient-to-br from-transparent via-teal-400 to-yellow-400 bg-clip-text">Refined</p>
       </div>
       <Link aria-label="Cases" href="/cases" target="_blank" className="w-max">
         <CasesSvg />
@@ -16,11 +16,11 @@ const Hero = () => (
       <div className="w-full h-[1px] circle-gradient"></div>
       <div className="flex flex-row gap-12">
         <div>
-          <p className="text-6xl text-white capitalize">80+</p>
-          <p className="text-xl text-white capitalize">Clients on work worldwide</p>
+          <p className="text-6xl text-white capitalize">10+</p>
+          <p className="text-xl text-white capitalize">Clients worldwide</p>
         </div>
         <div>
-          <p className="text-6xl text-white capitalize">100+</p>
+          <p className="text-6xl text-white capitalize">30+</p>
           <p className="text-xl text-white capitalize">Projects done</p>
         </div>
       </div>
