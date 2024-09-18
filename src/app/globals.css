@@ -4,7 +4,7 @@
 
 @layer components {
   .btn {
-    @apply bg-gray-900 transition ease-in duration-200 text-gray-300 hover:bg-gray-700/60 rounded-md px-3 py-2 text-sm;
+    @apply bg-gray-900 transition ease-in duration-200 text-gray-300 hover:bg-gray-700/60 px-3 py-2 text-sm;
   }
 }
 
@@ -23,7 +23,6 @@
 
   .gradient {
     @apply bg-gradient-to-br from-transparent via-red-700 to-yellow-400;
-    background-attachment: fixed;
   }
 
   .circle-gradient {

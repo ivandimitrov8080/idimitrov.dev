@@ -56,6 +56,8 @@ export const getCases = (): GrayMatterFile<string>[] =>
     .map(s => s.split("/"))
     .map(getContent);
 
+export const caseCount = getCases().length;
+
 export const getAllContent = (): GrayMatterFile<string>[] =>
   getAllPaths()
     .map(s => s.split("/"))
