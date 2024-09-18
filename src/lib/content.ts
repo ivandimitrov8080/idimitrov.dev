@@ -7,7 +7,7 @@ export const baseDir = "./_content/";
 const contentMap: Record<string, GrayMatterFile<string>> = {};
 
 export const getContent = (slug: string[]): GrayMatterFile<string> => {
-  let p: string = path.join(baseDir);
+  let p: string = path.join();
   slug.forEach(s => {
     p = path.join(p, s);
   });
@@ -49,14 +49,17 @@ const getAllPathsRecursive = (base = baseDir): string[] => {
   return results;
 };
 
-export const getAllPaths = (base = baseDir): string[] => getAllPathsRecursive(base).map(p => p.substring(9));
+export const getAllPaths = (base = baseDir): string[] => getAllPathsRecursive(base);
 
 export const getCases = (): GrayMatterFile<string>[] =>
   getAllPaths(`${baseDir}cases/`)
     .map(s => s.split("/"))
     .map(getContent);
 
-export const caseCount = getCases().length;
+export const getCasesTest = (): GrayMatterFile<string>[] =>
+  getAllPaths(`./_test_content/cases/`)
+    .map(s => s.split("/"))
+    .map(getContent);
 
 export const getAllContent = (): GrayMatterFile<string>[] =>
   getAllPaths()
