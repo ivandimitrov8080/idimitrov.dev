@@ -24,19 +24,20 @@
     "react-markdown": "latest",
     "react-syntax-highlighter": "latest",
     "rehype-raw": "latest",
+    "rehype-slug": "^6.0.0",
     "remark-frontmatter": "latest",
     "remark-gfm": "latest",
     "tailwind-scrollbar": "latest"
   },
   "devDependencies": {
-    "typescript": "latest",
-    "@types/react": "latest",
     "@types/node": "latest",
+    "@types/react": "latest",
     "@types/react-dom": "latest",
     "autoprefixer": "latest",
+    "eslint": "latest",
+    "eslint-config-next": "latest",
     "postcss": "latest",
     "tailwindcss": "latest",
-    "eslint": "latest",
-    "eslint-config-next": "latest"
+    "typescript": "latest"
   }
 }

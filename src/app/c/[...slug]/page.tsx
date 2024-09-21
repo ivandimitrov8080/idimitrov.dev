@@ -14,6 +14,7 @@ import codeStyle from "react-syntax-highlighter/dist/esm/styles/prism/coldark-da
 import { Metadata } from "next";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleUser, faUserCircle } from "@fortawesome/free-solid-svg-icons";
+import rehypeSlug from "rehype-slug";
 
 type Params = {
   slug: string[];
@@ -59,7 +60,7 @@ export default function Content({ params }: Props) {
             <Markdown
               className={styles.md}
               remarkPlugins={[remarkGfm, remarkFrontmatter]}
-              rehypePlugins={[rehypeRaw]}
+              rehypePlugins={[rehypeRaw, rehypeSlug]}
               components={{
                 img({ height, width, src, alt, className }) {
                   return (
@@ -98,6 +99,48 @@ export default function Content({ params }: Props) {
                     <code {...rest} className={`${className} text-orange-400 font-black font-mono`}>
                       {children}
                     </code>
+                  );
+                },
+                h1({ children, id }) {
+                  return (
+                    <h1 id={id}>
+                      <Link href={`#${id}`}>{children}</Link>
+                    </h1>
+                  );
+                },
+                h2({ children, id }) {
+                  return (
+                    <h2 id={id}>
+                      <Link href={`#${id}`}>{children}</Link>
+                    </h2>
+                  );
+                },
+                h3({ children, id }) {
+                  return (
+                    <h3 id={id}>
+                      <Link href={`#${id}`}>{children}</Link>
+                    </h3>
+                  );
+                },
+                h4({ children, id }) {
+                  return (
+                    <h4 id={id}>
+                      <Link href={`#${id}`}>{children}</Link>
+                    </h4>
+                  );
+                },
+                h5({ children, id }) {
+                  return (
+                    <h5 id={id}>
+                      <Link href={`#${id}`}>{children}</Link>
+                    </h5>
+                  );
+                },
+                h6({ children, id }) {
+                  return (
+                    <h6 id={id}>
+                      <Link href={`#${id}`}>{children}</Link>
+                    </h6>
                   );
                 },
               }}>

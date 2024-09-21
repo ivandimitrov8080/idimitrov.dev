@@ -63,6 +63,15 @@
   @apply font-bold;
 }
 
+.md h1 a,
+.md h2 a,
+.md h3 a,
+.md h4 a,
+.md h5 a,
+.md h6 a {
+  @apply no-underline text-inherit;
+}
+
 .md a {
   @apply underline text-teal-200 hover:text-cyan-500;
 }
