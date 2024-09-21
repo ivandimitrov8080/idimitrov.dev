@@ -37,9 +37,9 @@ export default function Content({ params }: Props) {
 
   return (
     <div className="overflow-y-scroll grid justify-items-center">
-      <div className="grid gap-20 grid-cols-12 w-11/12">
-        <div className="col-span-9">
-          <div className="flex flex-col gap-4 pl-24 pt-20">
+      <div className="grid gap-20 lg:w-11/12">
+        <div className="lg:col-span-9">
+          <div className="flex flex-col gap-4 lg:pl-24 lg:pt-20">
             <h1 className="text-5xl font-bold">{data.title}</h1>
             <div className="flex flex-row gap-4">
               <FontAwesomeIcon className="w-14 h-14 hover:filter-none" icon={faCircleUser} />
@@ -51,7 +51,7 @@ export default function Content({ params }: Props) {
             <MarkdownRenderer data={data} content={content} />
           </div>
         </div>
-        <div className="h-screen col-span-3 py-64">
+        <div className="hidden lg:block h-screen lg:col-span-3 py-64">
           <div className="fixed grid gap-4 pl-12">
             <span className="text-2xl font-bold">Table of contents</span>
             <div className="circle-gradient w-full h-[1px] top-1/2"></div>

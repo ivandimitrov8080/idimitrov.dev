@@ -6,6 +6,10 @@ import Stars from "@/components/stars";
 export const metadata: Metadata = {
   title: "Ivan Dimitrov",
   description: "Freelance Software Developer",
+  viewport: {
+    width: "device-width",
+    initialScale: 1
+  }
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
