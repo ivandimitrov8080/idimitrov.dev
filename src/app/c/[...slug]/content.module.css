@@ -5,6 +5,7 @@
 .md ol {
   @apply list-decimal list-inside;
 }
+
 .md ul {
   @apply list-disc list-inside;
 }
@@ -51,6 +52,15 @@
 
 .md h6 {
   @apply text-xl;
+}
+
+.md h1,
+.md h2,
+.md h3,
+.md h4,
+.md h5,
+.md h6 {
+  @apply font-bold;
 }
 
 .md a {

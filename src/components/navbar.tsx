@@ -21,7 +21,7 @@ const Navbar = () => {
     );
   };
   return (
-    <div className="w-full h-8 px-4 py-12 lg:px-14 lg:py-8">
+    <div className="w-full h-8 px-4 py-12 lg:px-14 lg:py-8 z-50">
       <div className="flex flex-row gap-6 float-left">
         {home("idimitrov.dev", "/")}
       </div>

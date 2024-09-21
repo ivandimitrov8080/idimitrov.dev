@@ -1,4 +1,5 @@
 ---
+author: Ivan Dimitrov
 title: Remotely profiling a Tomcat process serving a Java app
 goal: To enable Java profiling on a Tomcat server running on CentOS and then optimize the process using VM options.
 role:

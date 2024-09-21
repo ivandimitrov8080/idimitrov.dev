@@ -12,6 +12,8 @@ import { getText } from "$lib/react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import codeStyle from "react-syntax-highlighter/dist/esm/styles/prism/coldark-dark";
 import { Metadata } from "next";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCircleUser, faUserCircle } from "@fortawesome/free-solid-svg-icons";
 
 type Params = {
   slug: string[];
@@ -41,89 +43,80 @@ export default function Content({ params }: Props) {
     notFound();
   }
 
-  const title = () => <span className="text-3xl">{data.title}</span>;
-
-  const goal = () =>
-    data.goal ? (
-      <div>
-        <h2>The goal</h2>
-        {data.goal}
-      </div>
-    ) : (
-      ""
-    );
-
-  const role = () =>
-    data.role ? (
-      <div>
-        <h2>My role</h2>
-        {data.role}
-      </div>
-    ) : (
-      ""
-    );
-
-  const date = () => (data.date ? <span>{data.date}</span> : "");
-
-  const ctnt = () => (
-    <Markdown
-      className={styles.md}
-      remarkPlugins={[remarkGfm, remarkFrontmatter]}
-      rehypePlugins={[rehypeRaw]}
-      components={{
-        img({ height, width, src, alt, className }) {
-          return (
-            <span className="w-full h-max p-20">
-              <Image
-                className={`w-full h-full border-2 px-2 ${className || ""}`}
-                alt={alt!}
-                height={Number(height) || imgSize}
-                width={Number(width) || imgSize}
-                src={`${data.slug}${src}`}></Image>
-            </span>
-          );
-        },
-        a({ href, children, className }) {
-          return (
-            <Link className={className || ""} aria-label={getText(children)} href={href!} target="_blank">
-              {children}
-            </Link>
-          );
-        },
-        pre({ children, className }) {
-          return (
-            <div className="relative">
-              <CopyButton text={getText(children)} />
-              <pre className={`${className || ""}`}>{children}</pre>
-            </div>
-          );
-        },
-        code({ children, ref, className, node, ...rest }) {
-          const match = /language-(\w+)/.exec(className || "");
-          return match ? (
-            <SyntaxHighlighter {...rest} language={match[1]} style={codeStyle}>
-              {getText(children)}
-            </SyntaxHighlighter>
-          ) : (
-            <code {...rest} className={`${className} text-orange-400 font-black font-mono`}>
-              {children}
-            </code>
-          );
-        },
-      }}>
-      {content}
-    </Markdown>
-  );
-
   return (
-    <div className="w-full h-full p-4 lg:p-20 overflow-x-hidden overflow-scroll">
-      <div className="flex flex-col gap-4 text-center border-amber-50 border-2 p-2 m-2 lg:rounded-full">
-        {title()}
-        {goal()}
-        {role()}
-        {date()}
+    <div className="overflow-y-scroll grid justify-items-center">
+      <div className="grid gap-20 grid-cols-12 w-11/12">
+        <div className="col-span-8">
+          <div className="flex flex-col gap-4 pl-24 pt-20">
+            <h1 className="text-5xl font-bold">{data.title}</h1>
+            <div className="flex flex-row gap-4">
+              <FontAwesomeIcon className="w-14 h-14 hover:filter-none" icon={faCircleUser} />
+              <div className="flex flex-col">
+                <h1 className="font-bold text-xl">{data.author}</h1>
+                <span className="text-xs text-neutral-400">Published {data.date}</span>
+              </div>
+            </div>
+            <Markdown
+              className={styles.md}
+              remarkPlugins={[remarkGfm, remarkFrontmatter]}
+              rehypePlugins={[rehypeRaw]}
+              components={{
+                img({ height, width, src, alt, className }) {
+                  return (
+                    <span className="w-full h-max p-20">
+                      <Image
+                        className={`w-full h-full border-2 px-2 ${className || ""}`}
+                        alt={alt!}
+                        height={Number(height) || imgSize}
+                        width={Number(width) || imgSize}
+                        src={`${data.slug}${src}`}></Image>
+                    </span>
+                  );
+                },
+                a({ href, children, className }) {
+                  return (
+                    <Link className={className ?? ""} aria-label={getText(children)} href={href!} target="_blank">
+                      {children}
+                    </Link>
+                  );
+                },
+                pre({ children, className }) {
+                  return (
+                    <div className="relative">
+                      <CopyButton text={getText(children)} />
+                      <pre className={`${className || ""} bg-gray-900`}>{children}</pre>
+                    </div>
+                  );
+                },
+                code({ children, ref, className, node, ...rest }) {
+                  const match = /language-(\w+)/.exec(className || "");
+                  return match ? (
+                    <SyntaxHighlighter {...rest} language={match[1]} style={codeStyle}>
+                      {getText(children)}
+                    </SyntaxHighlighter>
+                  ) : (
+                    <code {...rest} className={`${className} text-orange-400 font-black font-mono`}>
+                      {children}
+                    </code>
+                  );
+                },
+              }}>
+              {content}
+            </Markdown>
+          </div>
+        </div>
+        <div className="h-screen col-span-4 py-64">
+          <div className="grid gap-4 pl-12">
+            <span className="text-2xl font-bold">
+              Table of contents
+            </span>
+            <div className="circle-gradient w-full h-[1px] top-1/2"></div>
+            <Link href="#" className="hover:gradient p-2 rounded-md">
+              Technical details
+            </Link>
+          </div>
+        </div>
       </div>
-      <div className="w-full m-auto lg:w-3/4 mt-10">{ctnt()}</div>
     </div>
   );
 }

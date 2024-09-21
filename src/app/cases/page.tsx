@@ -16,7 +16,7 @@ const CasesPage = () => {
           <div key={d.slug} className="aspect-[6/5] hover:gradient">
             <Link className="grid w-full h-full gap-4 lg:p-9" href={d.slug}>
               <span className="text-2xl lg:text-3xl line-clamp-3 self-center">{d.title}</span>
-              <span className="text-xs text-gray-400">{d.date}</span>
+              <span className="text-xs text-neutral-400">{d.date}</span>
             </Link>
             {i % 4 === 0 && i !== cases.length - 1 && <div className="absolute hidden lg:block circle-gradient w-full h-[1px]"></div>}
             {i !== cases.length - 1 && <div className="absolute lg:hidden circle-gradient w-full h-[1px]"></div>}
