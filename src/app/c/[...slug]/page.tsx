@@ -50,7 +50,7 @@ export default function Content({ params }: Props) {
           </div>
         </div>
         <div className="h-screen col-span-4 py-64">
-          <div className="grid gap-4 pl-12">
+          <div className="fixed grid gap-4 pl-12">
             <span className="text-2xl font-bold">Table of contents</span>
             <div className="circle-gradient w-full h-[1px] top-1/2"></div>
             <Link href="#" className="hover:gradient p-2 rounded-md">
