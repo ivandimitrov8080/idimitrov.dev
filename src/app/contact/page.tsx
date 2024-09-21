@@ -58,9 +58,19 @@ const Contact = () => (
       </div>
     </div>
     <div className="relative h-full">
-      <div className="absolute w-full h-full">
+      <div className="absolute w-full h-full z-10">
         <FolderSvg />
       </div>
+      <form className="w-full h-full grid place-content-center gap-4 z-40" action="/api/contact">
+        <input className="z-50" name="name" />
+        <input className="z-50" type="email" name="email" />
+        <input className="z-50" name="message" />
+        <button className="w-max px-12 py-4 rounded-full z-50 gradient" aria-label="Send message" type="submit">
+          <span className="flex flex-row gap-4 text-center capitalize">
+            Send message
+          </span>
+        </button>
+      </form>
     </div>
   </div>
 );
