@@ -14,9 +14,9 @@ const CheckSvg = () => (
     />
     <defs>
       <linearGradient id="paint0_linear_275_187" x1="5.53038" y1="-4.2267" x2="25.9837" y2="17.1045" gradientUnits="userSpaceOnUse">
-        <stop stop-color="#020617" />
-        <stop offset="0.5" stop-color="#B91C1C" />
-        <stop offset="1" stop-color="#FACC15" />
+        <stop stopColor="#020617" />
+        <stop offset="0.5" stopColor="#B91C1C" />
+        <stop offset="1" stopColor="#FACC15" />
       </linearGradient>
     </defs>
   </svg>
