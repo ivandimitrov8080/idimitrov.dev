@@ -37,7 +37,7 @@ export default function Content({ params }: Props) {
 
   return (
     <div className="overflow-y-scroll grid justify-items-center">
-      <div className="grid gap-20 lg:w-11/12">
+      <div className="grid gap-20 lg:grid-cols-12 lg:w-11/12">
         <div className="lg:col-span-9">
           <div className="flex flex-col gap-4 lg:pl-24 lg:pt-20">
             <h1 className="text-5xl font-bold">{data.title}</h1>
