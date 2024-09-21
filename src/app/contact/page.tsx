@@ -1,10 +1,5 @@
 import FolderSvg from "@/components/folder-svg";
-import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Link from "next/link";
-
-const email = "ivan@idimitrov.dev";
-const mailto = `mailto:${email}`;
 
 const CheckSvg = () => (
   <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -61,11 +56,20 @@ const Contact = () => (
       <div className="absolute w-full h-full z-10">
         <FolderSvg />
       </div>
-      <form className="w-full h-full grid place-content-center gap-4 z-40" action="/api/contact">
-        <input className="z-50" name="name" />
-        <input className="z-50" type="email" name="email" />
-        <input className="z-50" name="message" />
-        <button className="w-max px-12 py-4 rounded-full z-50 gradient" aria-label="Send message" type="submit">
+      <form className="relative w-full h-full grid grid-cols-2 place-content-center gap-8 z-40 p-12" action="/api/contact">
+        <div className="relative group border-b-[1px] border-neutral-500">
+          <input name="name" required className="w-full h-10 px-4 text-sm peer bg-gray-100 outline-none bg-transparent" />
+          <label htmlFor="name" className="pointer-events-none transform transition-all absolute top-0 left-0 h-full flex items-center pl-2 text-sm group-focus-within:text-xs peer-valid:text-xs group-focus-within:h-1/2 peer-valid:h-1/2 group-focus-within:-translate-y-full peer-valid:-translate-y-full group-focus-within:pl-0 peer-valid:pl-0">Full name</label>
+        </div>
+        <div className="relative group border-b-[1px] border-neutral-500">
+          <input type="email" name="email" required className="w-full h-10 px-4 text-sm peer bg-gray-100 outline-none bg-transparent" />
+          <label htmlFor="email" className="pointer-events-none transform transition-all absolute top-0 left-0 h-full flex items-center pl-2 text-sm group-focus-within:text-xs peer-valid:text-xs group-focus-within:h-1/2 peer-valid:h-1/2 group-focus-within:-translate-y-full peer-valid:-translate-y-full group-focus-within:pl-0 peer-valid:pl-0">Email</label>
+        </div>
+        <div className="col-span-2 relative group border-b-[1px] border-neutral-500">
+          <input name="message" required className="w-full h-10 px-4 text-sm peer bg-gray-100 outline-none bg-transparent" />
+          <label htmlFor="message" className="pointer-events-none transform transition-all absolute top-0 left-0 h-full flex items-center pl-2 text-sm group-focus-within:text-xs peer-valid:text-xs group-focus-within:h-1/2 peer-valid:h-1/2 group-focus-within:-translate-y-full peer-valid:-translate-y-full group-focus-within:pl-0 peer-valid:pl-0">Message</label>
+        </div>
+        <button className="absolute bottom-36 right-12 w-max px-12 py-4 rounded-full z-50 gradient" aria-label="Send message" type="submit">
           <span className="flex flex-row gap-4 text-center capitalize">
             Send message
           </span>
@@ -74,15 +78,5 @@ const Contact = () => (
     </div>
   </div>
 );
-
-const test = () => {
-  // <div className="flex flex-row gap-4">
-  //   <a aria-label={mailto} href={mailto}>
-  //   </a>
-  //   <Link aria-label="GPG public key" href="/pgp.txt">
-  //     <FontAwesomeIcon className="w-14 h-14" mask={faFile} icon={faLock} transform={"shrink-10 right-2 down-4"} />
-  //   </Link>
-  // </div>
-};
 
 export default Contact;
