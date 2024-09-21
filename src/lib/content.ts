@@ -6,7 +6,7 @@ import remarkParse from "remark-parse";
 import rehypeSlug from "rehype-slug";
 import rehypeStringify from "rehype-stringify";
 import remarkRehype from "remark-rehype";
-import jsdom from "jsdom"
+import jsdom from "jsdom";
 
 export const baseDir = "./_content/";
 
@@ -72,26 +72,22 @@ export const getAllContent = (): GrayMatterFile<string>[] =>
     .map(s => s.split("/"))
     .map(getContent);
 
-export const getHeaders = (content: string): { id: string, text: string }[] => {
-  const prc = unified()
-    .use(remarkParse)
-    .use(remarkRehype)
-    .use(rehypeSlug)
-    .use(rehypeStringify)
-  const html = prc.processSync(content).value.toString()
-  const dom = new jsdom.JSDOM(html)
-  const h1 = dom.window.document.querySelectorAll("h1")
-  const h2 = dom.window.document.querySelectorAll("h2")
-  const h3 = dom.window.document.querySelectorAll("h3")
-  const h4 = dom.window.document.querySelectorAll("h4")
-  const h5 = dom.window.document.querySelectorAll("h5")
-  const h6 = dom.window.document.querySelectorAll("h6")
-  const res = [] as { id: string, text: string }[]
-  h1.forEach(v => res.push({ id: v.id, text: v.textContent ?? "" }))
-  h2.forEach(v => res.push({ id: v.id, text: v.textContent ?? "" }))
-  h3.forEach(v => res.push({ id: v.id, text: v.textContent ?? "" }))
-  h4.forEach(v => res.push({ id: v.id, text: v.textContent ?? "" }))
-  h5.forEach(v => res.push({ id: v.id, text: v.textContent ?? "" }))
-  h6.forEach(v => res.push({ id: v.id, text: v.textContent ?? "" }))
-  return res
-}
+export const getHeaders = (content: string): { id: string; text: string }[] => {
+  const prc = unified().use(remarkParse).use(remarkRehype).use(rehypeSlug).use(rehypeStringify);
+  const html = prc.processSync(content).value.toString();
+  const dom = new jsdom.JSDOM(html);
+  const h1 = dom.window.document.querySelectorAll("h1");
+  const h2 = dom.window.document.querySelectorAll("h2");
+  const h3 = dom.window.document.querySelectorAll("h3");
+  const h4 = dom.window.document.querySelectorAll("h4");
+  const h5 = dom.window.document.querySelectorAll("h5");
+  const h6 = dom.window.document.querySelectorAll("h6");
+  const res = [] as { id: string; text: string }[];
+  h1.forEach(v => res.push({ id: v.id, text: v.textContent ?? "" }));
+  h2.forEach(v => res.push({ id: v.id, text: v.textContent ?? "" }));
+  h3.forEach(v => res.push({ id: v.id, text: v.textContent ?? "" }));
+  h4.forEach(v => res.push({ id: v.id, text: v.textContent ?? "" }));
+  h5.forEach(v => res.push({ id: v.id, text: v.textContent ?? "" }));
+  h6.forEach(v => res.push({ id: v.id, text: v.textContent ?? "" }));
+  return res;
+};

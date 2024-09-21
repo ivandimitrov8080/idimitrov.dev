@@ -11,8 +11,8 @@ export const metadata: Metadata = {
 export function generateViewport(): Viewport {
   return {
     width: "device-width",
-    initialScale: 1
-  }
+    initialScale: 1,
+  };
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

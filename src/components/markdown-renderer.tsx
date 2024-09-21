@@ -11,12 +11,11 @@ import Link from "next/link";
 import styles from "../app/c/[...slug]/content.module.css";
 
 type MarkdownRendererProps = {
-  data: { [key: string]: any }
-  content: string
-}
+  data: { [key: string]: any };
+  content: string;
+};
 
 const MarkdownRenderer = ({ data, content }: MarkdownRendererProps) => {
-
   const imgSize = 1024;
   return (
     <Markdown
@@ -108,6 +107,6 @@ const MarkdownRenderer = ({ data, content }: MarkdownRendererProps) => {
       }}>
       {content}
     </Markdown>
-  )
-}
-export default MarkdownRenderer
+  );
+};
+export default MarkdownRenderer;

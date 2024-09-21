@@ -33,7 +33,7 @@ export default function Content({ params }: Props) {
     notFound();
   }
 
-  const headers = getHeaders(content)
+  const headers = getHeaders(content);
 
   return (
     <div className="overflow-y-scroll lg:grid lg:justify-items-center">
