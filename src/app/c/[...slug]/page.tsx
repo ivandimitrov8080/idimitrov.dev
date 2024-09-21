@@ -1,4 +1,4 @@
-import { getAllPaths, getContent } from "$lib/content";
+import { getAllPaths, getContent, getHeaders } from "$lib/content";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Metadata } from "next";
@@ -33,6 +33,8 @@ export default function Content({ params }: Props) {
     notFound();
   }
 
+  const headers = getHeaders(content)
+
   return (
     <div className="overflow-y-scroll grid justify-items-center">
       <div className="grid gap-20 grid-cols-12 w-11/12">
@@ -53,9 +55,13 @@ export default function Content({ params }: Props) {
           <div className="fixed grid gap-4 pl-12">
             <span className="text-2xl font-bold">Table of contents</span>
             <div className="circle-gradient w-full h-[1px] top-1/2"></div>
-            <Link href="#" className="hover:gradient p-2 rounded-md">
-              Technical details
-            </Link>
+            <div className="flex flex-col">
+              {headers.map(h => (
+                <Link href={`#${h.id}`} className="hover:gradient p-2 rounded-md">
+                  {h.text}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </div>

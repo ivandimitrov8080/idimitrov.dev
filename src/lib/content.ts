@@ -1,6 +1,12 @@
 import fs from "fs";
 import matter, { GrayMatterFile } from "gray-matter";
 import path from "path";
+import { unified } from "unified";
+import remarkParse from "remark-parse";
+import rehypeSlug from "rehype-slug";
+import rehypeStringify from "rehype-stringify";
+import remarkRehype from "remark-rehype";
+import jsdom from "jsdom"
 
 export const baseDir = "./_content/";
 
@@ -65,3 +71,17 @@ export const getAllContent = (): GrayMatterFile<string>[] =>
   getAllPaths()
     .map(s => s.split("/"))
     .map(getContent);
+
+export const getHeaders = (content: string): { id: string, text: string }[] => {
+  const prc = unified()
+    .use(remarkParse)
+    .use(remarkRehype)
+    .use(rehypeSlug)
+    .use(rehypeStringify)
+  const html = prc.processSync(content).value.toString()
+  const dom = new jsdom.JSDOM(html)
+  const headers = dom.window.document.querySelectorAll("h3")
+  const res = [] as { id: string, text: string }[]
+  headers.forEach(v => res.push({ id: v.id, text: v.textContent ?? "" }))
+  return res
+}
