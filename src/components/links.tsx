@@ -6,7 +6,9 @@ import FolderSvg from "./folder-svg";
 
 const Links = () => (
   <div className="relative h-full grid place-content-center">
-    <FolderSvg />
+    <div className="absolute w-full h-full top-[-5px] lg:top-0">
+      <FolderSvg />
+    </div>
     <div className="relative grid w-max h-max grid-cols-2 grid-rows-2 gap-0">
       <div className="absolute circle-gradient w-[1px] h-full left-1/2"></div>
       <div className="absolute circle-gradient w-full h-[1px] top-1/2"></div>
