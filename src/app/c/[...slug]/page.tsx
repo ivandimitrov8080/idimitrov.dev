@@ -36,11 +36,11 @@ export default function Content({ params }: Props) {
   const headers = getHeaders(content)
 
   return (
-    <div className="overflow-y-scroll grid justify-items-center">
-      <div className="grid gap-20 lg:grid-cols-12 lg:w-11/12">
-        <div className="lg:col-span-9">
+    <div className="overflow-y-scroll lg:grid lg:justify-items-center">
+      <div className="lg:grid lg:gap-20 lg:grid-cols-12 lg:w-11/12">
+        <div className="lg:col-span-9 p-4">
           <div className="flex flex-col gap-4 lg:pl-24 lg:pt-20">
-            <h1 className="text-5xl font-bold">{data.title}</h1>
+            <h1 className="text-4xl lg:text-5xl font-bold">{data.title}</h1>
             <div className="flex flex-row gap-4">
               <FontAwesomeIcon className="w-14 h-14 hover:filter-none" icon={faCircleUser} />
               <div className="flex flex-col">
