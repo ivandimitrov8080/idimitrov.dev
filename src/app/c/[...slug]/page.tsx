@@ -2,7 +2,6 @@ import styles from "./content.module.css";
 import { getAllPaths, getContent } from "$lib/content";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import remarkFrontmatter from "remark-frontmatter";
 import Image from "next/image";
 import rehypeRaw from "rehype-raw";
 import { notFound } from "next/navigation";
@@ -13,7 +12,7 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import codeStyle from "react-syntax-highlighter/dist/esm/styles/prism/coldark-dark";
 import { Metadata } from "next";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleUser, faUserCircle } from "@fortawesome/free-solid-svg-icons";
+import { faCircleUser } from "@fortawesome/free-solid-svg-icons";
 import rehypeSlug from "rehype-slug";
 
 type Params = {
@@ -59,7 +58,7 @@ export default function Content({ params }: Props) {
             </div>
             <Markdown
               className={styles.md}
-              remarkPlugins={[remarkGfm, remarkFrontmatter]}
+              remarkPlugins={[remarkGfm]}
               rehypePlugins={[rehypeRaw, rehypeSlug]}
               components={{
                 img({ height, width, src, alt, className }) {

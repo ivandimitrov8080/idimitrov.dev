@@ -25,7 +25,6 @@
     "react-syntax-highlighter": "latest",
     "rehype-raw": "latest",
     "rehype-slug": "^6.0.0",
-    "remark-frontmatter": "latest",
     "remark-gfm": "latest",
     "tailwind-scrollbar": "latest"
   },
