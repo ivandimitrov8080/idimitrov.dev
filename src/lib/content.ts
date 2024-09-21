@@ -80,8 +80,18 @@ export const getHeaders = (content: string): { id: string, text: string }[] => {
     .use(rehypeStringify)
   const html = prc.processSync(content).value.toString()
   const dom = new jsdom.JSDOM(html)
-  const headers = dom.window.document.querySelectorAll("h3")
+  const h1 = dom.window.document.querySelectorAll("h1")
+  const h2 = dom.window.document.querySelectorAll("h2")
+  const h3 = dom.window.document.querySelectorAll("h3")
+  const h4 = dom.window.document.querySelectorAll("h4")
+  const h5 = dom.window.document.querySelectorAll("h5")
+  const h6 = dom.window.document.querySelectorAll("h6")
   const res = [] as { id: string, text: string }[]
-  headers.forEach(v => res.push({ id: v.id, text: v.textContent ?? "" }))
+  h1.forEach(v => res.push({ id: v.id, text: v.textContent ?? "" }))
+  h2.forEach(v => res.push({ id: v.id, text: v.textContent ?? "" }))
+  h3.forEach(v => res.push({ id: v.id, text: v.textContent ?? "" }))
+  h4.forEach(v => res.push({ id: v.id, text: v.textContent ?? "" }))
+  h5.forEach(v => res.push({ id: v.id, text: v.textContent ?? "" }))
+  h6.forEach(v => res.push({ id: v.id, text: v.textContent ?? "" }))
   return res
 }

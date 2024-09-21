@@ -38,7 +38,7 @@ export default function Content({ params }: Props) {
   return (
     <div className="overflow-y-scroll grid justify-items-center">
       <div className="grid gap-20 grid-cols-12 w-11/12">
-        <div className="col-span-8">
+        <div className="col-span-9">
           <div className="flex flex-col gap-4 pl-24 pt-20">
             <h1 className="text-5xl font-bold">{data.title}</h1>
             <div className="flex flex-row gap-4">
@@ -51,13 +51,13 @@ export default function Content({ params }: Props) {
             <MarkdownRenderer data={data} content={content} />
           </div>
         </div>
-        <div className="h-screen col-span-4 py-64">
+        <div className="h-screen col-span-3 py-64">
           <div className="fixed grid gap-4 pl-12">
             <span className="text-2xl font-bold">Table of contents</span>
             <div className="circle-gradient w-full h-[1px] top-1/2"></div>
             <div className="flex flex-col">
               {headers.map(h => (
-                <Link href={`#${h.id}`} className="hover:gradient p-2 rounded-md">
+                <Link key={h.id} href={`#${h.id}`} className="hover:gradient p-2 rounded-md">
                   {h.text}
                 </Link>
               ))}
