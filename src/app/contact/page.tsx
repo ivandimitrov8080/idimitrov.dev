@@ -1,4 +1,7 @@
 import FolderSvg from "@/components/folder-svg";
+import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import Link from "next/link";
 
 const email = "ivan@idimitrov.dev";
 const mailto = `mailto:${email}`;
@@ -16,17 +19,32 @@ const CheckSvg = () => (
   </svg>
 )
 
+const MailLockSvg = () => (
+  <svg width="22" height="16" viewBox="0 0 22 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 7L3.3 2.8C3.01667 2.61667 2.72917 2.60833 2.4375 2.775C2.14583 2.94167 2 3.19167 2 3.525C2 3.675 2.03333 3.8125 2.1 3.9375C2.16667 4.0625 2.26667 4.16667 2.4 4.25L9.475 8.675C9.64167 8.775 9.81667 8.825 10 8.825C10.1833 8.825 10.3583 8.775 10.525 8.675L17.6 4.25C17.7333 4.16667 17.8333 4.0625 17.9 3.9375C17.9667 3.8125 18 3.675 18 3.525C18 3.19167 17.8542 2.94167 17.5625 2.775C17.2708 2.60833 16.9833 2.61667 16.7 2.8L10 7ZM17 16C16.7167 16 16.4792 15.9042 16.2875 15.7125C16.0958 15.5208 16 15.2833 16 15V12C16 11.7167 16.0958 11.4792 16.2875 11.2875C16.4792 11.0958 16.7167 11 17 11V10C17 9.45 17.1958 8.97917 17.5875 8.5875C17.9792 8.19583 18.45 8 19 8C19.55 8 20.0208 8.19583 20.4125 8.5875C20.8042 8.97917 21 9.45 21 10V11C21.2833 11 21.5208 11.0958 21.7125 11.2875C21.9042 11.4792 22 11.7167 22 12V15C22 15.2833 21.9042 15.5208 21.7125 15.7125C21.5208 15.9042 21.2833 16 21 16H17ZM18 11H20V10C20 9.71667 19.9042 9.47917 19.7125 9.2875C19.5208 9.09583 19.2833 9 19 9C18.7167 9 18.4792 9.09583 18.2875 9.2875C18.0958 9.47917 18 9.71667 18 10V11ZM2 16C1.45 16 0.979167 15.8042 0.5875 15.4125C0.195833 15.0208 0 14.55 0 14V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H18C18.55 0 19.0208 0.195833 19.4125 0.5875C19.8042 0.979167 20 1.45 20 2V5C20 5.28333 19.9042 5.52083 19.7125 5.7125C19.5208 5.90417 19.2833 6 19 6C17.6167 6 16.4375 6.4875 15.4625 7.4625C14.4875 8.4375 14 9.61667 14 11V15C14 15.2833 13.9042 15.5208 13.7125 15.7125C13.5208 15.9042 13.2833 16 13 16H2Z" fill="white" />
+  </svg>
+)
+
 const Contact = () => (
-  <div className="w-full p-12 grid grid-cols-12 gap-12 basis-full">
-    <div className="p-8 col-span-4 flex flex-col gap-4 h-min">
-      <p className="text-xl lg:text-2xl text-[#FB923C]">Available for projects</p>
-      <p className="text-4xl lg:text-6xl text-white capitalize">Get in touch</p>
-      <p className="flex flex-row gap-2 text-xl lg:text-2xl text-white"><CheckSvg /> Schedule a consultation</p>
-      <p className="flex flex-row gap-2 text-xl lg:text-2xl text-white"><CheckSvg /> Tell me about yourself and your project</p>
-      <p className="flex flex-row gap-2 text-xl lg:text-2xl text-white"><CheckSvg /> Get advice for your needs</p>
+  <div className="w-full p-12 grid grid-cols-2 gap-12 basis-full">
+    <div className="p-12 flex flex-col justify-between">
+      <div className="flex flex-col gap-4">
+        <p className="text-xl lg:text-2xl text-[#FB923C]">Available for projects</p>
+        <p className="text-4xl lg:text-6xl text-white capitalize">Get in touch</p>
+        <p className="flex flex-row gap-2 text-lg lg:text-xl text-white"><CheckSvg /> Schedule a consultation</p>
+        <p className="flex flex-row gap-2 text-lg lg:text-xl text-white"><CheckSvg /> Tell me about yourself and your project</p>
+        <p className="flex flex-row gap-2 text-lg lg:text-xl text-white"><CheckSvg /> Get advice for your needs</p>
+      </div>
+      <div className="flex flex-col gap-4">
+        <p className="text-lg lg:text-xl text-white">Contact me privately using my PGP key</p>
+        <Link className="w-max px-4 py-2 lg:px-10 rounded-full border-[1px] border-amber-50 z-50" aria-label="PGP key" href="/pgp">
+          <span className="flex flex-row gap-4 text-center"><MailLockSvg />
+            Contact privately</span>
+        </Link>
+      </div>
     </div>
-    <div className="col-span-8 h-full">
-      <div className="relative">
+    <div className="relative h-full">
+      <div className="absolute w-full h-full">
         <FolderSvg />
       </div>
     </div>
@@ -37,7 +55,6 @@ const test = () => {
 
   // <div className="flex flex-row gap-4">
   //   <a aria-label={mailto} href={mailto}>
-  //     <FontAwesomeIcon className="w-14 h-14" icon={faEnvelope} />
   //   </a>
   //   <Link aria-label="GPG public key" href="/pgp.txt">
   //     <FontAwesomeIcon className="w-14 h-14" mask={faFile} icon={faLock} transform={"shrink-10 right-2 down-4"} />
