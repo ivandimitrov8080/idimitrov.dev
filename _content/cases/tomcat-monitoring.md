@@ -8,19 +8,18 @@ z: 8
 draft: false
 ---
 
-
-[VisualVM](https://visualvm.github.io/) is a FOSS Java profiler used to monitor the resource usage of an app.
-It can be very useful when you want to diagnose problems with your program and/or optimize it.
+[VisualVM](https://visualvm.github.io/) is a FOSS Java profiler used to monitor the resource usage of an app. It can be very useful when you want to diagnose problems with your
+program and/or optimize it.
 
 For Java VM optimizations, please have a look [here](https://stackoverflow.com/questions/564039/jvm-performance-tuning-for-large-applications).
 
 ### Technical details
 
-Remote Java profiling is natively supported through the use of [JMX technology](https://docs.oracle.com/javase/8/docs/technotes/guides/management/agent.html).
-To use it, you tell the JVM to start with JMX enabled by adding some startup options to your application.
+Remote Java profiling is natively supported through the use of [JMX technology](https://docs.oracle.com/javase/8/docs/technotes/guides/management/agent.html). To use it, you tell
+the JVM to start with JMX enabled by adding some startup options to your application.
 
-By default, this is a localhost only solution which lets you profile while developing an app.
-Using this over the network requires extra steps of securing the connection as it's not encrypted and it doesn't have a password.
+By default, this is a localhost only solution which lets you profile while developing an app. Using this over the network requires extra steps of securing the connection as it's
+not encrypted and it doesn't have a password.
 
 To encrypt the connection you need to create 2 pairs of keystores and truststores for both Tomcat and VisualVM and then make sure that they trust each other (using -import).
 
@@ -77,7 +76,6 @@ keytool -import -alias tomcat -file tomcat.cer -keystore vvm.truststore -storepa
 ```
 
 This last script will generate 6 files 2 of which are temporary and can be deleted (the .cer files).
-
 
 To later use these files and make a connection you need to restart your Tomcat server and run VisualVM like so:
 

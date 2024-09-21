@@ -1,9 +1,5 @@
 const FolderSvg = () => (
-  <svg
-    className="absolute bottom-0 left-0 lg:left-[14%] lg:h-full"
-    style={{ transform: "scaleX(-1)" }}
-    viewBox="0 0 580 435"
-  >
+  <svg className="absolute bottom-0 left-0 lg:left-[14%] lg:h-full" style={{ transform: "scaleX(-1)" }} viewBox="0 0 580 435">
     <defs>
       <linearGradient id="linear" x1="0%" y1="100%" x2="100%" y2="0%">
         <stop offset="0%" stopColor="#facc15" />
@@ -33,8 +29,9 @@ const FolderSvg = () => (
         S 0 0
           30 0
         "
-      style={{ strokeWidth: 3 }} />
+      style={{ strokeWidth: 3 }}
+    />
   </svg>
-)
+);
 
 export default FolderSvg;

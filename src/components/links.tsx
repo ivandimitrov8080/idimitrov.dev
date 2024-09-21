@@ -24,6 +24,6 @@ const Links = () => (
       </Link>
     </div>
   </div>
-)
+);
 
 export default Links;

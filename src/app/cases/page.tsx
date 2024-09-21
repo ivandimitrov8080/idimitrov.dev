@@ -21,11 +21,10 @@ const CasesPage = () => {
             {i % 4 === 0 && i !== cases.length - 1 && <div className="absolute hidden lg:block circle-gradient w-full h-[1px]"></div>}
             {i !== cases.length - 1 && <div className="absolute lg:hidden circle-gradient w-full h-[1px]"></div>}
           </div>
-        )
-        )}
+        ))}
       </div>
     </div>
-  )
+  );
 };
 
 export default CasesPage;
