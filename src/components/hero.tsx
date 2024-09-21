@@ -3,7 +3,7 @@ import Links from "./links";
 import CasesSvg from "./cases-svg";
 
 const Hero = () => (
-  <div className="grid grid-cols-1 lg:grid-cols-2 px-4 py-12 lg:px-14 lg:py-48 gap-12 w-full h-full">
+  <div className="grid grid-cols-1 lg:grid-cols-2 px-4 py-12 lg:px-14 gap-12 w-full h-full">
     <div className="grid gap-6">
       <div className="pt-0 lg:pt-12">
         <p className="text-xl lg:text-3xl text-[#FB923C]">Software Developer</p>

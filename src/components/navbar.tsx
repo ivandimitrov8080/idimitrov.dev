@@ -11,14 +11,14 @@ const Navbar = () => {
   };
   const link = (text: string, href: string) => {
     return (
-      <Link className="w-max px-4 py-1 lg:px-10 rounded-full border-[1px] border-amber-50 box-border z-50" aria-label={text} href={href}>
+      <Link className="w-max px-4 py-1 lg:px-10 rounded-full border-[1px] border-amber-50 z-50" aria-label={text} href={href}>
         <span className="text-center">{text}</span>
       </Link>
     );
   };
   return (
     <nav className="p-12">
-      <div className="flex flex-row justify-between box-border w-full h-8 z-40">
+      <div className="flex flex-row justify-between w-full h-8 z-40">
         {home("idimitrov.dev", "/")}
         {link("Contact", "/contact")}
       </div>

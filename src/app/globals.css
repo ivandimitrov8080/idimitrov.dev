@@ -30,6 +30,10 @@
   }
 }
 
+* {
+   @apply box-border;
+}
+
 body {
   @apply gradient text-slate-50 w-screen h-screen overflow-hidden;
 }
