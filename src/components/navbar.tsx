@@ -17,11 +17,9 @@ const Navbar = () => {
     );
   };
   return (
-    <nav className="p-12">
-      <div className="flex flex-row justify-between w-full h-8 z-40">
-        {home("idimitrov.dev", "/")}
-        {link("Contact", "/contact")}
-      </div>
+    <nav className="h-max flex flex-row justify-between w-full z-50 p-12">
+      {home("idimitrov.dev", "/")}
+      {link("Contact", "/contact")}
     </nav>
   );
 };
