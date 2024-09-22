@@ -31,7 +31,7 @@ const MarkdownRenderer = ({ data, content }: MarkdownRendererProps) => {
                 alt={alt!}
                 height={Number(height) || imgSize}
                 width={Number(width) || imgSize}
-                src={`${data.slug}${src}`}></Image>
+                src={`${src}`}></Image>
             </span>
           );
         },

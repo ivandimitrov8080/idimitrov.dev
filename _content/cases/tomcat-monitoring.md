@@ -11,7 +11,7 @@ draft: false
 [VisualVM](https://visualvm.github.io/) is a FOSS Java profiler used to monitor the resource usage of an app. It can be very useful when you want to diagnose problems with your
 program and/or optimize it.
 
-For Java VM optimizations, please have a look [here](https://stackoverflow.com/questions/564039/jvm-performance-tuning-for-large-applications).
+[For Java VM optimizations, please have a look here](https://stackoverflow.com/questions/564039/jvm-performance-tuning-for-large-applications).
 
 ### Technical details
 

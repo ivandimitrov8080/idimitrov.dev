@@ -12,7 +12,7 @@ This project aims to be a Google Drive frontend. It uses the Google APIs to fetc
 
 (website not live yet.. waiting for client)
 
-![thumbnail](/thumbnail.png)
+![thumbnail](/stepsy-thumbnail.png)
 
 It supports Google Docs, Google Sheets, Google Slides, PDFs and regular files.
 
