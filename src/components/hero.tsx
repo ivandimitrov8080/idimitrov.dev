@@ -3,8 +3,8 @@ import Links from "./links";
 import CasesSvg from "./cases-svg";
 
 const Hero = () => (
-  <div className="grid grid-cols-1 lg:grid-cols-2 gap-7 lg:gap-0 w-full h-full p-7 lg:p-20 overflow-y-scroll lg:overflow-y-hidden">
-    <div className="grid lg:gap-6">
+  <div className="grid grid-cols-1 lg:grid-cols-2 gap-7 lg:gap-0 w-full h-max p-7 lg:p-20 overflow-y-scroll lg:overflow-y-hidden">
+    <div className="grid lg:gap-6 pb-12">
       <div className="pt-0 lg:pt-12">
         <p className="text-xl lg:text-3xl text-[#FB923C]">Software Developer</p>
         <p className="text-4xl lg:text-8xl text-white capitalize">Full stack web development</p>
