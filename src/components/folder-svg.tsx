@@ -2,7 +2,7 @@ type FolderSvgProps = {
   preserveAspectRatio?: string
 }
 const FolderSvg = ({ preserveAspectRatio }: FolderSvgProps) => (
-  <svg preserveAspectRatio={preserveAspectRatio ?? ""} className="w-full h-full" style={{ transform: "scaleX(-1)" }} viewBox="0 0 580 435">
+  <svg preserveAspectRatio={preserveAspectRatio ?? "none"} className="w-full h-full" style={{ transform: "scaleX(-1)" }} viewBox="0 0 580 435">
     <defs>
       <linearGradient id="linear" x1="0%" y1="100%" x2="100%" y2="0%">
         <stop offset="0%" stopColor="#facc15" />
