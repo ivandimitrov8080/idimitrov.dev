@@ -1,5 +1,5 @@
 const GiteaSvg = () => (
-  <svg version="1.1" id="main_outline" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 640 640">
+  <svg className="w-14 h-14" version="1.1" id="main_outline" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 640 640">
     <g>
       <path
         id="teabag"

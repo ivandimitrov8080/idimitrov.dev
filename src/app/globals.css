@@ -4,30 +4,34 @@
 
 @layer components {
   .btn {
-    @apply bg-gray-900 transition ease-in duration-200 text-gray-300 hover:bg-gray-700/60 rounded-md px-3 py-2 text-sm;
+    @apply bg-gray-900 transition ease-in duration-200 text-gray-300 hover:bg-gray-700/60 px-3 py-2 text-sm;
   }
 }
 
 @layer utilities {
   @keyframes spinner {
     100% {
-      transform: rotate(360deg)
+      transform: rotate(360deg);
     }
   }
 
   @keyframes spinner-reverse {
     100% {
-      transform: rotate(-360deg)
+      transform: rotate(-360deg);
     }
   }
 
   .gradient {
-    @apply bg-gradient-to-br from-slate-950 via-red-700 to-yellow-400;
+    @apply bg-gradient-to-br from-transparent via-red-700 to-yellow-400;
+  }
+
+  .circle-gradient {
+    background: radial-gradient(circle at center, white 0, #020617 100%);
   }
 }
 
-html * {
-  @apply scrollbar scrollbar-thin scrollbar-thumb-sky-400;
+* {
+  @apply box-border;
 }
 
 body {
