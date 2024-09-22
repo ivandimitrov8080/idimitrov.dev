@@ -43,7 +43,7 @@
         pname = "idimitrov.dev";
         version = "0.1.1";
         src = ./.;
-        npmDepsHash = "sha256-+GgP+cilcphMZxns/EM2TTRDuQi8RE1PkxsDG3gXZEQ=";
+        npmDepsHash = "sha256-3sED1d3WY8tUUE5KvJ3vS+AZ5xZZypP8hTSazPFH194=";
         postInstall = ''
           rm -rf $out/lib
           cp -r ./out/* $out/
