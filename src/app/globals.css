@@ -48,7 +48,7 @@ svg {
 }
 
 svg {
-  @apply transition duration-200 ease-in;
+  @apply transition duration-200 ease-in w-10 h-10 lg:w-20 lg:h-20;
 }
 
 svg:hover {

@@ -54,7 +54,7 @@ const Contact = () => (
     </div>
     <div className="relative h-full">
       <div className="absolute w-full h-full z-10">
-        <FolderSvg />
+        <FolderSvg preserveAspectRatio="none" />
       </div>
       <form className="relative w-full h-full grid lg:grid-cols-2 place-content-center gap-8 z-40 p-12" action="/api/contact">
         <div className="relative group border-b-[1px] border-neutral-500">

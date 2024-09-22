@@ -1,5 +1,5 @@
 const CasesSvg = () => (
-  <svg width="224" height="56" viewBox="0 0 224 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg className="w-[224px] h-[56px]" width="224" height="56" viewBox="0 0 224 56" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path
       fillRule="evenodd"
       clipRule="evenodd"
