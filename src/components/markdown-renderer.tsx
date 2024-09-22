@@ -8,14 +8,13 @@ import { getText } from "$lib/react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import codeStyle from "react-syntax-highlighter/dist/esm/styles/prism/coldark-dark";
 import Link from "next/link";
-import styles from "../app/c/[...slug]/content.module.css";
+import styles from "../app/cases/[slug]/content.module.css";
 
 type MarkdownRendererProps = {
-  data: { [key: string]: any };
   content: string;
 };
 
-const MarkdownRenderer = ({ data, content }: MarkdownRendererProps) => {
+const MarkdownRenderer = ({ content }: MarkdownRendererProps) => {
   const imgSize = 1024;
   return (
     <Markdown

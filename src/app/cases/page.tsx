@@ -14,7 +14,7 @@ const CasesPage = () => {
         <div className="absolute hidden lg:block circle-gradient w-[1px] h-full left-1/4"></div>
         {cases.map((d, i) => (
           <div key={d.slug} className="aspect-[6/5] hover:gradient">
-            <Link className="grid w-full h-full gap-4 lg:p-9" href={d.slug}>
+            <Link className="grid w-full h-full gap-4 lg:p-9" href={`/cases/${d.slug}`}>
               <span className="text-2xl lg:text-3xl line-clamp-3 self-center">{d.title}</span>
               <span className="text-xs text-neutral-400">{d.date}</span>
             </Link>

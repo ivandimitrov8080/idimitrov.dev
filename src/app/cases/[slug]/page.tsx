@@ -1,4 +1,4 @@
-import { getAllPaths, getContent, getHeaders } from "$lib/content";
+import { getContent, getCases, getHeaders } from "$lib/content";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Metadata } from "next";
@@ -7,7 +7,7 @@ import { faCircleUser } from "@fortawesome/free-solid-svg-icons";
 import MarkdownRenderer from "@/components/markdown-renderer";
 
 type Params = {
-  slug: string[];
+  slug: string;
 };
 
 type Props = {
@@ -17,13 +17,13 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { data } = getContent(params.slug);
   return {
-    title: data.title,
+    title: data.title || "Note",
     description: data.goal || "Software development notes",
   };
 }
 
 export async function generateStaticParams(): Promise<Params[]> {
-  return getAllPaths().map(p => ({ slug: p.split("/") }));
+  return getCases().map(p => ({ slug: p.data.slug }));
 }
 
 export default function Content({ params }: Props) {
@@ -48,7 +48,7 @@ export default function Content({ params }: Props) {
                 <span className="text-xs text-neutral-400">Published {data.date}</span>
               </div>
             </div>
-            <MarkdownRenderer data={data} content={content} />
+            <MarkdownRenderer content={content} />
           </div>
         </div>
         <div className="hidden lg:block h-screen lg:col-span-3 py-64">

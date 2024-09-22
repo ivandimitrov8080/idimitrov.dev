@@ -8,17 +8,13 @@ import rehypeStringify from "rehype-stringify";
 import remarkRehype from "remark-rehype";
 import jsdom from "jsdom";
 
-export const baseDir = "./_content/";
+const baseDir = "./_content/";
 
 const contentMap: Record<string, GrayMatterFile<string>> = {};
 
-export const getContent = (slug: string[]): GrayMatterFile<string> => {
-  let p: string = path.join();
-  slug.forEach(s => {
-    p = path.join(p, s);
-  });
-  if (!contentMap[p]) {
-    const file = fs.readFileSync(p, "utf8");
+const readContent = (fp: string): GrayMatterFile<string> => {
+  if (!contentMap[fp]) {
+    const file = fs.readFileSync(fp, "utf8");
     const m = matter(file);
     const date = m.data.date;
     if (date) {
@@ -33,18 +29,18 @@ export const getContent = (slug: string[]): GrayMatterFile<string> => {
         m.data.date += ` - ${new Date(to).toDateString()}`;
       }
     }
-    m.data.slug = `/c/${slug.join("/")}`;
-    contentMap[p] = m;
+    m.data.slug = path.parse(fp).name;
+    contentMap[fp] = m;
     return m;
   }
-  return contentMap[p];
+  return contentMap[fp];
 };
 
 const getAllPathsRecursive = (base = baseDir): string[] => {
   let results = [] as string[];
   const files = fs.readdirSync(base);
   for (const file of files) {
-    const filePath = path.join(base, file);
+    const filePath = path.resolve(base, file);
     const stat = fs.statSync(filePath);
     if (stat.isDirectory()) {
       results = results.concat(getAllPathsRecursive(filePath));
@@ -55,22 +51,20 @@ const getAllPathsRecursive = (base = baseDir): string[] => {
   return results;
 };
 
-export const getAllPaths = (base = baseDir): string[] => getAllPathsRecursive(base);
+export const getAllPaths = (): string[] => getAllPathsRecursive(baseDir);
 
 export const getCases = (): GrayMatterFile<string>[] =>
-  getAllPaths(`${baseDir}cases/`)
-    .map(s => s.split("/"))
-    .map(getContent);
-
-export const getCasesTest = (): GrayMatterFile<string>[] =>
-  getAllPaths(`./_test_content/cases/`)
-    .map(s => s.split("/"))
-    .map(getContent);
+  getAllPaths()
+    .filter(p => p.includes("/cases/"))
+    .map(readContent);
 
 export const getAllContent = (): GrayMatterFile<string>[] =>
   getAllPaths()
-    .map(s => s.split("/"))
-    .map(getContent);
+    .map(readContent);
+
+export const getContent = (slug: string): GrayMatterFile<string> =>
+  getAllContent()
+    .find(c => c.data.slug === slug) || {} as any
 
 export const getHeaders = (content: string): { id: string; text: string }[] => {
   const prc = unified().use(remarkParse).use(remarkRehype).use(rehypeSlug).use(rehypeStringify);
