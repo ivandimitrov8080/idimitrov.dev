@@ -27,8 +27,8 @@ const MailLockSvg = () => (
 );
 
 const Contact = () => (
-  <div className="w-full p-12 grid grid-cols-2 gap-12 basis-full">
-    <div className="p-12 flex flex-col justify-between">
+  <div className="w-full p-12 grid lg:grid-cols-2 gap-12 basis-full overflow-y-scroll">
+    <div className="lg:p-12 flex flex-col gap-12 justify-between">
       <div className="flex flex-col gap-4">
         <p className="text-xl lg:text-2xl text-[#FB923C]">Available for projects</p>
         <p className="text-4xl lg:text-6xl text-white capitalize">Get in touch</p>
@@ -43,20 +43,20 @@ const Contact = () => (
         </p>
       </div>
       <div className="flex flex-col gap-4">
-        <p className="text-lg lg:text-xl text-white">Contact me privately using my PGP key</p>
+        <p className="text-lg lg:text-xl text-white">Encrypt your message using my public PGP key</p>
         <Link className="w-max px-4 py-2 lg:px-10 rounded-full border-[1px] border-amber-50 z-50" aria-label="PGP key" href="/pgp">
           <span className="flex flex-row gap-4 text-center">
             <MailLockSvg />
-            Contact privately
+            PGP key
           </span>
         </Link>
       </div>
     </div>
     <div className="relative h-full">
       <div className="absolute w-full h-full z-10">
-        <FolderSvg />
+        <FolderSvg preserveAspectRatio="none" />
       </div>
-      <form className="relative w-full h-full grid grid-cols-2 place-content-center gap-8 z-40 p-12" action="/api/contact">
+      <form className="relative w-full h-full grid lg:grid-cols-2 place-content-center gap-8 z-40 p-12" action="/api/contact">
         <div className="relative group border-b-[1px] border-neutral-500">
           <input name="name" required className="w-full h-10 px-4 text-sm peer bg-gray-100 outline-none bg-transparent" />
           <label htmlFor="name" className="pointer-events-none transform transition-all absolute top-0 left-0 h-full flex items-center pl-2 text-sm group-focus-within:text-xs peer-valid:text-xs group-focus-within:h-1/2 peer-valid:h-1/2 group-focus-within:-translate-y-full peer-valid:-translate-y-full group-focus-within:pl-0 peer-valid:pl-0">Full name</label>
@@ -65,11 +65,11 @@ const Contact = () => (
           <input type="email" name="email" required className="w-full h-10 px-4 text-sm peer bg-gray-100 outline-none bg-transparent" />
           <label htmlFor="email" className="pointer-events-none transform transition-all absolute top-0 left-0 h-full flex items-center pl-2 text-sm group-focus-within:text-xs peer-valid:text-xs group-focus-within:h-1/2 peer-valid:h-1/2 group-focus-within:-translate-y-full peer-valid:-translate-y-full group-focus-within:pl-0 peer-valid:pl-0">Email</label>
         </div>
-        <div className="col-span-2 relative group border-b-[1px] border-neutral-500">
+        <div className="lg:col-span-2 relative group border-b-[1px] border-neutral-500">
           <input name="message" required className="w-full h-10 px-4 text-sm peer bg-gray-100 outline-none bg-transparent" />
           <label htmlFor="message" className="pointer-events-none transform transition-all absolute top-0 left-0 h-full flex items-center pl-2 text-sm group-focus-within:text-xs peer-valid:text-xs group-focus-within:h-1/2 peer-valid:h-1/2 group-focus-within:-translate-y-full peer-valid:-translate-y-full group-focus-within:pl-0 peer-valid:pl-0">Message</label>
         </div>
-        <button className="absolute bottom-36 right-12 w-max px-12 py-4 rounded-full z-50 gradient" aria-label="Send message" type="submit">
+        <button className="lg:absolute lg:bottom-36 lg:right-12 w-max px-12 py-4 rounded-full z-50 gradient" aria-label="Send message" type="submit">
           <span className="flex flex-row gap-4 text-center capitalize">
             Send message
           </span>
