@@ -4,6 +4,8 @@ goal: Create a modern multi-tenant web app that lets users use their Google Driv
 role: Design and implement the web app
 date: Jul 29, 2023 - Nov 5, 2023
 z: 3
+author: Ivan Dimitrov
+published: Sep 2023
 ---
 
 This project aims to be a Google Drive frontend. It uses the Google APIs to fetch document data and display that data in a wiki-style web page.

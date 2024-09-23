@@ -4,7 +4,8 @@ goal: Integrate the Parcel Lab Post-purchase solution into all US and European W
 role: Plan, design and implement the integration
 date: 2022 - 2023
 z: 2
-draft: false
+author: Ivan Dimitrov
+published: Sep 2023
 ---
 
 > parcelLab is the only truly global enterprise post-purchase software provider, enabling brands to increase top-line revenue, decrease operational costs, and optimize the customer

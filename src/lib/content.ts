@@ -12,29 +12,42 @@ const baseDir = "./_content/";
 
 const contentMap: Record<string, GrayMatterFile<string>> = {};
 
+const formatDate = (m: GrayMatterFile<string>) => {
+  const date = m.data.date;
+  if (date) {
+    m.data.date = "";
+    const d = date.split("-");
+    const from = d[0]?.trim();
+    const to = d[1]?.trim();
+    if (from) {
+      m.data.date += new Date(from).toDateString();
+    }
+    if (to) {
+      m.data.date += ` - ${new Date(to).toDateString()}`;
+    }
+  }
+}
+
+const formatPublisher = (m: GrayMatterFile<string>) => {
+  const author = m.data.author;
+  const published = m.data.published;
+  if (!(author || published)) return
+  m.data.published = new Date(published).toDateString();
+}
+
 const readContent = (fp: string): GrayMatterFile<string> => {
   if (!contentMap[fp]) {
     const file = fs.readFileSync(fp, "utf8");
     const m = matter(file);
-    const date = m.data.date;
-    if (date) {
-      m.data.date = "";
-      const d = date.split("-");
-      const from = d[0]?.trim();
-      const to = d[1]?.trim();
-      if (from) {
-        m.data.date += new Date(from).toDateString();
-      }
-      if (to) {
-        m.data.date += ` - ${new Date(to).toDateString()}`;
-      }
-    }
+    formatDate(m);
+    formatPublisher(m);
     m.data.slug = path.parse(fp).name;
     contentMap[fp] = m;
     return m;
   }
   return contentMap[fp];
 };
+
 
 const getAllPathsRecursive = (base = baseDir): string[] => {
   let results = [] as string[];

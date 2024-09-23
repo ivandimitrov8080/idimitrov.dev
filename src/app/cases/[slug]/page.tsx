@@ -42,11 +42,15 @@ export default function Content({ params }: Props) {
           <div className="flex flex-col gap-4 lg:pl-24 lg:pt-20">
             <h1 className="text-4xl lg:text-5xl font-bold">{data.title}</h1>
             <div className="flex flex-row gap-4">
-              <FontAwesomeIcon className="w-14 h-14 hover:filter-none" icon={faCircleUser} />
-              <div className="flex flex-col">
-                <h1 className="font-bold text-xl">{data.author}</h1>
-                <span className="text-xs text-neutral-400">Published {data.date}</span>
-              </div>
+              {data.author && data.published && (
+                <>
+                  <FontAwesomeIcon className="w-14 h-14 hover:filter-none" icon={faCircleUser} />
+                  <div className="flex flex-col">
+                    <h1 className="font-bold text-xl">{data.author}</h1>
+                    <span className="text-xs text-neutral-400">Published {data.published}</span>
+                  </div>
+                </>
+              )}
             </div>
             <MarkdownRenderer content={content} />
           </div>
