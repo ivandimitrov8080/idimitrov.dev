@@ -60,20 +60,30 @@ const Contact = () => (
       <form className="relative w-full h-full grid lg:grid-cols-2 place-content-center gap-8 z-40 p-12" action="/api/contact">
         <div className="relative group border-b-[1px] border-neutral-500">
           <input aria-label="your name" name="name" required className="w-full h-10 px-4 text-sm peer bg-gray-100 outline-none bg-transparent" />
-          <label htmlFor="name" className="pointer-events-none transform transition-all absolute top-0 left-0 h-full flex items-center pl-2 text-sm group-focus-within:text-xs peer-valid:text-xs group-focus-within:h-1/2 peer-valid:h-1/2 group-focus-within:-translate-y-full peer-valid:-translate-y-full group-focus-within:pl-0 peer-valid:pl-0">Full name</label>
+          <label
+            htmlFor="name"
+            className="pointer-events-none transform transition-all absolute top-0 left-0 h-full flex items-center pl-2 text-sm group-focus-within:text-xs peer-valid:text-xs group-focus-within:h-1/2 peer-valid:h-1/2 group-focus-within:-translate-y-full peer-valid:-translate-y-full group-focus-within:pl-0 peer-valid:pl-0">
+            Full name
+          </label>
         </div>
         <div className="relative group border-b-[1px] border-neutral-500">
           <input aria-label="your email" type="email" name="email" required className="w-full h-10 px-4 text-sm peer bg-gray-100 outline-none bg-transparent" />
-          <label htmlFor="email" className="pointer-events-none transform transition-all absolute top-0 left-0 h-full flex items-center pl-2 text-sm group-focus-within:text-xs peer-valid:text-xs group-focus-within:h-1/2 peer-valid:h-1/2 group-focus-within:-translate-y-full peer-valid:-translate-y-full group-focus-within:pl-0 peer-valid:pl-0">Email</label>
+          <label
+            htmlFor="email"
+            className="pointer-events-none transform transition-all absolute top-0 left-0 h-full flex items-center pl-2 text-sm group-focus-within:text-xs peer-valid:text-xs group-focus-within:h-1/2 peer-valid:h-1/2 group-focus-within:-translate-y-full peer-valid:-translate-y-full group-focus-within:pl-0 peer-valid:pl-0">
+            Email
+          </label>
         </div>
         <div className="lg:col-span-2 relative group border-b-[1px] border-neutral-500">
           <input aria-label="your message" name="message" required className="w-full h-10 px-4 text-sm peer bg-gray-100 outline-none bg-transparent" />
-          <label htmlFor="message" className="pointer-events-none transform transition-all absolute top-0 left-0 h-full flex items-center pl-2 text-sm group-focus-within:text-xs peer-valid:text-xs group-focus-within:h-1/2 peer-valid:h-1/2 group-focus-within:-translate-y-full peer-valid:-translate-y-full group-focus-within:pl-0 peer-valid:pl-0">Message</label>
+          <label
+            htmlFor="message"
+            className="pointer-events-none transform transition-all absolute top-0 left-0 h-full flex items-center pl-2 text-sm group-focus-within:text-xs peer-valid:text-xs group-focus-within:h-1/2 peer-valid:h-1/2 group-focus-within:-translate-y-full peer-valid:-translate-y-full group-focus-within:pl-0 peer-valid:pl-0">
+            Message
+          </label>
         </div>
         <button className="lg:absolute lg:bottom-36 lg:right-12 w-max px-12 py-4 rounded-full z-50 gradient" aria-label="Send message" type="submit">
-          <span className="flex flex-row gap-4 text-center capitalize">
-            Send message
-          </span>
+          <span className="flex flex-row gap-4 text-center capitalize">Send message</span>
         </button>
       </form>
     </div>

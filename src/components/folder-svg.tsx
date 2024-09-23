@@ -1,6 +1,6 @@
 type FolderSvgProps = {
-  preserveAspectRatio?: string
-}
+  preserveAspectRatio?: string;
+};
 const FolderSvg = ({ preserveAspectRatio }: FolderSvgProps) => (
   <svg preserveAspectRatio={preserveAspectRatio ?? "xMidYMid meet"} className="w-full h-full" style={{ transform: "scaleX(-1)" }} viewBox="0 0 580 435">
     <defs>

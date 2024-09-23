@@ -26,14 +26,14 @@ const formatDate = (m: GrayMatterFile<string>) => {
       m.data.date += ` - ${new Date(to).toDateString()}`;
     }
   }
-}
+};
 
 const formatPublisher = (m: GrayMatterFile<string>) => {
   const author = m.data.author;
   const published = m.data.published;
-  if (!(author || published)) return
+  if (!(author || published)) return;
   m.data.published = new Date(published).toDateString();
-}
+};
 
 const readContent = (fp: string): GrayMatterFile<string> => {
   if (!contentMap[fp]) {
@@ -47,7 +47,6 @@ const readContent = (fp: string): GrayMatterFile<string> => {
   }
   return contentMap[fp];
 };
-
 
 const getAllPathsRecursive = (base = baseDir): string[] => {
   let results = [] as string[];
@@ -71,13 +70,9 @@ export const getCases = (): GrayMatterFile<string>[] =>
     .filter(p => p.includes("/cases/"))
     .map(readContent);
 
-export const getAllContent = (): GrayMatterFile<string>[] =>
-  getAllPaths()
-    .map(readContent);
+export const getAllContent = (): GrayMatterFile<string>[] => getAllPaths().map(readContent);
 
-export const getContent = (slug: string): GrayMatterFile<string> =>
-  getAllContent()
-    .find(c => c.data.slug === slug) || {} as any
+export const getContent = (slug: string): GrayMatterFile<string> => getAllContent().find(c => c.data.slug === slug) || ({} as any);
 
 export const getHeaders = (content: string): { id: string; text: string }[] => {
   const prc = unified().use(remarkParse).use(remarkRehype).use(rehypeSlug).use(rehypeStringify);
