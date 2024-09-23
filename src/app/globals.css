@@ -35,7 +35,7 @@
 }
 
 body {
-  @apply gradient text-slate-50 w-screen h-screen overflow-hidden;
+  @apply gradient text-slate-50 w-dvw h-dvh overflow-hidden;
 }
 
 main {
