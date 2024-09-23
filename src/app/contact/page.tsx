@@ -26,7 +26,7 @@ const MailLockSvg = () => (
 );
 
 const Contact = () => (
-  <div className="w-full p-12 grid lg:grid-cols-2 gap-12 basis-full overflow-y-scroll">
+  <div className="w-full p-7 lg:p-12 grid lg:grid-cols-2 gap-12 basis-full overflow-y-scroll overflow-x-hidden">
     <div className="lg:p-12 flex flex-col gap-12 justify-between">
       <div className="flex flex-col gap-4">
         <p className="text-xl lg:text-2xl text-[#FB923C]">Available for projects</p>

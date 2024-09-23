@@ -17,7 +17,7 @@ const Navbar = () => {
     );
   };
   return (
-    <nav className="h-max flex flex-row justify-between w-full z-50 p-12">
+    <nav className="h-max flex flex-row justify-between w-full z-50 p-3 lg:p-12">
       {home("idimitrov.dev", "/")}
       {link("Contact", "/contact")}
     </nav>
