@@ -7,7 +7,7 @@ const CasesPage = () => {
     .sort((a, b) => Number(b.data.z) - Number(a.data.z))
     .map(c => c.data);
   return (
-    <div className="overflow-y-scroll">
+    <div className="overflow-y-auto">
       <div className="relative grid lg:grid-cols-4 mx-8 lg:mt-44 lg:mx-44 gap-0">
         <div className="absolute hidden lg:block circle-gradient w-[1px] h-full right-1/2"></div>
         <div className="absolute hidden lg:block circle-gradient w-[1px] h-full right-1/4"></div>

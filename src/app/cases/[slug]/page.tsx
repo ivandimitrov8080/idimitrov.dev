@@ -36,7 +36,7 @@ export default function Content({ params }: Props) {
   const headers = getHeaders(content);
 
   return (
-    <div className="overflow-y-scroll lg:grid lg:justify-items-center">
+    <div className="overflow-y-auto lg:grid lg:justify-items-center">
       <div className="lg:grid lg:gap-20 lg:grid-cols-12 lg:w-11/12">
         <div className="lg:col-span-9 p-4">
           <div className="flex flex-col gap-4 lg:pl-24 lg:pt-20">
