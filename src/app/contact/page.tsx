@@ -57,7 +57,7 @@ const Contact = () => (
       <div className="absolute w-full h-full z-10">
         <FolderSvg preserveAspectRatio="none" />
       </div>
-      <form className="relative w-full h-full grid lg:grid-cols-2 place-content-center gap-8 z-40 p-12" action="/api/contact">
+      <form className="relative w-full h-full grid lg:grid-cols-2 place-content-center gap-8 z-40 p-12" action="/api/contact" method="POST">
         <div className="relative group border-b-[1px] border-neutral-500">
           <input aria-label="your name" name="name" required className="w-full h-10 px-4 text-sm peer bg-gray-100 outline-none bg-transparent" />
           <label

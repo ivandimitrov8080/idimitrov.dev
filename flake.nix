@@ -16,6 +16,10 @@
           coreutils-full
           nodejs
           nodePackages_latest.prettier
+          rustc
+          rust-analyzer
+          rustfmt
+          cargo
           (nvim.extend {
             plugins = {
               lsp.servers = {
@@ -24,6 +28,14 @@
                 jsonls.enable = true;
                 tailwindcss.enable = true;
                 cssls.enable = true;
+                rust-analyzer = {
+                  enable = true;
+                  installCargo = false;
+                  installRustc = false;
+                };
+              };
+              rust-tools = {
+                enable = true;
               };
             };
           })
