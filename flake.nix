@@ -1,10 +1,5 @@
 {
-  inputs = {
-    configuration = {
-      url = "github:ivandimitrov8080/configuration.nix";
-    };
-  };
-
+  inputs.configuration.url = "github:ivandimitrov8080/configuration.nix";
   outputs = { configuration, ... }:
     let
       system = "x86_64-linux";
@@ -14,26 +9,25 @@
           configuration.overlays.default
         ];
       };
-      buildInputs = with pkgs; [
-        coreutils-full
-        nodejs
-        (nvim.extend {
-          plugins = {
-            lsp.servers = {
-              html.enable = true;
-              ts-ls.enable = true;
-              jsonls.enable = true;
-              tailwindcss.enable = true;
-              cssls.enable = true;
-            };
-          };
-        })
-        nodePackages_latest.prettier
-      ];
     in
     {
       devShells.${system}.default = pkgs.mkShell {
-        inherit buildInputs;
+        buildInputs = with pkgs; [
+          coreutils-full
+          nodejs
+          nodePackages_latest.prettier
+          (nvim.extend {
+            plugins = {
+              lsp.servers = {
+                html.enable = true;
+                ts-ls.enable = true;
+                jsonls.enable = true;
+                tailwindcss.enable = true;
+                cssls.enable = true;
+              };
+            };
+          })
+        ];
       };
       packages.${system}.default = pkgs.buildNpmPackage {
         pname = "idimitrov.dev";
