@@ -1,37 +1,33 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    ide = {
-      url = "github:ivandimitrov8080/flake-ide";
-      inputs.nixpkgs.follows = "nixpkgs";
+    configuration = {
+      url = "github:ivandimitrov8080/configuration.nix";
     };
   };
 
-  outputs = { nixpkgs, ide, ... }:
+  outputs = { configuration, ... }:
     let
       system = "x86_64-linux";
-      pkgs = import nixpkgs {
+      pkgs = import configuration.inputs.nixpkgs {
         inherit system;
         overlays = [
-          (final: prev: {
-            nvim = ide.nvim.${system}.standalone.default {
-              plugins = {
-                lsp.servers = {
-                  html.enable = true;
-                  ts-ls.enable = true;
-                  jsonls.enable = true;
-                  tailwindcss.enable = true;
-                  cssls.enable = true;
-                };
-              };
-            };
-          })
+          configuration.overlays.default
         ];
       };
       buildInputs = with pkgs; [
         coreutils-full
         nodejs
-        nvim
+        (nvim.extend {
+          plugins = {
+            lsp.servers = {
+              html.enable = true;
+              ts-ls.enable = true;
+              jsonls.enable = true;
+              tailwindcss.enable = true;
+              cssls.enable = true;
+            };
+          };
+        })
         nodePackages_latest.prettier
       ];
     in
