@@ -9,6 +9,7 @@
           configuration.overlays.default
         ];
       };
+      nativeBuildInputs = with pkgs; [ pkg-config openssl ];
     in
     {
       devShells.${system}.default = pkgs.mkShell {
@@ -39,17 +40,29 @@
               };
             };
           })
-        ];
+        ] ++ nativeBuildInputs;
       };
-      packages.${system}.default = pkgs.buildNpmPackage {
-        pname = "idimitrov.dev";
-        version = "0.1.1";
-        src = ./.;
-        npmDepsHash = "sha256-3sED1d3WY8tUUE5KvJ3vS+AZ5xZZypP8hTSazPFH194=";
-        postInstall = ''
-          rm -rf $out/lib
-          cp -r ./out/* $out/
-        '';
+      packages.${system} = {
+        default = pkgs.buildNpmPackage {
+          pname = "idimitrov.dev";
+          version = "0.1.1";
+          src = ./.;
+          npmDepsHash = "sha256-3sED1d3WY8tUUE5KvJ3vS+AZ5xZZypP8hTSazPFH194=";
+          postInstall = ''
+            rm -rf $out/lib
+            cp -r ./out/* $out/
+          '';
+        };
+        api = pkgs.rustPlatform.buildRustPackage {
+          inherit nativeBuildInputs;
+          buildInputs = nativeBuildInputs;
+          pname = "backend";
+          version = "0.0.1";
+          src = ./backend;
+          cargoLock = {
+            lockFile = ./backend/Cargo.lock;
+          };
+        };
       };
     };
 }
