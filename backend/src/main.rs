@@ -4,7 +4,7 @@ use rocket::response::Redirect;
 #[macro_use]
 extern crate rocket;
 
-#[post("/contact")]
+#[post("/api/contact")]
 fn contact() -> Redirect {
     let email = Message::builder()
         .from("Website <noreply@idimitrov.dev>".parse().unwrap())
