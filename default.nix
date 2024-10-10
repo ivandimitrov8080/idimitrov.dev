@@ -20,7 +20,7 @@
               lsp.servers = {
                 svelte.enable = true;
                 html.enable = true;
-                ts-ls.enable = true;
+                ts_ls.enable = true;
                 jsonls.enable = true;
                 tailwindcss.enable = true;
                 cssls.enable = true;
