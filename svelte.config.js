@@ -1,8 +1,10 @@
-import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import adapter from '@sveltejs/adapter-static';
+import rehypeSlug from 'rehype-slug';
+import { mdsvex } from 'mdsvex';
+import remarkGfm from 'remark-gfm';
+import { sveltePreprocess } from 'svelte-preprocess';
 
 const config = {
-  preprocess: vitePreprocess(),
   kit: {
     adapter: adapter({
       pages: 'build',
@@ -11,9 +13,14 @@ const config = {
       precompress: false,
       strict: true
     }),
-    alias: {
-      "$comp/*": "./src/components/*"
-    }
   },
+  extensions: [".svelte", ".svx"],
+  preprocess: [
+    sveltePreprocess(),
+    mdsvex({
+      rehypePlugins: [rehypeSlug],
+      remarkPlugins: [remarkGfm]
+    })
+  ],
 };
 export default config;

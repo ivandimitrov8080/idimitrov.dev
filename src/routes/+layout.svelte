@@ -1,6 +1,6 @@
 <script lang="ts">
 	import '../app.css';
-	import Stars from '../components/stars.svelte';
+	import Stars from '$lib/components/stars.svelte';
 </script>
 
 <svelte:head>

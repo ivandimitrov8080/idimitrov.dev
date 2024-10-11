@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+	import CasesSvg from '$lib/components/cases-svg.svelte';
+	import FolderSvg from '$lib/components/folder-svg.svelte';
+	import GiteaSvg from '$lib/components/gitea-svg.svelte';
 	import { faGithub, faLinkedin, faUpwork } from '@fortawesome/free-brands-svg-icons';
-	import CasesSvg from '$comp/cases-svg.svelte';
-	import FolderSvg from '$comp/folder-svg.svelte';
-	import GiteaSvg from '$comp/gitea-svg.svelte';
+	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 </script>
 
 <div class="w-full h-full overflow-y-auto grid place-content-center">
