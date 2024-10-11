@@ -18,7 +18,7 @@
           Refined
         </p>
       </div>
-      <a aria-label="Cases" href="/" target="_blank" class="w-max">
+      <a aria-label="Cases" href="/cases" target="_blank" class="w-max">
         <CasesSvg />
       </a>
     </div>
