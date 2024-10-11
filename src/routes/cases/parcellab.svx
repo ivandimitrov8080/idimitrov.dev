@@ -41,7 +41,7 @@ This system allows for a seamless, declarative event-based integration where the
 
 Create the first order when a customer places it.
 
-```hurl
+```console
 POST https://api.parcellab.com/order/                       # This is the method and the endpoint
 user: business-uid                                          # Header
 token: access-token                                         # Header
@@ -89,7 +89,7 @@ This will reflect on the parcelLab dashboard.
 
 Add a few trackings to that order once you get the delivery number from the courier.
 
-```hurl
+```console
 POST https://api.parcellab.com/track/
 user: business-uid
 token: access-token
@@ -131,7 +131,7 @@ The order now has 3 trackings. Parcel Lab integrates with many couriers to provi
 
 Update the order for whatever reason.
 
-```hurl
+```console
 POST https://api.parcellab.com/order/
 user: business-uid
 token: access-token
@@ -146,7 +146,7 @@ Content-Type: application/json
 
 These updates can act as event notifications allowing for a declarative configuration.
 
-```hurl
+```console
 POST https://api.parcellab.com/order/
 user: business-uid
 token: access-token
@@ -159,7 +159,7 @@ Content-Type: application/json
 
 Complete shipment.
 
-```hurl
+```console
 POST https://api.parcellab.com/order/
 user: business-uid
 token: access-token
