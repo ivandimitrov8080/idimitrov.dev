@@ -30,11 +30,11 @@
         "webshite": "webshite"
       },
       "locked": {
-        "lastModified": 1728586092,
-        "narHash": "sha256-OW8kEb42MuwKrXJWuiSP1lYgdao7fN1XlqB7DN88mHU=",
+        "lastModified": 1728678138,
+        "narHash": "sha256-qCC+qAaMWxHTSrzgG8StjCCNcmzjGsJEN+UuAhQeD6s=",
         "owner": "ivandimitrov8080",
         "repo": "configuration.nix",
-        "rev": "0eeba0b554d0c4b385ce4c2e9b70ab359ebefefe",
+        "rev": "5ec0bb10f7eb3aaa164a75bb61803afcd7ee29e0",
         "type": "github"
       },
       "original": {
