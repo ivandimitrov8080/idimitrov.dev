@@ -2,11 +2,15 @@ import type { LoadProperties } from "@sveltejs/kit";
 
 export async function load({ params }: LoadProperties<Record<string, any>>) {
   const post = await import(`../${params.slug}.svx`);
-  const { title, date } = post.metadata;
+  const { title, date, author, published } = post.metadata;
   const content = post.default;
+  const headers = [] as any;
   return {
     content,
     title,
-    date
-  }
+    date,
+    author,
+    published,
+    headers
+  };
 }

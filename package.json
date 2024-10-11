@@ -39,12 +39,14 @@
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.6.0",
     "@fortawesome/free-brands-svg-icons": "^6.6.0",
+    "@fortawesome/free-solid-svg-icons": "^6.6.0",
     "@fortawesome/svelte-fontawesome": "^0.2.2",
     "autoprefixer": "latest",
     "mdsvex": "latest",
     "postcss": "latest",
     "rehype-slug": "latest",
     "remark-gfm": "latest",
+    "shiki": "^1.22.0",
     "tailwindcss": "latest"
   }
 }
