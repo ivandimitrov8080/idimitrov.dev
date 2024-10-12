@@ -3,6 +3,7 @@
   import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
   import { FontAwesomeIcon } from "@fortawesome/svelte-fontawesome";
 
+  export let title;
   const p = $page.url.pathname;
   const path = p === "/" ? [] : $page.url.pathname.split("/");
   const isLast = (i: number) => i === path.length - 1;
@@ -13,7 +14,7 @@
     {#if p === ""}
       <a href="/">Home</a>
     {:else if isLast(i)}
-      <span class="capitalize">{p}</span>
+      <span class="max-w-52 overflow-hidden text-ellipsis whitespace-nowrap">{title}</span>
     {:else}
       <a href={path.slice(0, i + 1).join("/")} class="capitalize">{p}</a>
     {/if}
