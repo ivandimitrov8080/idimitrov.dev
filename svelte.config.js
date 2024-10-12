@@ -6,7 +6,6 @@ import { sveltePreprocess } from 'svelte-preprocess';
 import { createHighlighter } from 'shiki';
 import { visit } from 'unist-util-visit'
 import { toString } from 'mdast-util-to-string'
-import { headingRank } from 'hast-util-heading-rank'
 import GithubSlugger from 'github-slugger'
 
 const theme = "github-dark"
