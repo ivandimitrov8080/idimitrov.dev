@@ -87,5 +87,5 @@ h6 a {
 }
 
 .ctnt pre {
-  @apply p-4 rounded-xl
+  @apply p-4 rounded-xl overflow-x-auto
 }
