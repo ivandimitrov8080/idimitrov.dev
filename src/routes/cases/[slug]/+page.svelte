@@ -20,7 +20,9 @@
             </div>
           {/if}
         </div>
-        <svelte:component this={content} />
+        <div class="ctnt">
+          <svelte:component this={content} />
+        </div>
       </div>
     </div>
     <div class="hidden lg:block h-screen lg:col-span-3 py-64">
@@ -38,3 +40,7 @@
     </div>
   </div>
 </div>
+
+<style>
+  @import "./case.css";
+</style>
