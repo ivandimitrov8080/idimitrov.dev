@@ -12,7 +12,7 @@ published: Nov 2023
 [cryptsetup](https://man.archlinux.org/man/cryptsetup.8.en) utility is usually used for that. After a partition is encrypted it can be opened for reading and writing after
 inputting a password or a keyfile.
 
-### Technical details
+## Technical details
 
 > cryptsetup is used to conveniently setup dm-crypt managed device-mapper mappings. These include plain dm-crypt volumes and LUKS volumes. The difference is that LUKS uses a
 > metadata header and can hence offer more features than plain dm-crypt. On the other hand, the header is visible and vulnerable to damage.
@@ -42,7 +42,7 @@ gone. This could still be fixed with a header backup file using `cryptsetup luks
 
 Unfortunately, there was no header backup file so the only solution was to restore a backup of the entire partition.
 
-### Utilities used
+## Utilities used
 
 Encrypt a partition
 

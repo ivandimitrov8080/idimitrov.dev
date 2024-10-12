@@ -13,7 +13,7 @@ program and/or optimize it.
 
 [For Java VM optimizations, please have a look here](https://stackoverflow.com/questions/564039/jvm-performance-tuning-for-large-applications).
 
-### Technical details
+## Technical details
 
 Remote Java profiling is natively supported through the use of [JMX technology](https://docs.oracle.com/javase/8/docs/technotes/guides/management/agent.html). To use it, you tell
 the JVM to start with JMX enabled by adding some startup options to your application.
@@ -87,7 +87,7 @@ visualvm -J-Djavax.net.ssl.keyStore=/path/to/vvm.keystore -J-Djavax.net.ssl.keyS
 
 As for the actual VisualVM UI - I'm sure you'll figure it out since you already found your way here.
 
-### Explanation
+## Explanation
 
 This enables JMX on port 9090 together with the RMI option. RMI is required for the remote connection.
 

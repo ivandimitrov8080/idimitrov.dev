@@ -41,23 +41,23 @@
 }
 
 .ctnt h2 {
-  @apply text-5xl;
-}
-
-.ctnt h3 {
   @apply text-4xl;
 }
 
-.ctnt h4 {
+.ctnt h3 {
   @apply text-3xl;
 }
 
-.ctnt h5 {
+.ctnt h4 {
   @apply text-2xl;
 }
 
-.ctnt h6 {
+.ctnt h5 {
   @apply text-xl;
+}
+
+.ctnt h6 {
+  @apply text-lg;
 }
 
 h1,

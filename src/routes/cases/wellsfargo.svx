@@ -16,7 +16,7 @@ They provide an [Open Banking API](https://en.wikipedia.org/wiki/Open_banking) f
 
 ---
 
-### Technical overview
+## Technical overview
 
 Integrating Open Banking APIs requires many security and legal precautions. There is always a double layer of encryption for all APIs and communications (even emails).
 

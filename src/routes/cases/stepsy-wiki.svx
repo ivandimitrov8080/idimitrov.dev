@@ -10,7 +10,7 @@ published: Sep 2023
 
 This project aims to be a Google Drive frontend. It uses the Google APIs to fetch document data and display that data in a wiki-style web page.
 
-### [Demo page](https://ivan.stepsy.wiki/space/spc)
+## [Demo page](https://ivan.stepsy.wiki/space/spc)
 
 (website not live yet.. waiting for client)
 
@@ -20,7 +20,7 @@ It supports Google Docs, Google Sheets, Google Slides, PDFs and regular files.
 
 ---
 
-### Technical overview
+## Technical overview
 
 I chose NextJS as the backbone for this project as it offers the greatest amount of flexibility while still being very powerful both on the client as well as on the server with an
 active community and thriving ecosystem.
@@ -50,7 +50,7 @@ see in the screenshots below allowing the app to reach a lighthouse score of 100
 
 ---
 
-### Google API details
+## Google API details
 
 Configure NextAuth for Google:
 

@@ -17,7 +17,7 @@ Parcel lab takes care of the post-purchase operations like order tracking, email
 
 ---
 
-### Technical overview
+## Technical overview
 
 This integration is straightforward thanks to the [amazing documentation](https://how.parcellab.works/docs/) provided by the Parcel Lab team.
 
@@ -37,7 +37,7 @@ This system allows for a seamless, declarative event-based integration where the
 
 ---
 
-### ParcelLab API details
+## ParcelLab API details
 
 Create the first order when a customer places it.
 
