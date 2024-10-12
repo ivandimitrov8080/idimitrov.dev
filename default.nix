@@ -33,7 +33,7 @@
         pname = "idimitrov.dev";
         version = "0.1.1";
         src = ./.;
-        npmDepsHash = "sha256-a7B1g+yNj/m0ILsGe+TbqptQD6qp0kFZQmXLw+rrtwo=";
+        npmDepsHash = "sha256-4CkqtBsIqj+JlYnW478Ip4sloJpX7pHpr40584v9owQ=";
         postInstall = ''
           rm -rf $out/*
           rm -rf $out/.*
