@@ -1,17 +1,15 @@
-import { getCases } from "$lib/util/content"
 import type { MetaTagsProps } from "svelte-meta-tags";
 
 export const load = async () => {
   const pageMetaTags = Object.freeze({
-    title: 'Cases',
-    description: 'Development Case Studies',
+    title: 'Contact',
+    description: 'Contact page',
     openGraph: {
-      title: 'Cases',
-      description: 'Development Case Studies'
+      title: 'Contact',
+      description: 'Contact page'
     }
   }) satisfies MetaTagsProps;
   return {
-    cases: await getCases(),
     pageMetaTags
   }
 }

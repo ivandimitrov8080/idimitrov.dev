@@ -7,7 +7,7 @@
 </script>
 
 <div class="w-full h-full overflow-y-auto grid place-content-center">
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-7 lg:gap-0 w-full h-max p-7 lg:p-20">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-7 lg:gap-0 w-full h-max">
     <div class="grid gap-6 pb-12">
       <div class="pt-0 lg:pt-12">
         <p class="text-xl lg:text-3xl text-[#FB923C]">Software Developer</p>

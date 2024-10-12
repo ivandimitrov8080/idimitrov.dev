@@ -1,26 +1,11 @@
 <script lang="ts">
   import { faCircleUser } from "@fortawesome/free-solid-svg-icons";
   import { FontAwesomeIcon } from "@fortawesome/svelte-fontawesome";
-  import { MetaTags } from "svelte-meta-tags";
-  import { page } from "$app/stores";
 
   export let data;
-  const { title, published, author, content, headers, goal } = data;
+  const { title, published, author, content, headers } = data;
 </script>
 
-<MetaTags
-  {title}
-  titleTemplate="%s | idimitrov.dev"
-  description={goal}
-  canonical={$page.url.href}
-  openGraph={{
-    type: "website",
-    locale: "en_GB",
-    title: "idimitrov.dev",
-    description: "Software Development",
-    siteName: "idimitrov.dev"
-  }}
-/>
 <div class="overflow-y-auto lg:grid lg:justify-items-center">
   <div class="lg:grid lg:gap-20 lg:grid-cols-12 lg:w-11/12">
     <div class="lg:col-span-9 p-4">

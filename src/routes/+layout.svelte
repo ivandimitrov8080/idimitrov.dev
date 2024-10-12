@@ -4,29 +4,19 @@
   import Navbar from "$lib/components/navbar.svelte";
   import { MetaTags } from "svelte-meta-tags";
   import { page } from "$app/stores";
+  import Breadcrumbs from "$lib/components/breadcrumbs.svelte";
+  import extend from "just-extend";
+  export let data;
+  $: metaTags = extend(true, {}, data.baseMetaTags, $page.data.pageMetaTags);
 </script>
 
-<MetaTags
-  title="idimitrov.dev"
-  titleTemplate="%s | idimitrov.dev"
-  description="Software Development"
-  canonical={$page.url.href}
-  openGraph={{
-    type: "website",
-    locale: "en_GB",
-    title: "idimitrov.dev",
-    description: "Software Development",
-    siteName: "idimitrov.dev"
-  }}
-/>
-
-<svelte:head>
-  <title>Ivan Dimitrov</title>
-  <meta name="description" content="Freelance Software Developer" />
-</svelte:head>
+<MetaTags {...metaTags} />
 
 <main>
   <Stars />
-  <Navbar />
-  <slot />
+  <div class="p-3 lg:p-12 flex flex-col gap-10">
+    <Navbar />
+    <Breadcrumbs />
+    <slot />
+  </div>
 </main>

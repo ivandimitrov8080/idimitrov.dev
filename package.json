@@ -42,6 +42,7 @@
     "@fortawesome/free-solid-svg-icons": "^6.6.0",
     "@fortawesome/svelte-fontawesome": "^0.2.2",
     "autoprefixer": "latest",
+    "just-extend": "^6.2.0",
     "mdsvex": "latest",
     "postcss": "latest",
     "rehype-slug": "latest",

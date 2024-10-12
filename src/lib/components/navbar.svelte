@@ -1,4 +1,4 @@
-<nav class="h-max flex flex-row justify-between w-full z-50 p-3 lg:p-12">
+<nav class="h-max flex flex-row justify-between w-full z-50">
   <a class="text-md lg:text-2xl font-bold z-50" aria-label="home" href="/">
     <span class="text-center">[idimitrov.dev]</span>
   </a>

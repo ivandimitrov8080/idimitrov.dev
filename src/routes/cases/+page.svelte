@@ -4,7 +4,7 @@
 </script>
 
 <div class="overflow-y-auto">
-  <div class="relative grid lg:grid-cols-4 mx-8 lg:mt-44 lg:mx-44 gap-0">
+  <div class="relative grid lg:grid-cols-4 gap-0">
     <div class="absolute hidden lg:block circle-gradient w-[1px] h-full right-1/2"></div>
     <div class="absolute hidden lg:block circle-gradient w-[1px] h-full right-1/4"></div>
     <div class="absolute hidden lg:block circle-gradient w-[1px] h-full left-1/4"></div>
