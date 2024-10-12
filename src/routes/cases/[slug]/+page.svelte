@@ -6,7 +6,7 @@
   const { title, published, author, content, headers } = data;
 </script>
 
-<div class="overflow-y-auto lg:grid lg:justify-items-center">
+<div class="overflow-y-auto lg:grid lg:justify-items-center scroll-smooth">
   <div class="lg:grid lg:gap-20 lg:grid-cols-12 lg:w-11/12">
     <div class="lg:col-span-9 p-4">
       <div class="flex flex-col gap-4 lg:pl-24 lg:pt-20">
