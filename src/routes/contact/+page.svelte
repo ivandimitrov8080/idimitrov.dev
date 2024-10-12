@@ -54,7 +54,7 @@
         target="_blank"
         class="w-max px-4 py-2 lg:px-10 rounded-full border-[1px] border-amber-50 z-50"
         aria-label="PGP key"
-        href="/pgp"
+        href="/pgp.txt"
       >
         <span class="flex flex-row gap-4 text-center w-max">
           <div>
