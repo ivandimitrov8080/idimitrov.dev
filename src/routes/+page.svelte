@@ -18,8 +18,8 @@
           Refined
         </p>
       </div>
-      <a aria-label="Cases" href="/cases" target="_blank" class="w-max">
-        <CasesSvg />
+      <a aria-label="Cases" href="/cases" class="w-max">
+        <span class="p-4 px-12 text-xl rounded-full gradient">Cases</span>
       </a>
     </div>
     <div class="relative h-full grid place-content-center">
