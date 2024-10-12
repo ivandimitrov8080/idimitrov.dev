@@ -133,9 +133,6 @@ Google doesn't export everything to HTML. They provide document renderers as iFr
 
 ```tsx
 <iframe src={`https://docs.google.com/{{"spreadsheets" or "presentation"}}/d/${docId}/preview`}></iframe>
-```
-
-```tsx
 // This is used for PDFs or regular text files
 <iframe src={`https://drive.google.com/file/d/${docId}/preview`}></iframe>
 ```
