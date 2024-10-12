@@ -1,5 +1,4 @@
 <script lang="ts">
-  import CasesSvg from "$lib/components/cases-svg.svelte";
   import FolderSvg from "$lib/components/folder-svg.svelte";
   import GiteaSvg from "$lib/components/gitea-svg.svelte";
   import { faGithub, faLinkedin, faUpwork } from "@fortawesome/free-brands-svg-icons";
