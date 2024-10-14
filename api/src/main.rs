@@ -32,5 +32,5 @@ fn contact(contact_form: Form<ContactForm<'_>>) -> Redirect {
 
 #[launch]
 fn rocket() -> _ {
-    rocket::build().mount("/api", routes![contact])
+    rocket::build().mount("/", routes![contact])
 }
