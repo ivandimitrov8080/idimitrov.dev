@@ -11,7 +11,7 @@ struct ContactForm<'r> {
     message: &'r str,
 }
 
-#[post("/api/contact", data = "<contact_form>")]
+#[post("/contact", data = "<contact_form>")]
 fn contact(contact_form: Form<ContactForm<'_>>) -> Redirect {
     let name = contact_form.name;
     let email = contact_form.email;
@@ -32,5 +32,5 @@ fn contact(contact_form: Form<ContactForm<'_>>) -> Redirect {
 
 #[launch]
 fn rocket() -> _ {
-    rocket::build().mount("/", routes![contact])
+    rocket::build().mount("/api", routes![contact])
 }
