@@ -84,6 +84,7 @@
     <form
       class="relative w-full h-full grid lg:grid-cols-2 place-content-center gap-8 z-40 p-12"
       action="/api/contact"
+      method="POST"
     >
       <div class="relative group border-b-[1px] border-neutral-500">
         <input
