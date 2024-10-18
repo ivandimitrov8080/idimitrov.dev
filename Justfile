@@ -7,5 +7,3 @@ build:
 
 update:
   nix flake update
-  npm update
-
