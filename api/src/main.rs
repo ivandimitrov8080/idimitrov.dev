@@ -1,4 +1,4 @@
-use lettre::{Message, SmtpTransport, Transport};
+use lettre::{message::MultiPart, Message, SmtpTransport, Transport};
 use rocket::{form::Form, response::Redirect};
 
 #[macro_use]
@@ -22,7 +22,10 @@ fn contact(contact_form: Form<ContactForm<'_>>) -> Redirect {
             .parse()
             .unwrap())
         .subject("Website contact form!")
-        .body(String::from(message))
+        .multipart(MultiPart::alternative_plain_html(
+            String::from(message),
+            String::from(message),
+        ))
         .unwrap();
     let sender = SmtpTransport::unencrypted_localhost();
     let result = sender.send(&email);
