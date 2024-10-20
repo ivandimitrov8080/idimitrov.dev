@@ -14,7 +14,7 @@
 
 <main>
   <Stars />
-  <div class="p-3 lg:p-12 flex flex-col gap-10 w-full h-full bg-transparent">
+  <div class="p-3 lg:p-12 flex flex-col gap-0 lg:gap-10 w-full h-full bg-transparent">
     <Navbar />
     <Breadcrumbs title={metaTags.title} />
     <slot />

@@ -5,7 +5,7 @@
   import { FontAwesomeIcon } from "@fortawesome/svelte-fontawesome";
 </script>
 
-<div class="w-full h-full overflow-y-auto grid place-content-center">
+<div class="w-full h-full grid place-content-center">
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-7 lg:gap-0 w-full h-max">
     <div class="grid gap-6 pb-12">
       <div class="pt-0 lg:pt-12">
