@@ -21,6 +21,7 @@
           cargo
           pkg-config
           openssl
+          hurl
           (nvim.extend {
             plugins = {
               lsp.servers = {
