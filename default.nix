@@ -47,6 +47,7 @@
         default = pkgs.buildNpmPackage {
           pname = "idimitrov.dev";
           version = "0.1.1";
+          nodejs = pkgs.nodejs_22;
           src = ./.;
           npmDepsHash = "sha256-5dBbBF16aUTEda3aGVpeLE/LF75b/Pay9AF12Ip1cRo=";
           npmFlags = [ "--legacy-peer-deps" ];
