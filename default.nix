@@ -32,12 +32,11 @@
                 tailwindcss.enable = true;
                 cssls.enable = true;
                 rust_analyzer = {
-                  enable = true;
                   installCargo = false;
                   installRustc = false;
                 };
               };
-              rust-tools = {
+              rustaceanvim = {
                 enable = true;
               };
             };
