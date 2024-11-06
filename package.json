@@ -20,7 +20,6 @@
     "@sveltejs/adapter-auto": "latest",
     "@sveltejs/adapter-static": "latest",
     "@sveltejs/kit": "latest",
-    "@sveltejs/vite-plugin-svelte": "latest",
     "@types/eslint": "latest",
     "eslint": "latest",
     "eslint-config-prettier": "latest",
@@ -37,18 +36,21 @@
     "vitest": "latest"
   },
   "dependencies": {
-    "@fortawesome/fontawesome-svg-core": "^6.6.0",
-    "@fortawesome/free-brands-svg-icons": "^6.6.0",
-    "@fortawesome/free-solid-svg-icons": "^6.6.0",
-    "@fortawesome/svelte-fontawesome": "^0.2.2",
+    "@fortawesome/fontawesome-svg-core": "latest",
+    "@fortawesome/free-brands-svg-icons": "latest",
+    "@fortawesome/free-solid-svg-icons": "latest",
+    "@fortawesome/svelte-fontawesome": "latest",
     "autoprefixer": "latest",
-    "just-extend": "^6.2.0",
+    "just-extend": "latest",
     "mdsvex": "latest",
     "postcss": "latest",
     "rehype-slug": "latest",
     "remark-gfm": "latest",
-    "shiki": "^1.22.0",
-    "svelte-meta-tags": "^3.1.4",
+    "shiki": "latest",
+    "svelte-meta-tags": "latest",
     "tailwindcss": "latest"
+  },
+  "overrides": {
+    "@sveltejs/vite-plugin-svelte": "^4.0.0-next.6"
   }
 }

@@ -49,7 +49,7 @@
           version = "0.1.1";
           nodejs = pkgs.nodejs_22;
           src = ./.;
-          npmDepsHash = "sha256-5dBbBF16aUTEda3aGVpeLE/LF75b/Pay9AF12Ip1cRo=";
+          npmDepsHash = "sha256-t81rx4NPUjGDHvNEnjJTOfPBeqUuQhcfaEukgInbrog=";
           npmFlags = [ "--legacy-peer-deps" ];
           postInstall = ''
             rm -rf $out/*
