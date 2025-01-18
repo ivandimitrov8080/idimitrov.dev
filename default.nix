@@ -75,9 +75,9 @@ top@{ inputs, moduleWithSystem, ... }:
     };
   flake.nixosModules.default = moduleWithSystem (
     _:
-    { lib, ... }:
+    { lib, system, ... }:
     let
-      packages = top.config.flake.packages;
+      packages = top.config.flake.packages.${system};
       webshiteConfig = {
         enableACME = true;
         forceSSL = true;
