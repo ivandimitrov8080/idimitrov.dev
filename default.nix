@@ -1,4 +1,4 @@
-top@{ inputs, moduleWithSystem, ... }:
+{ inputs, moduleWithSystem, ... }:
 {
   systems = [ "x86_64-linux" ];
   perSystem =
@@ -74,10 +74,10 @@ top@{ inputs, moduleWithSystem, ... }:
       };
     };
   flake.nixosModules.default = moduleWithSystem (
-    _:
-    { lib, system, ... }:
+    { config, ... }:
+    { lib, ... }:
     let
-      packages = top.config.flake.packages.${system};
+      packages = config.packages;
       webshiteConfig = {
         enableACME = true;
         forceSSL = true;
