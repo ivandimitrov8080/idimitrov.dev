@@ -51,8 +51,11 @@ fn contact(
 ) -> Redirect {
     let mut capdb = mdb.captcha.lock().unwrap();
     let ip = remote_addr.ip().to_string();
-    let is_captcha_valid =
-        capdb.contains_key(&ip) && capdb.remove(&ip).unwrap().eq(contact_form.captcha);
+    let is_captcha_valid = capdb.contains_key(&ip)
+        && capdb
+            .remove(&ip)
+            .unwrap()
+            .eq(&contact_form.captcha.to_string());
     match is_captcha_valid {
         true => {
             send_email(contact_form);
