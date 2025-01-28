@@ -20,7 +20,7 @@
     "@sveltejs/adapter-auto": "latest",
     "@sveltejs/adapter-static": "latest",
     "@sveltejs/kit": "latest",
-    "@tailwindcss/vite": "^4.0.0",
+    "@tailwindcss/vite": "latest",
     "@types/eslint": "latest",
     "eslint": "latest",
     "eslint-config-prettier": "latest",

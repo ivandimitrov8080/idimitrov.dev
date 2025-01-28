@@ -40,6 +40,14 @@ const config = {
       precompress: false,
       strict: true
     }),
+    prerender: {
+      handleHttpError: ({ path, message }) => {
+        if (path.includes("api")) {
+          return;
+        }
+        throw new Error(message);
+      }
+    }
   },
   extensions: [".svelte", ".svx"],
   preprocess: [
