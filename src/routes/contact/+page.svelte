@@ -86,7 +86,7 @@
           aria-label="your name"
           name="name"
           required
-          class="w-full h-10 px-4 text-sm peer bg-gray-100 outline-none bg-transparent"
+          class="w-full h-10 px-4 text-sm peer outline-none bg-transparent"
         />
         <label
           for="name"
@@ -101,7 +101,7 @@
           type="email"
           name="email"
           required
-          class="w-full h-10 px-4 text-sm peer bg-gray-100 outline-none bg-transparent"
+          class="w-full h-10 px-4 text-sm peer outline-none bg-transparent"
         />
         <label
           for="email"
@@ -115,7 +115,7 @@
           aria-label="your message"
           name="message"
           required
-          class="w-full h-10 px-4 text-sm peer bg-gray-100 outline-none bg-transparent"
+          class="w-full h-10 px-4 text-sm peer outline-none bg-transparent"
         />
         <label
           for="message"
@@ -123,6 +123,23 @@
         >
           Message
         </label>
+      </div>
+      <div class="grid gap-4">
+        <div class="lg:col-span-1 relative group border-b-[1px] border-neutral-500">
+          <input
+            aria-label="captcha"
+            name="captcha"
+            required
+            class="w-min h-10 px-4 text-sm peer outline-none bg-transparent"
+          />
+          <label
+            for="captcha"
+            class="pointer-events-none transform transition-all absolute top-0 left-0 h-full flex items-center pl-2 text-sm group-focus-within:text-xs peer-valid:text-xs group-focus-within:h-1/2 peer-valid:h-1/2 group-focus-within:-translate-y-full peer-valid:-translate-y-full group-focus-within:pl-0 peer-valid:pl-0"
+          >
+            Captcha
+          </label>
+        </div>
+        <img src="http://localhost:8000/api/captcha" alt="captcha" />
       </div>
       <button
         class="lg:absolute lg:bottom-36 lg:right-12 w-max px-12 py-4 rounded-full z-50 gradient"
