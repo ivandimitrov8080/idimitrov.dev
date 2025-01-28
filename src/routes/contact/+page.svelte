@@ -139,7 +139,7 @@
             Captcha
           </label>
         </div>
-        <img src="http://localhost:8000/api/captcha" alt="captcha" />
+        <img src="/api/captcha" alt="captcha" />
       </div>
       <button
         class="lg:absolute lg:bottom-36 lg:right-12 w-max px-12 py-4 rounded-full z-50 gradient"
