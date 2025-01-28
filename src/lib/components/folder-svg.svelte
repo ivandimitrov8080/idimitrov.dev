@@ -4,7 +4,7 @@
 
 <svg
   preserveAspectRatio={preserveAspectRatio ?? "xMidYMid meet"}
-  class="w-full h-full"
+  class="size-full"
   style="transform: scaleX(-1);"
   viewBox="0 0 580 435"
 >

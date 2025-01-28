@@ -10,7 +10,7 @@
     <div class="absolute hidden lg:block circle-gradient w-[1px] h-full left-1/4"></div>
     {#each cases as d, i}
       <div class="aspect-[6/5] hover:gradient">
-        <a class="grid w-full h-full gap-4 lg:p-9" href={`${d.path}`}>
+        <a class="grid size-full gap-4 lg:p-9" href={`${d.path}`}>
           <span class="text-2xl lg:text-3xl line-clamp-3 self-center">{d.meta.title}</span>
           <span class="text-xs text-neutral-400">{d.meta.date}</span>
         </a>

@@ -5,7 +5,7 @@
   import { FontAwesomeIcon } from "@fortawesome/svelte-fontawesome";
 </script>
 
-<div class="w-full h-full grid place-content-center">
+<div class="size-full grid place-content-center">
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-7 lg:gap-0 w-full h-max">
     <div class="grid gap-6 pb-12">
       <div class="pt-0 lg:pt-12">
@@ -22,7 +22,7 @@
       </a>
     </div>
     <div class="relative h-full grid place-content-center">
-      <div class="absolute w-full h-full">
+      <div class="absolute size-full">
         <FolderSvg preserveAspectRatio={undefined} />
       </div>
       <div class="relative grid w-max h-max grid-cols-2 grid-rows-2 gap-0">
