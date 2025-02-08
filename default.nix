@@ -75,10 +75,10 @@
     };
   flake.nixosModules.default = moduleWithSystem (
     { config, ... }:
-    { lib, ... }:
+    perSystem@{ lib, ... }:
     let
       inherit (lib) mkIf mkMerge mkEnableOption;
-      cfg = config.webshite;
+      cfg = perSystem.config.webshite;
       packages = config.packages;
     in
     {
