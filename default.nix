@@ -77,47 +77,57 @@
     { config, ... }:
     { lib, ... }:
     let
+      inherit (lib) mkIf mkMerge mkEnableOption;
+      cfg = config.webshite;
       packages = config.packages;
-      webshiteConfig = {
-        enableACME = true;
-        forceSSL = true;
-        locations = {
-          "/" = {
-            root = "${packages.default}";
-            extraConfig = serveStatic extensions;
-          };
-          "/api" = {
-            proxyPass = "http://127.0.0.1:8000";
-          };
-        };
-        extraConfig = ''
-          add_header 'Referrer-Policy' 'origin-when-cross-origin';
-          add_header X-Content-Type-Options nosniff;
-        '';
-      };
-      extensions = [
-        "html"
-        "txt"
-        "png"
-        "jpg"
-        "jpeg"
-      ];
-      serveStatic = exts: ''
-        try_files ${lib.strings.concatStringsSep " " (builtins.map (x: "$uri.${x}") exts)} $uri $uri/ =404;
-      '';
     in
     {
-      services.nginx.virtualHosts = {
-        "idimitrov.dev" = webshiteConfig;
-        "www.idimitrov.dev" = webshiteConfig;
+      options.webshite = {
+        enable = mkEnableOption "enable webshite config";
       };
-      systemd.services.webshiteApi = {
-        enable = true;
-        serviceConfig = {
-          ExecStart = "${packages.api}/bin/api";
-          Restart = "always";
+      config = mkIf cfg.enable {
+        services.nginx.virtualHosts =
+          let
+            extensions = [
+              "html"
+              "txt"
+              "png"
+              "jpg"
+              "jpeg"
+            ];
+            serveStatic = exts: ''
+              try_files ${lib.strings.concatStringsSep " " (builtins.map (x: "$uri.${x}") exts)} $uri $uri/ =404;
+            '';
+            webshiteConfig = {
+              enableACME = true;
+              forceSSL = true;
+              locations = {
+                "/" = {
+                  root = "${packages.default}";
+                  extraConfig = serveStatic extensions;
+                };
+                "/api" = {
+                  proxyPass = "http://127.0.0.1:8000";
+                };
+              };
+              extraConfig = ''
+                add_header 'Referrer-Policy' 'origin-when-cross-origin';
+                add_header X-Content-Type-Options nosniff;
+              '';
+            };
+          in
+          {
+            "idimitrov.dev" = webshiteConfig;
+            "www.idimitrov.dev" = webshiteConfig;
+          };
+        systemd.services.webshiteApi = {
+          enable = true;
+          serviceConfig = {
+            ExecStart = "${packages.api}/bin/api";
+            Restart = "always";
+          };
+          wantedBy = [ "multi-user.target" ];
         };
-        wantedBy = [ "multi-user.target" ];
       };
     }
   );
