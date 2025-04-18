@@ -66,7 +66,7 @@
             pname = "api";
             version = "0.0.2";
             env = {
-              ROCKET_ENV = "prod";
+              ROCKET_ENV = "release";
             };
             src = ./api;
             cargoLock = {
