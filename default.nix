@@ -64,7 +64,10 @@
             nativeBuildInputs = [ pkgs.pkg-config ];
             buildInputs = [ pkgs.openssl ];
             pname = "api";
-            version = "0.0.1";
+            version = "0.0.2";
+            env = {
+              ROCKET_ENV = "prod";
+            };
             src = ./api;
             cargoLock = {
               lockFile = ./api/Cargo.lock;
