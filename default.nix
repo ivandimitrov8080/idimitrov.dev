@@ -60,8 +60,11 @@
               cp -r ./build/* $out/
             '';
           };
-          api = pkgs.rustPlatform.buildRustPackage {
-            nativeBuildInputs = [ pkgs.pkg-config ];
+          api = pkgs.rustPlatform.buildRustPackage rec {
+            nativeBuildInputs = with pkgs; [
+              pkg-config
+              makeBinaryWrapper
+            ];
             buildInputs = [ pkgs.openssl ];
             pname = "api";
             version = "0.0.2";
@@ -69,6 +72,12 @@
               ROCKET_ENV = "release";
             };
             src = ./api;
+            postInstall = ''
+              mkdir -p $out/etc
+              cp ./Rocket.toml $out/etc
+              wrapProgram $out/bin/${pname} \
+                --prefix ROCKET_CONFIG : $out/etc/Rocket.toml
+            '';
             cargoLock = {
               lockFile = ./api/Cargo.lock;
             };
