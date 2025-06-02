@@ -50,7 +50,6 @@
           let
             inherit (lib) mkIf mkEnableOption;
             cfg = config.webshite;
-            packages = config.packages;
           in
           {
             options.webshite = {
