@@ -47,6 +47,7 @@
     "remark-gfm": "latest",
     "shiki": "latest",
     "svelte-meta-tags": "latest",
-    "tailwindcss": "latest"
+    "tailwindcss": "latest",
+    "unist-util-visit": "latest"
   }
 }
