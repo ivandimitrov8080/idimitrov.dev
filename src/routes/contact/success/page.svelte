@@ -3,5 +3,5 @@
 </script>
 
 <div class="grid size-full place-content-center">
-  <h1 class="text-9xl">{page.status} {page.error?.message}</h1>
+  <h1 class="text-9xl">Thanks for getting in touch</h1>
 </div>

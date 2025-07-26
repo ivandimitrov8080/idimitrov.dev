@@ -59,7 +59,7 @@ fn contact(
     match is_captcha_valid {
         true => {
             send_email(contact_form);
-            Redirect::to("/contact")
+            Redirect::to("/contact/success")
         }
         false => Redirect::to("/404"),
     }
