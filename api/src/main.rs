@@ -20,7 +20,7 @@ pub struct RateLimitGuard;
 
 impl<'r> RocketGovernable<'r> for RateLimitGuard {
     fn quota(_method: Method, _route_name: &str) -> Quota {
-        Quota::per_hour(Self::nonzero(2 as u32))
+        Quota::per_minute(Self::nonzero(5u32))
     }
 }
 
