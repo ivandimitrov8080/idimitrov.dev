@@ -3,7 +3,7 @@ use std::net::SocketAddr;
 use std::sync::Mutex;
 use std::thread;
 
-use ::captcha::{gen, Difficulty};
+use ::captcha::{generate, Difficulty};
 use lettre::{message::MultiPart, Message, SmtpTransport, Transport};
 use rocket::State;
 use rocket::{form::Form, response::Redirect};
@@ -34,7 +34,7 @@ struct ContactForm<'r> {
 
 #[get("/captcha")]
 fn captcha(mdb: &State<MemoryDb>, remote_addr: SocketAddr) -> Vec<u8> {
-    let captcha = gen(Difficulty::Medium).as_tuple().unwrap();
+    let captcha = generate(Difficulty::Medium).as_tuple().unwrap();
     mdb.captcha
         .lock()
         .unwrap()

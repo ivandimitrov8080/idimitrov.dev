@@ -13,7 +13,7 @@
           version = "0.1.1";
           nodejs = pkgs.nodejs;
           src = ./.;
-          npmDepsHash = "sha256-hFzZwz+SkO4u8UF5O25x7POINn3u6uJgInc+Ou/rTuw=";
+          npmDepsHash = "sha256-kdtIoBTZgSFtiwL40M9/dv+miR0wSEFsO+Z0CF8N5z8=";
           npmFlags = [ "--legacy-peer-deps" ];
           postInstall = ''
             rm -rf $out/*
