@@ -148,6 +148,7 @@
             server.wait_for_unit("nginx.service")
             client1.succeed("curl http://server | grep -o '301'")
             client1.succeed("curl -k https://server | grep -o 'Home | idimitrov.dev'")
+            client1.succeed("curl -k https://server/api | grep -o 'Rocket'")
           '';
       };
     in
