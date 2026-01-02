@@ -52,6 +52,7 @@
             modules = [
               {
                 packages = with pkgs; [
+                  nodejs
                   elmPackages.elm
                   elmPackages.elm-format
                   (nixvim.web.extend {

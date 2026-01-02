@@ -1,5 +1,8 @@
+dist
+node_modules
 .env
 .devenv
 .direnv
+.elm-pages
 result
 elm-stuff
