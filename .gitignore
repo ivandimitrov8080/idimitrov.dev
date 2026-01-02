@@ -1,0 +1,5 @@
+.env
+.devenv
+.direnv
+result
+elm-stuff
