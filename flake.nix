@@ -52,11 +52,25 @@
             modules = [
               {
                 packages = with pkgs; [
-                  nodejs
+                  (ghc.withPackages (
+                    p: with p; [
+                      hakyll
+                      servant
+                      servant-server
+                      servant-elm
+                      hspec
+                      http-client
+                      http-types
+                    ]
+                  ))
+                  haskellPackages.hakyll
                   elmPackages.elm
                   elmPackages.elm-format
                   (nixvim.web.extend {
-                    lsp.servers.elmls.enable = true;
+                    lsp.servers = {
+                      elmls.enable = true;
+                      hls.enable = true;
+                    };
                   })
                 ];
               }
