@@ -26,12 +26,150 @@
     }:
     let
       eachSystem = nixpkgs.lib.genAttrs (import systems);
-    in
-    {
-      packages = eachSystem (system: {
-        hello = nixpkgs.legacyPackages.x86_64-linux.hello;
-        default = self.packages.x86_64-linux.hello;
-      });
+      mkPkgs = system: import nixpkgs { inherit system; };
+      nixosModules = {
+        default =
+          {
+            system,
+            lib,
+            config,
+            ...
+          }:
+          let
+            inherit (lib) mkIf mkEnableOption;
+            cfg = config.webshite;
+            extensions = [
+              "html"
+              "txt"
+              "png"
+              "jpg"
+              "jpeg"
+            ];
+            serveStatic = exts: ''
+              try_files ${lib.strings.concatStringsSep " " (builtins.map (x: "$uri.${x}") exts)} $uri $uri/ =404;
+            '';
+            webshiteConfig = {
+              enableACME = true;
+              forceSSL = true;
+              locations = {
+                "/" = {
+                  root = "${packages.${system}.default}";
+                  extraConfig = serveStatic extensions;
+                };
+              };
+              extraConfig = ''
+                add_header 'Referrer-Policy' 'origin-when-cross-origin';
+                add_header X-Content-Type-Options nosniff;
+              '';
+            };
+          in
+          {
+            options.webshite = {
+              enable = mkEnableOption "enable webshite config";
+            };
+            config = mkIf cfg.enable {
+              services.nginx.virtualHosts = {
+                "idimitrov.dev" = webshiteConfig;
+                "www.idimitrov.dev" = webshiteConfig;
+              };
+            };
+          };
+      };
+      client = {
+        default =
+          { pkgs, ... }:
+          {
+            environment.systemPackages = with pkgs; [
+              curl
+              gnugrep
+            ];
+            systemd.network.enable = true;
+            networking.useNetworkd = true;
+          };
+      };
+      server = {
+        default =
+          { pkgs, config, ... }:
+          {
+            imports = [ nixosModules.default ];
+            networking.firewall.allowedTCPPorts = [
+              80
+              443
+            ];
+            networking.firewall.allowedUDPPorts = [
+              80
+              443
+            ];
+            systemd.network.enable = true;
+            networking.useNetworkd = true;
+            webshite.enable = true;
+            services.nginx.enable = true;
+            security.acme.defaults.server = "https://acme-staging-v02.api.letsencrypt.org/directory";
+            security.acme.defaults.email = "test@example.com";
+            security.acme.acceptTerms = true;
+          };
+      };
+      nixosTest = {
+        name = "test";
+        nodes = {
+          server = server.default;
+          client1 = client.default;
+        };
+        testScript =
+          #py
+          ''
+            start_all()
+            client1.wait_for_unit("default.target")
+            server.wait_for_unit("nginx.service")
+            client1.succeed("curl http://server | grep -o '301'")
+            client1.succeed("curl -k https://server | grep -o 'Home | idimitrov.dev'")
+          '';
+      };
+      packages = eachSystem (
+        system:
+        let
+          pkgs = mkPkgs system;
+          inherit (pkgs) stdenv;
+        in
+        {
+          default = stdenv.mkDerivation {
+            name = "idimitrov.dev";
+            version = "1.0";
+            src = ./.;
+            nativeBuildInputs = with pkgs; [
+              (ghc.withPackages (p: with p; [ hakyll ]))
+            ];
+            env = {
+              LOCALE_ARCHIVE = "${pkgs.glibcLocales}/lib/locale/locale-archive";
+              LANG = "en_US.UTF-8";
+            };
+            buildPhase = ''
+              runHook preBuild
+
+              runghc ./site.hs build
+
+              runHook postBuild
+            '';
+            installPhase = ''
+              runHook preInstall
+
+              mkdir -p $out/
+              cp -r _site/* $out/
+
+              runHook postInstall
+            '';
+          };
+        }
+      );
+      checks = eachSystem (
+        system:
+        let
+          pkgs = mkPkgs system;
+        in
+        {
+          default = pkgs.testers.runNixOSTest nixosTest;
+        }
+      );
       devShells = eachSystem (
         system:
         let
@@ -95,33 +233,12 @@
           };
         }).config.build.wrapper
       );
-
-      checks = eachSystem (
-        system:
-        let
-          pkgs = import nixpkgs {
-            inherit system;
-            overlays = [ configuration.overlays.default ];
-          };
-        in
-        {
-          default = pkgs.testers.runNixOSTest {
-            name = "test";
-            nodes = {
-              machine =
-                { pkgs, ... }:
-                {
-                  environment.systemPackages = [ pkgs.hello ];
-                };
-            };
-            testScript =
-              #py
-              ''
-                machine.wait_for_unit("multi-user.target");
-                machine.succeed("hello");
-              '';
-          };
-        }
-      );
+    in
+    {
+      checks = checks;
+      devShells = devShells;
+      formatter = formatter;
+      nixosModules = nixosModules;
+      packages = packages;
     };
 }
