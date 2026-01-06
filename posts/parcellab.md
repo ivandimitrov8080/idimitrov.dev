@@ -2,7 +2,7 @@
 title: Parcel Lab integration into international eCommerce app
 goal: Integrate the Parcel Lab Post-purchase solution into all US and European WOSG websites
 role: Plan, design and implement the integration
-date: 2022 - 2023
+date: Jan 01, 2022
 z: 2
 author: Ivan Dimitrov
 published: Sep 2023
@@ -176,7 +176,10 @@ All this can be viewed on the tracking page embedded anywhere.
 
 ```html
 <div id="parcellab-track-and-trace">
-  <img src="https://cdn.parcellab.com/img/loading-spinner-1.gif" alt="loading" />
+  <img
+    src="https://cdn.parcellab.com/img/loading-spinner-1.gif"
+    alt="loading"
+  />
 </div>
 
 <script>
@@ -190,7 +193,11 @@ All this can be viewed on the tracking page embedded anywhere.
     document.getElementsByTagName("head")[0].appendChild(linkTag);
   }
 </script>
-<script async onload="plTrackAndTraceStart()" src="https://cdn.parcellab.com/js/v5/main.min.js"></script>
+<script
+  async
+  onload="plTrackAndTraceStart()"
+  src="https://cdn.parcellab.com/js/v5/main.min.js"
+></script>
 ```
 
 This shows a nice UI that can be [customized](https://how.parcellab.works/docs/track-and-communicate/order-status-page/configuration#additional-options).

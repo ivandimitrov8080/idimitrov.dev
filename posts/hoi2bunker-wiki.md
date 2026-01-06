@@ -2,7 +2,7 @@
 title: Static wiki website powered by Markdown
 goal: Scrape an old wiki website and create a new one from the content
 role: Scrape, design and implement the app
-date: Jun 22, 2023 - Jun 27, 2023
+date: Jun 22, 2023
 z: 6
 draft: true
 author: Ivan Dimitrov

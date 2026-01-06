@@ -2,7 +2,7 @@
 title: Multi-tenant knowledge base website based on Google APIs
 goal: Create a modern multi-tenant web app that lets users use their Google Drive as a knowledge base
 role: Design and implement the web app
-date: Jul 29, 2023 - Nov 5, 2023
+date: Jul 29, 2023
 z: 3
 author: Ivan Dimitrov
 published: Sep 2023
@@ -76,7 +76,10 @@ export default NextAuth({
 Create an auth client for logged in users
 
 ```ts
-let authClient = new google.auth.OAuth2(process.env.GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET);
+let authClient = new google.auth.OAuth2(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+);
 authClient.setCredentials({
   access_token: accessToken, // this comes from the logged in user info
   refresh_token: refreshToken, // same for this
@@ -109,7 +112,9 @@ const file = (await drive.files.get({ fileId })).data;
 ```
 
 ```ts
-const folderContents = (await drive.files.list({ q: `'${folderId}' in parents` })).data.files;
+const folderContents = (
+  await drive.files.list({ q: `'${folderId}' in parents` })
+).data.files;
 ```
 
 ```ts

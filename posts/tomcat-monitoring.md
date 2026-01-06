@@ -2,7 +2,7 @@
 title: Remotely profiling a Tomcat process serving a Java app
 goal: To enable Java profiling on a Tomcat server running on CentOS and then optimize the process using VM options.
 role:
-date: Nov 2023
+date: Nov 12, 2023
 z: 8
 author: Ivan Dimitrov
 published: Nov 2023
