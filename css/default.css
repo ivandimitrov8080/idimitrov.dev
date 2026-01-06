@@ -1,3 +1,5 @@
+@import url(https://cdn.jsdelivr.net/npm/water.css@2/out/water.min.css);
+
 header div a {
   color: red;
 }
