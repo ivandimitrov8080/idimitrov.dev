@@ -1,6 +1,4 @@
----
-title: About
----
+# [idimitrov.dev](idimitrov.dev)
 
 This site is built using only purely functional programming languages (excluding non-programming languages like HTML,
 CSS and JSON):
