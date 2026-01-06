@@ -91,6 +91,7 @@
             nixfmt.enable = true;
             prettier.enable = true;
             ormolu.enable = true;
+            elm-format.enable = true;
           };
         }).config.build.wrapper
       );
