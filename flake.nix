@@ -11,6 +11,7 @@
     neovim-nightly-overlay.inputs.nixpkgs.follows = "nixpkgs";
     devenv.url = "github:cachix/devenv";
     devenv.inputs.nixpkgs.follows = "nixpkgs";
+    treefmt-nix.url = "github:numtide/treefmt-nix";
   };
   outputs =
     inputs@{
@@ -21,6 +22,7 @@
       nixvim-flake,
       neovim-nightly-overlay,
       devenv,
+      treefmt-nix,
     }:
     let
       eachSystem = nixpkgs.lib.genAttrs (import systems);
@@ -78,6 +80,21 @@
           };
         }
       );
+      formatter = eachSystem (
+        system:
+        let
+          pkgs = import nixpkgs { inherit system; };
+        in
+        (treefmt-nix.lib.evalModule pkgs {
+          projectRootFile = "flake.nix";
+          programs = {
+            nixfmt.enable = true;
+            prettier.enable = true;
+            ormolu.enable = true;
+          };
+        }).config.build.wrapper
+      );
+
       checks = eachSystem (
         system:
         let
