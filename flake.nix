@@ -239,10 +239,12 @@
       );
     in
     {
-      inherit checks;
-      inherit devShells;
-      inherit formatter;
-      inherit nixosModules;
-      inherit packages;
+      inherit
+        checks
+        devShells
+        formatter
+        nixosModules
+        packages
+        ;
     };
 }
