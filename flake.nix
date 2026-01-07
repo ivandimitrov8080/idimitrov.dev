@@ -89,8 +89,9 @@
       };
       server = {
         default =
-          { pkgs, config, ... }:
+          { pkgs, ... }:
           {
+            _module.args.system = "x86_64-linux";
             imports = [ nixosModules.default ];
             networking.firewall.allowedTCPPorts = [
               80
@@ -191,6 +192,7 @@
             inherit inputs pkgs;
             modules = [
               {
+                devenv.root = "/home/ivand/src/idimitrov.dev";
                 packages = with pkgs; [
                   (ghc.withPackages (
                     p: with p; [
