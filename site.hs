@@ -3,6 +3,9 @@
 
 import Data.Monoid (mappend)
 import Hakyll
+import System.FilePath ((</>))
+import System.IO.Temp (withSystemTempDirectory)
+import System.Process (callProcess)
 
 --------------------------------------------------------------------------------
 main :: IO ()
@@ -59,8 +62,41 @@ main = hakyll $ do
 
   match "templates/*" $ compile templateBodyCompiler
 
+  -- Rebuild the JS if *any* Elm file changes (not just the entrypoint).
+  elmDeps <- makePatternDependency "src/**/*.elm"
+
+  rulesExtraDependencies [elmDeps] $ do
+    -- Entry point: elm/src/Main.elm  ->  assets/elm/main.js
+    match "src/Main.elm" $ do
+      route $ constRoute "js/app.js"
+      compile $ elmMakeCompiler ["--optimize"]
+
+  match "room.html" $ do
+    route idRoute
+    compile $ do
+      getResourceBody
+        >>= loadAndApplyTemplate "templates/default.html" defaultContext
+        >>= relativizeUrls
+
 --------------------------------------------------------------------------------
 postCtx :: Context String
 postCtx =
   dateField "date" "%B %e, %Y"
     `mappend` defaultContext
+
+--------------------------------------------------------------------------------
+
+-- | Compile an Elm entrypoint to JS using `elm make`.
+--   Usage: match the entrypoint file and route it to a .js.
+elmMakeCompiler :: [String] -> Compiler (Item String)
+elmMakeCompiler extraElmArgs = do
+  entry <- getResourceFilePath
+  js <- unsafeCompiler $
+    withSystemTempDirectory "hakyll-elm" $ \dir -> do
+      let out = dir </> "elm.js"
+      callProcess "elm" $
+        ["make", entry, "--output", out] ++ extraElmArgs
+      readFile out
+  makeItem js
+
+--------------------------------------------------------------------------------
