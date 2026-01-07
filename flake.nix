@@ -15,7 +15,6 @@
   };
   outputs =
     inputs@{
-      self,
       nixpkgs,
       configuration,
       systems,
@@ -23,6 +22,7 @@
       neovim-nightly-overlay,
       devenv,
       treefmt-nix,
+      ...
     }:
     let
       eachSystem = nixpkgs.lib.genAttrs (import systems);
@@ -89,7 +89,7 @@
       };
       server = {
         default =
-          { pkgs, ... }:
+          { ... }:
           {
             _module.args.system = "x86_64-linux";
             imports = [ nixosModules.default ];
@@ -180,7 +180,7 @@
           pkgs = import nixpkgs {
             inherit system;
             overlays = [
-              (final: prev: {
+              (_final: _prev: {
                 nixvim = nixvim-default;
               })
               configuration.overlays.default
@@ -232,15 +232,17 @@
             prettier.enable = true;
             ormolu.enable = true;
             elm-format.enable = true;
+            deadnix.enable = true;
+            statix.enable = true;
           };
         }).config.build.wrapper
       );
     in
     {
-      checks = checks;
-      devShells = devShells;
-      formatter = formatter;
-      nixosModules = nixosModules;
-      packages = packages;
+      inherit checks;
+      inherit devShells;
+      inherit formatter;
+      inherit nixosModules;
+      inherit packages;
     };
 }
