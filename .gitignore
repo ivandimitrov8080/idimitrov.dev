@@ -8,3 +8,4 @@ node_modules
 .elm-pages
 result
 elm-stuff
+.pre-commit-config.yaml

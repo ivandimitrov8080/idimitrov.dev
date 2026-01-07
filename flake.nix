@@ -93,21 +93,31 @@
           {
             _module.args.system = "x86_64-linux";
             imports = [ nixosModules.default ];
-            networking.firewall.allowedTCPPorts = [
-              80
-              443
-            ];
-            networking.firewall.allowedUDPPorts = [
-              80
-              443
-            ];
+            networking = {
+              useNetworkd = true;
+              firewall = {
+                allowedTCPPorts = [
+                  80
+                  443
+                ];
+                allowedUDPPorts = [
+                  80
+                  443
+                ];
+              };
+            };
             systemd.network.enable = true;
-            networking.useNetworkd = true;
             webshite.enable = true;
             services.nginx.enable = true;
-            security.acme.defaults.server = "https://acme-staging-v02.api.letsencrypt.org/directory";
-            security.acme.defaults.email = "test@example.com";
-            security.acme.acceptTerms = true;
+            security = {
+              acme = {
+                defaults = {
+                  server = "https://acme-staging-v02.api.letsencrypt.org/directory";
+                  email = "test@example.com";
+                };
+                acceptTerms = true;
+              };
+            };
           };
       };
       nixosTest = {
@@ -215,6 +225,14 @@
                     };
                   })
                 ];
+                git-hooks.hooks = {
+                  nixfmt.enable = true;
+                  prettier.enable = true;
+                  ormolu.enable = true;
+                  elm-format.enable = true;
+                  deadnix.enable = true;
+                  statix.enable = true;
+                };
               }
             ];
           };
