@@ -1,7 +1,6 @@
 --------------------------------------------------------------------------------
 {-# LANGUAGE OverloadedStrings #-}
 
-import Data.Monoid (mappend)
 import Hakyll
 import System.FilePath ((</>))
 import System.IO.Temp (withSystemTempDirectory)
@@ -39,8 +38,8 @@ main = hakyll $ do
       posts <- recentFirst =<< loadAll "posts/*"
       let archiveCtx =
             listField "posts" postCtx (return posts)
-              `mappend` constField "title" "Archives"
-              `mappend` defaultContext
+              <> constField "title" "Archives"
+              <> defaultContext
 
       makeItem ""
         >>= loadAndApplyTemplate "templates/archive.html" archiveCtx
@@ -53,7 +52,7 @@ main = hakyll $ do
       posts <- recentFirst =<< loadAll "posts/*"
       let indexCtx =
             listField "posts" postCtx (return posts)
-              `mappend` defaultContext
+              <> defaultContext
 
       getResourceBody
         >>= applyAsTemplate indexCtx
@@ -82,7 +81,7 @@ main = hakyll $ do
 postCtx :: Context String
 postCtx =
   dateField "date" "%B %e, %Y"
-    `mappend` defaultContext
+    <> defaultContext
 
 --------------------------------------------------------------------------------
 
