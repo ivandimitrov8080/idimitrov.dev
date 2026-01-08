@@ -77,6 +77,10 @@ main = hakyll $ do
         >>= loadAndApplyTemplate "templates/default.html" defaultContext
         >>= relativizeUrls
 
+  match (fromList ["icons/*", "manifest.json", "favicon.ico"]) $ do
+    route idRoute
+    compile $ copyFileCompiler
+
 --------------------------------------------------------------------------------
 postCtx :: Context String
 postCtx =
