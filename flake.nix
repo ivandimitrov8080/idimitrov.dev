@@ -141,6 +141,12 @@
         let
           pkgs = mkPkgs system;
           inherit (pkgs) stdenv;
+          # to update -> elm2nix --help
+          fetchElmDeps = pkgs.elmPackages.fetchElmDeps {
+            elmPackages = import ./elm-srcs.nix;
+            elmVersion = pkgs.elmPackages.elm.version;
+            registryDat = ./registry.dat;
+          };
         in
         {
           default = stdenv.mkDerivation {
@@ -149,11 +155,13 @@
             src = ./.;
             nativeBuildInputs = with pkgs; [
               (ghc.withPackages (p: with p; [ hakyll ]))
+              elmPackages.elm
             ];
             env = {
               LOCALE_ARCHIVE = "${pkgs.glibcLocales}/lib/locale/locale-archive";
               LANG = "en_US.UTF-8";
             };
+            postConfigure = fetchElmDeps;
             buildPhase = ''
               runHook preBuild
 
@@ -218,6 +226,7 @@
                   haskellPackages.hakyll
                   elmPackages.elm
                   elmPackages.elm-format
+                  elm2nix
                   (nixvim.web.extend {
                     lsp.servers = {
                       elmls.enable = true;
