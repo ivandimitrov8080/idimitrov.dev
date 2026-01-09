@@ -7,16 +7,23 @@ module Main exposing (..)
 --
 
 import Browser
-import Html exposing (Html, button, div, text)
+import Html exposing (Html, br, button, div, text)
 import Html.Events exposing (onClick)
+import Random
 
 
 
 -- MAIN
 
 
+main : Program () Model Msg
 main =
-    Browser.sandbox { init = init, update = update, view = view }
+    Browser.element
+        { init = init
+        , view = view
+        , update = update
+        , subscriptions = always Sub.none
+        }
 
 
 
@@ -24,12 +31,12 @@ main =
 
 
 type alias Model =
-    Int
+    { value : Int, inc : Int }
 
 
-init : Model
-init =
-    0
+init : () -> ( Model, Cmd Msg )
+init _ =
+    ( Model 0 0, Cmd.none )
 
 
 
@@ -39,16 +46,24 @@ init =
 type Msg
     = Increment
     | Decrement
+    | GenerateRandom
+    | NewRandom Int
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Increment ->
-            model + 1
+            ( { model | value = model.value + model.inc }, Cmd.none )
 
         Decrement ->
-            model - 1
+            ( { model | value = model.value - model.inc }, Cmd.none )
+
+        NewRandom n ->
+            ( { model | inc = n }, Cmd.none )
+
+        GenerateRandom ->
+            ( model, Random.generate NewRandom (Random.int 1 100) )
 
 
 
@@ -59,6 +74,8 @@ view : Model -> Html Msg
 view model =
     div []
         [ button [ onClick Decrement ] [ text "-" ]
-        , div [] [ text (String.fromInt model) ]
+        , div [] [ text (String.fromInt model.value) ]
         , button [ onClick Increment ] [ text "+" ]
+        , br [] []
+        , button [ onClick GenerateRandom ] [ text "+" ]
         ]
