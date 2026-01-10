@@ -5,6 +5,7 @@ import Browser.Events exposing (onAnimationFrame)
 import Canvas exposing (..)
 import Canvas.Settings exposing (..)
 import Color exposing (Color)
+import Cube
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Time exposing (Posix)
@@ -20,7 +21,7 @@ type alias Point =
 
 
 type alias Model =
-    List Point
+    { pts : List Point, cubeTheta : Float }
 
 
 type Msg
@@ -74,16 +75,19 @@ numParticles =
 
 init : () -> ( Model, Cmd Msg )
 init () =
-    ( List.range 0 numParticles
-        |> List.map
-            (\i ->
-                { x = w / 2
-                , y = h / 2
-                , size = toFloat (modBy 2 i + 1)
-                , speedMod = toFloat (modBy 345 (i * 4236))
-                , deviation = toFloat (modBy 4435 (i * 2346))
-                }
-            )
+    ( { pts =
+            List.range 0 numParticles
+                |> List.map
+                    (\i ->
+                        { x = w / 2
+                        , y = h / 2
+                        , size = toFloat (modBy 2 i + 1)
+                        , speedMod = toFloat (modBy 345 (i * 4236))
+                        , deviation = toFloat (modBy 4435 (i * 2346))
+                        }
+                    )
+      , cubeTheta = 0
+      }
     , Cmd.none
     )
 
@@ -111,18 +115,21 @@ update msg model =
                                 + padding
                     }
             in
-            ( List.map updatePoint model
+            ( { model | pts = List.map updatePoint model.pts, cubeTheta = model.cubeTheta + 0.01 }
             , Cmd.none
             )
 
 
 view : Model -> Html Msg
 view model =
-    Canvas.toHtml
-        ( round w, round h )
-        []
-        [ shapes [ fill Color.white ] [ rect ( 0, 0 ) w h ]
-        , shapes [ fill particleColor ] (List.map drawPoint model)
+    div []
+        [ Canvas.toHtml
+            ( round w, round h )
+            []
+            [ shapes [ fill Color.white ] [ rect ( 0, 0 ) w h ]
+            , shapes [ fill particleColor ] (List.map drawPoint model.pts)
+            ]
+        , Cube.view model.cubeTheta
         ]
 
 
