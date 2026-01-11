@@ -233,6 +233,7 @@
                       hls.enable = true;
                     };
                   })
+                  nodePackages.browser-sync
                 ];
                 git-hooks.hooks = {
                   nixfmt.enable = true;

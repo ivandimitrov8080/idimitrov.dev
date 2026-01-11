@@ -2,13 +2,21 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 import Hakyll
-import System.FilePath ((</>))
+import System.FilePath (splitDirectories, (</>))
 import System.IO.Temp (withSystemTempDirectory)
 import System.Process (callProcess)
 
 --------------------------------------------------------------------------------
+myConfig :: Configuration
+myConfig =
+  defaultConfiguration
+    { ignoreFile = \p ->
+        ignoreFile defaultConfiguration p
+          || ("elm-stuff" `elem` splitDirectories p)
+    }
+
 main :: IO ()
-main = hakyll $ do
+main = hakyllWith myConfig $ do
   match "images/*" $ do
     route idRoute
     compile copyFileCompiler
@@ -62,7 +70,7 @@ main = hakyll $ do
   match "templates/*" $ compile templateBodyCompiler
 
   -- Rebuild the JS if *any* Elm file changes (not just the entrypoint).
-  elmDeps <- makePatternDependency "src/**.elm"
+  elmDeps <- makePatternDependency ("src/**.elm" .||. "elm.json")
 
   rulesExtraDependencies [elmDeps] $ do
     -- Entry point: elm/src/Main.elm  ->  assets/elm/main.js
