@@ -5,6 +5,16 @@
     version = "1.0.0";
   };
 
+  "elm-explorations/linear-algebra" = {
+    sha256 = "19zf3dgrx5bvhybjwq3bp171wzsb4bfk5rrfjv234b2f8q3yi59g";
+    version = "1.0.3";
+  };
+
+  "elm-explorations/webgl" = {
+    sha256 = "0ma7laa3ax8zd41s838px1y5s1dsmlqzp4j321lwngxjzvxkm3zy";
+    version = "1.1.3";
+  };
+
   "elm/browser" = {
     sha256 = "0nagb9ajacxbbg985r4k9h0jadqpp0gp84nm94kcgbr5sf8i9x13";
     version = "1.0.2";

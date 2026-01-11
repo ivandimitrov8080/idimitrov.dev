@@ -226,6 +226,7 @@
                   haskellPackages.hakyll
                   elmPackages.elm
                   elmPackages.elm-format
+                  elmPackages.elm-json
                   elm2nix
                   (nixvim.web.extend {
                     lsp.servers = {
@@ -234,11 +235,30 @@
                     };
                   })
                   nodePackages.browser-sync
+                  watchexec
                 ];
-                processes = {
-                  hakyll-watch.exec = "runghc site.hs watch";
-                  browser-sync.exec = "browser-sync start --proxy localhost:8000 --files '_site/**/*'";
-                };
+                processes =
+                  let
+                    syncElmDeps =
+                      pkgs.writeScript "sync_elm_deps"
+                        # bash
+                        ''
+                          elm2nix convert > elm-srcs.nix
+                          elm2nix snapshot
+                        '';
+                    frontendWatcher = "runghc site.hs watch";
+                    browserSync = "browser-sync start --proxy localhost:8000 --files '_site/**/*'";
+                    elm2nixWatcher =
+                      #bash
+                      ''
+                        watchexec -f elm.json ${syncElmDeps}
+                      '';
+                  in
+                  {
+                    hakyll-watch.exec = frontendWatcher;
+                    browser-sync.exec = browserSync;
+                    watch-elm.exec = elm2nixWatcher;
+                  };
                 git-hooks.hooks = {
                   nixfmt.enable = true;
                   prettier.enable = true;
