@@ -115,7 +115,7 @@ update msg model =
                                 + padding
                     }
             in
-            ( { model | pts = List.map updatePoint model.pts, cubeTheta = model.cubeTheta + 0.01 }
+            ( { model | pts = List.map updatePoint model.pts, cubeTheta = model.cubeTheta + 0.005 }
             , Cmd.none
             )
 
