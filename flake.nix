@@ -235,6 +235,10 @@
                   })
                   nodePackages.browser-sync
                 ];
+                processes = {
+                  hakyll-watch.exec = "runghc site.hs watch";
+                  browser-sync.exec = "browser-sync start --proxy localhost:8000 --files '_site/**/*'";
+                };
                 git-hooks.hooks = {
                   nixfmt.enable = true;
                   prettier.enable = true;
