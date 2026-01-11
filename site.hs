@@ -62,7 +62,7 @@ main = hakyll $ do
   match "templates/*" $ compile templateBodyCompiler
 
   -- Rebuild the JS if *any* Elm file changes (not just the entrypoint).
-  elmDeps <- makePatternDependency ("src/**.elm" .||. "elm.json")
+  elmDeps <- makePatternDependency "src/**.elm"
 
   rulesExtraDependencies [elmDeps] $ do
     -- Entry point: elm/src/Main.elm  ->  assets/elm/main.js
