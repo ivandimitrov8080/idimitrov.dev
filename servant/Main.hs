@@ -22,7 +22,9 @@ import Servant
 import Servant.API (Capture, Get, JSON, (:>))
 import Servant.Elm
   ( DefineElm (DefineElm),
+    ElmOptions (urlPrefix),
     Proxy (Proxy),
+    UrlPrefix (Static),
     defElmImports,
     defElmOptions,
     generateElmModuleWith,
@@ -157,7 +159,7 @@ exampleItem3 = Item 2 "example item 3"
 generateElm :: IO ()
 generateElm =
   generateElmModuleWith
-    defElmOptions
+    (defElmOptions {urlPrefix = Static "http://localhost:8080"})
     [ "Generated",
       "Api"
     ]

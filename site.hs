@@ -20,7 +20,7 @@ myConfig =
     { ignoreFile = ignoreFile'
     }
   where
-    ignoreFile' p = ignoreFile defaultConfiguration p || ("elm-stuff" `elem` splitDirectories p)
+    ignoreFile' p = ignoreFile defaultConfiguration p || (any (`elem` splitDirectories p) ["elm-stuff", "servant"])
 
 --------------------------------------------------------------------------------
 -- Hakyll config

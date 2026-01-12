@@ -78,7 +78,7 @@ getItemByItemId capture_itemId toMsg =
         , headers =
             []
         , url =
-            Url.Builder.crossOrigin ""
+            Url.Builder.crossOrigin "http://localhost:8080"
                 [ "item"
                 , capture_itemId |> String.fromInt
                 ]
