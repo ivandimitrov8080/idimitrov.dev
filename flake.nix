@@ -262,12 +262,12 @@
                     serverWatcher =
                       # bash
                       ''
-                        watchexec -f servant/**/*.hs ${restartServer}
+                        watchexec -r -w servant --exts hs -- ${restartServer}
                       '';
                     elm2nixWatcher =
                       # bash
                       ''
-                        watchexec -f elm.json ${syncElmDeps}
+                        watchexec -f elm.json -- ${syncElmDeps}
                       '';
                   in
                   {
