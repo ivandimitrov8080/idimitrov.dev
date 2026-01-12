@@ -248,17 +248,24 @@
                           elm2nix convert | ${pkgs.nixfmt}/bin/nixfmt -f elm-srcs.nix > elm-srcs.nix
                           elm2nix snapshot
                         '';
+                    serve =
+                      pkgs.writeScript "sync_elm_deps"
+                        # bash
+                        ''
+                          ghc servant/Main.hs
+                          servant/Main serve
+                        '';
                     restartServer =
                       pkgs.writeScript "sync_elm_deps"
                         # bash
                         ''
                           process-compose process restart server
-                          runghc servant/Main.hs gen
+                          servant/Main gen
                           elm-format --yes src/Generated/Api.elm
                         '';
                     frontendWatcher = "runghc site.hs watch";
                     browserSync = "browser-sync start --proxy localhost:8000 --files '_site/**/*'";
-                    server = "runghc servant/Main.hs serve";
+                    server = "${serve}";
                     serverWatcher =
                       # bash
                       ''

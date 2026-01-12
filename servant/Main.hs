@@ -132,7 +132,7 @@ server =
     :<|> getItemById
 
 getItems :: Handler [Item]
-getItems = return [exampleItem, exampleItem2, exampleItem3]
+getItems = return [exampleItem, exampleItem2, exampleItem3, exampleItem4]
 
 getItemById :: Integer -> Handler Item
 getItemById = \case
@@ -147,6 +147,9 @@ exampleItem2 = Item 1 "example item 2"
 
 exampleItem3 :: Item
 exampleItem3 = Item 2 "example item 3"
+
+exampleItem4 :: Item
+exampleItem4 = Item 3 "example item 4"
 
 --------------------------------------------------------------------------------
 -- Serve

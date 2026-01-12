@@ -9,3 +9,6 @@ node_modules
 result
 elm-stuff
 .pre-commit-config.yaml
+servant/**/*.hi
+servant/**/*.o
+servant/Main
