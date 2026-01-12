@@ -7,14 +7,23 @@ import System.IO.Temp (withSystemTempDirectory)
 import System.Process (callProcess)
 
 --------------------------------------------------------------------------------
+-- Hakyll config
+--------------------------------------------------------------------------------
 myConfig :: Configuration
 myConfig =
   defaultConfiguration
-    { ignoreFile = \p ->
-        ignoreFile defaultConfiguration p
-          || ("elm-stuff" `elem` splitDirectories p)
+    { ignoreFile = ignoreFile'
     }
+  where
+    ignoreFile' p = ignoreFile defaultConfiguration p || ("elm-stuff" `elem` splitDirectories p)
 
+--------------------------------------------------------------------------------
+-- Hakyll config
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Site config
+--------------------------------------------------------------------------------
 main :: IO ()
 main = hakyllWith myConfig $ do
   match "images/*" $ do
@@ -73,7 +82,6 @@ main = hakyllWith myConfig $ do
   elmDeps <- makePatternDependency ("src/**.elm" .||. "elm.json")
 
   rulesExtraDependencies [elmDeps] $ do
-    -- Entry point: elm/src/Main.elm  ->  assets/elm/main.js
     match "src/Main.elm" $ do
       route $ constRoute "js/app.js"
       compile $ elmMakeCompiler ["--optimize"]
@@ -85,10 +93,20 @@ main = hakyllWith myConfig $ do
         >>= loadAndApplyTemplate "templates/default.html" defaultContext
         >>= relativizeUrls
 
-  match (fromList ["icons/*", "manifest.json", "favicon.ico"]) $ do
+  match (fromList ["manifest.json", "favicon.ico"]) $ do
     route idRoute
     compile $ copyFileCompiler
 
+  match "static/**" $ do
+    route idRoute
+    compile $ copyFileCompiler
+
+--------------------------------------------------------------------------------
+-- Site config
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Context
 --------------------------------------------------------------------------------
 postCtx :: Context String
 postCtx =
@@ -96,9 +114,12 @@ postCtx =
     <> defaultContext
 
 --------------------------------------------------------------------------------
+-- Context
+--------------------------------------------------------------------------------
 
--- | Compile an Elm entrypoint to JS using `elm make`.
---   Usage: match the entrypoint file and route it to a .js.
+--------------------------------------------------------------------------------
+-- Compilers
+--------------------------------------------------------------------------------
 elmMakeCompiler :: [String] -> Compiler (Item String)
 elmMakeCompiler extraElmArgs = do
   entry <- getResourceFilePath
@@ -110,4 +131,6 @@ elmMakeCompiler extraElmArgs = do
       readFile out
   makeItem js
 
+--------------------------------------------------------------------------------
+-- Compilers
 --------------------------------------------------------------------------------
