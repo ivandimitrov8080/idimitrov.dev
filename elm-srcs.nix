@@ -5,6 +5,11 @@
     version = "1.0.0";
   };
 
+  "bartavelle/json-helpers" = {
+    sha256 = "0k96qra2nq1j4j4ahfl98dkpkc6f2831mq5d5xxg27mp31qwq5nn";
+    version = "2.0.2";
+  };
+
   "elm-explorations/linear-algebra" = {
     sha256 = "19zf3dgrx5bvhybjwq3bp171wzsb4bfk5rrfjv234b2f8q3yi59g";
     version = "1.0.3";
