@@ -223,6 +223,10 @@
                       http-types
                       optparse-applicative
                       wai-cors
+                      persistent
+                      persistent-template
+                      persistent-redis
+                      persistent-postgresql
                     ]
                   ))
                   haskellPackages.hakyll
