@@ -1,10 +1,15 @@
 --------------------------------------------------------------------------------
 {-# LANGUAGE OverloadedStrings #-}
 
+import Data.List (nub)
 import Hakyll
+import Skylighting (Style, monochrome, styleToCss, zenburn)
+import Skylighting.Styles (kate, monochrome, pygments, zenburn)
 import System.FilePath (splitDirectories, (</>))
 import System.IO.Temp (withSystemTempDirectory)
 import System.Process (callProcess)
+import Text.Pandoc (Block (CodeBlock), Pandoc, WriterOptions (writerHighlightStyle))
+import Text.Pandoc.Walk (walk)
 
 --------------------------------------------------------------------------------
 -- Hakyll config
@@ -22,6 +27,27 @@ myConfig =
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
+-- Render options
+--------------------------------------------------------------------------------
+
+codeStyle :: Style
+codeStyle = zenburn
+
+addNumberLines :: Pandoc -> Pandoc
+addNumberLines = walk go
+  where
+    go (CodeBlock (ident, classes, attrs) code) =
+      CodeBlock (ident, nub ("numberLines" : classes), attrs) code
+    go x = x
+
+myWriterOptions :: WriterOptions
+myWriterOptions = defaultHakyllWriterOptions {writerHighlightStyle = Just codeStyle}
+
+--------------------------------------------------------------------------------
+-- Render options
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
 -- Site config
 --------------------------------------------------------------------------------
 main :: IO ()
@@ -34,6 +60,10 @@ main = hakyllWith myConfig $ do
     route idRoute
     compile compressCssCompiler
 
+  create ["css/syntax.css"] $ do
+    route idRoute
+    compile $ makeItem (styleToCss codeStyle)
+
   match (fromList ["about.rst", "contact.markdown"]) $ do
     route $ setExtension "html"
     compile $
@@ -44,7 +74,7 @@ main = hakyllWith myConfig $ do
   match "posts/**.md" $ do
     route $ setExtension "html"
     compile $
-      pandocCompiler
+      pandocCompilerWithTransform defaultHakyllReaderOptions myWriterOptions addNumberLines
         >>= loadAndApplyTemplate "templates/post.html" postCtx
         >>= loadAndApplyTemplate "templates/default.html" postCtx
         >>= relativizeUrls
