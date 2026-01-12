@@ -221,6 +221,8 @@
                       hspec
                       http-client
                       http-types
+                      optparse-applicative
+                      wai-cors
                     ]
                   ))
                   haskellPackages.hakyll

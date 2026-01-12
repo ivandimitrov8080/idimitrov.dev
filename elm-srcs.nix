@@ -35,6 +35,11 @@
     version = "1.0.1";
   };
 
+  "elm/http" = {
+    sha256 = "008bs76mnp48b4dw8qwjj4fyvzbxvlrl4xpa2qh1gg2kfwyw56v1";
+    version = "2.0.0";
+  };
+
   "elm/json" = {
     sha256 = "0w1n61m2b9zbwp1yx8zhvir7gqy66mkm22rpq8hmnvgkcwnhxalb";
     version = "1.1.4";
@@ -47,6 +52,11 @@
 
   "elm/time" = {
     sha256 = "0vch7i86vn0x8b850w1p69vplll1bnbkp8s383z7pinyg94cm2z1";
+    version = "1.0.0";
+  };
+
+  "elm/url" = {
+    sha256 = "0av8x5syid40sgpl5vd7pry2rq0q4pga28b4yykn9gd9v12rs3l4";
     version = "1.0.0";
   };
 
@@ -70,9 +80,14 @@
     version = "1.0.1";
   };
 
-  "elm/url" = {
-    sha256 = "0av8x5syid40sgpl5vd7pry2rq0q4pga28b4yykn9gd9v12rs3l4";
-    version = "1.0.0";
+  "elm/bytes" = {
+    sha256 = "02ywbf52akvxclpxwj9n04jydajcbsbcbsnjs53yjc5lwck3abwj";
+    version = "1.0.8";
+  };
+
+  "elm/file" = {
+    sha256 = "1rljcb41dl97myidyjih2yliyzddkr2m7n74x7gg46rcw4jl0ny8";
+    version = "1.0.5";
   };
 
   "elm/virtual-dom" = {

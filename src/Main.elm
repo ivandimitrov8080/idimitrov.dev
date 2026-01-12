@@ -6,8 +6,11 @@ import Canvas exposing (..)
 import Canvas.Settings exposing (..)
 import Color exposing (Color)
 import Cube
+import Generated.Api exposing (Item, getItem)
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Http
+import Json.Decode exposing (errorToString)
 import Time exposing (Posix)
 
 
@@ -21,11 +24,13 @@ type alias Point =
 
 
 type alias Model =
-    { pts : List Point, cubeTheta : Float }
+    { pts : List Point, cubeTheta : Float, items : List Item, error : Maybe String }
 
 
 type Msg
     = AnimationFrame Posix
+    | GotItems (Result Http.Error (List Item))
+    | FetchItems
 
 
 main : Program () Model Msg
@@ -87,8 +92,10 @@ init () =
                         }
                     )
       , cubeTheta = 0
+      , items = []
+      , error = Just ""
       }
-    , Cmd.none
+    , getItem GotItems
     )
 
 
@@ -119,6 +126,23 @@ update msg model =
             , Cmd.none
             )
 
+        FetchItems ->
+            ( model
+            , getItem GotItems
+            )
+
+        GotItems result ->
+            case result of
+                Ok items ->
+                    ( { model | items = items, error = Nothing }
+                    , Cmd.none
+                    )
+
+                Err _ ->
+                    ( { model | error = Just "Problem" }
+                    , Cmd.none
+                    )
+
 
 view : Model -> Html Msg
 view model =
@@ -130,7 +154,14 @@ view model =
             , shapes [ fill particleColor ] (List.map drawPoint model.pts)
             ]
         , Cube.view model.cubeTheta
+        , div [] [ ul [] (List.map viewItem model.items) ]
         ]
+
+
+viewItem : Item -> Html Msg
+viewItem item =
+    li []
+        [ Html.text item.itemText ]
 
 
 drawPoint : Point -> Shape
