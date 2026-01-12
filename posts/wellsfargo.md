@@ -1,11 +1,7 @@
 ---
 title: Wells Fargo Open Banking APIs integration
-goal: Integrate the API so that customers can use their Wells Fargo credit card to put down-payments on US orders
-role: Plan, design and implement the integration according to the Wells Fargo specifications
 date: Feb 01, 2021
-z: 1
 author: Ivan Dimitrov
-published: Nov 2023
 ---
 
 [Wells Fargo](https://www.wellsfargo.com/) is a US based international financial institution operating in 35 countries and serving over 70 million people worldwide.

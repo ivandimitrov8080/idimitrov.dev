@@ -1,11 +1,7 @@
 ---
 title: LUKS encrypted drive stopped working on a server
-goal: Diagnose faulty LUKS-encrypted drive to figure out what happened and possibly fix it
-role:
 date: Sep 21, 2023
-z: 7
 author: Ivan Dimitrov
-published: Nov 2023
 ---
 
 [LUKS](https://en.wikipedia.org/wiki/Linux_Unified_Key_Setup) is an encryption specifications for Linux used to encrypt disk partitions. The

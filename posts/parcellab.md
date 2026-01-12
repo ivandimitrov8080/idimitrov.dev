@@ -1,11 +1,7 @@
 ---
 title: Parcel Lab integration into international eCommerce app
-goal: Integrate the Parcel Lab Post-purchase solution into all US and European WOSG websites
-role: Plan, design and implement the integration
 date: Jan 01, 2022
-z: 2
 author: Ivan Dimitrov
-published: Sep 2023
 ---
 
 > parcelLab is the only truly global enterprise post-purchase software provider, enabling brands to increase top-line revenue, decrease operational costs, and optimize the customer

@@ -1,12 +1,7 @@
 ---
 title: Static wiki website powered by Markdown
-goal: Scrape an old wiki website and create a new one from the content
-role: Scrape, design and implement the app
 date: Jun 22, 2023
-z: 6
-draft: true
 author: Ivan Dimitrov
-published: Aug 2023
 ---
 
 Repo: [github.com](https://github.com/hearts-of-iron-2/wiki)
