@@ -245,14 +245,19 @@
                       pkgs.writeScript "sync_elm_deps"
                         # bash
                         ''
-                          elm2nix convert > elm-srcs.nix
+                          elm2nix convert | ${pkgs.nixfmt}/bin/nixfmt -f elm-srcs.nix > elm-srcs.nix
                           elm2nix snapshot
                         '';
                     frontendWatcher = "runghc site.hs watch";
                     browserSync = "browser-sync start --proxy localhost:8000 --files '_site/**/*'";
                     server = "runghc servant/Main.hs serve";
+                    serverWatcher =
+                      # bash
+                      ''
+                        watchexec -f servant/**/*.hs process-compose process restart server
+                      '';
                     elm2nixWatcher =
-                      #bash
+                      # bash
                       ''
                         watchexec -f elm.json ${syncElmDeps}
                       '';
@@ -260,8 +265,9 @@
                   {
                     hakyll-watch.exec = frontendWatcher;
                     browser-sync.exec = browserSync;
-                    watch-elm.exec = elm2nixWatcher;
                     server.exec = server;
+                    elm-watcher.exec = elm2nixWatcher;
+                    server-watcher.exec = serverWatcher;
                   };
                 git-hooks.hooks = {
                   nixfmt.enable = true;
