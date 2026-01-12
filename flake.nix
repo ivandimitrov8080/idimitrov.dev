@@ -250,6 +250,7 @@
                         '';
                     frontendWatcher = "runghc site.hs watch";
                     browserSync = "browser-sync start --proxy localhost:8000 --files '_site/**/*'";
+                    server = "runghc servant/Main.hs serve";
                     elm2nixWatcher =
                       #bash
                       ''
@@ -260,6 +261,7 @@
                     hakyll-watch.exec = frontendWatcher;
                     browser-sync.exec = browserSync;
                     watch-elm.exec = elm2nixWatcher;
+                    server.exec = server;
                   };
                 git-hooks.hooks = {
                   nixfmt.enable = true;
