@@ -225,6 +225,7 @@
                       hasql
                       hasql-th
                       hedis
+                      tuple
                     ]
                   ))
                   haskellPackages.hakyll
@@ -241,6 +242,29 @@
                   nodePackages.browser-sync
                   watchexec
                 ];
+                services = {
+                  postgres = {
+                    enable = true;
+                    initialDatabases = [
+                      {
+                        name = "postgres";
+                        pass = "postgres";
+                        user = "postgres";
+                        initialSQL =
+                          # sql
+                          ''
+                            CREATE TABLE items (
+                              item_id   BIGINT PRIMARY KEY,
+                              item_text TEXT   NOT NULL,
+                              item_name TEXT   NOT NULL
+                            );
+                            INSERT INTO items (item_id, item_text, item_name) VALUES (0, "text0", "name0");
+                            INSERT INTO items (item_id, item_text, item_name) VALUES (1, "text1", "name1");
+                          '';
+                      }
+                    ];
+                  };
+                };
                 processes =
                   let
                     siteWatch = "bin/site watch";
@@ -285,7 +309,15 @@
                     after = [ "build:site" ];
                   };
                   "build:site" = {
-                    exec = "ghc -outputdir bin site.hs -o bin/site && bin/site build";
+                    exec = "ghc -outputdir bin site.hs -o bin/site";
+                    before = [ "devenv:processes:site" ];
+                  };
+                  "build:_site" = {
+                    exec = "bin/site build";
+                    after = [
+                      "build:site"
+                      "build:server"
+                    ];
                     before = [ "devenv:processes:site" ];
                   };
                   "build:library" = {
