@@ -287,10 +287,13 @@
                   };
                   "build:library" = {
                     exec = ''
-                      ghc -outputdir bin server/GenerateLibraryCode.hs -iserver -o bin/gen && bin/gen
+                      ghc -outputdir bin server/Generators/Main.hs -iserver -o bin/gen && bin/gen
                       elm-format --yes src/Generated/Api.elm
                     '';
-                    before = [ "build:site" ];
+                    before = [
+                      "build:site"
+                      "build:server"
+                    ];
                   };
                 };
                 git-hooks.hooks = {
