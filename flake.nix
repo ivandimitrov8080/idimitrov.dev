@@ -244,6 +244,10 @@
                 ];
                 processes =
                   let
+                    siteWatch = "bin/site watch";
+                    server = "bin/server";
+                    browserSync = "browser-sync start --proxy localhost:8000 --files '_site/**/*'";
+                    serverWatcher = "watchexec -w server --exts hs -- process-compose process restart server";
                     syncElmDeps =
                       pkgs.writeScript "sync_elm_deps"
                         # bash
@@ -251,14 +255,6 @@
                           elm2nix convert | ${pkgs.nixfmt}/bin/nixfmt -f elm-srcs.nix > elm-srcs.nix
                           elm2nix snapshot
                         '';
-                    frontendWatcher = "bin/site watch";
-                    browserSync = "browser-sync start --proxy localhost:8000 --files '_site/**/*'";
-                    server = "bin/server/Main";
-                    serverWatcher =
-                      # bash
-                      ''
-                        watchexec --no-project-ignore -w bin -f Main -- process-compose process restart server
-                      '';
                     elm2nixWatcher =
                       # bash
                       ''
@@ -266,12 +262,37 @@
                       '';
                   in
                   {
-                    hakyll-watch.exec = frontendWatcher;
-                    browser-sync.exec = browserSync;
+                    site.exec = siteWatch;
                     server.exec = server;
+                    browser-sync.exec = browserSync;
                     elm-watcher.exec = elm2nixWatcher;
                     server-watcher.exec = serverWatcher;
                   };
+                tasks = {
+                  "build:init" = {
+                    exec = "mkdir -p bin";
+                    before = [
+                      "build:server"
+                      "build:site"
+                      "build:library"
+                    ];
+                  };
+                  "build:server" = {
+                    exec = "ghc -outputdir bin server/Main.hs -iserver -o bin/server";
+                    before = [ "devenv:processes:server" ];
+                  };
+                  "build:site" = {
+                    exec = "ghc -outputdir bin site.hs -o bin/site && bin/site build";
+                    before = [ "devenv:processes:site" ];
+                  };
+                  "build:library" = {
+                    exec = ''
+                      ghc -outputdir bin server/GenerateLibraryCode.hs -iserver -o bin/gen && bin/gen
+                      elm-format --yes src/Generated/Api.elm
+                    '';
+                    before = [ "build:site" ];
+                  };
+                };
                 git-hooks.hooks = {
                   nixfmt.enable = true;
                   prettier.enable = true;

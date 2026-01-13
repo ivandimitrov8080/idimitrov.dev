@@ -3,7 +3,6 @@
 
 import Data.List (nub)
 import GHC.Internal.Data.Proxy (Proxy)
-import GenerateLibraryCode
 import Hakyll
 import Servant.Elm
   ( DefineElm (DefineElm),
@@ -64,9 +63,6 @@ myWriterOptions = defaultHakyllWriterOptions {writerHighlightStyle = Just codeSt
 --------------------------------------------------------------------------------
 main :: IO ()
 main = hakyllWith myConfig $ do
-  match "site.hs" $ do
-    compile $ haskellCompiler []
-
   match "images/*" $ do
     route idRoute
     compile copyFileCompiler
@@ -174,16 +170,6 @@ elmMakeCompiler extraElmArgs = do
         ["make", entry, "--output", out] ++ extraElmArgs
       readFile out
   makeItem js
-
-haskellCompiler :: [String] -> Compiler (Item ())
-haskellCompiler extraGhcFlags = do
-  entry <- getResourceFilePath
-  unsafeCompiler $ do
-    let out = "bin" </> dropExtension entry
-    createDirectoryIfMissing True (takeDirectory out)
-    callProcess "ghc" $
-      ["-outputdir", "bin", entry, "-iserver", "-o", out] ++ extraGhcFlags
-  makeItem ()
 
 --------------------------------------------------------------------------------
 -- Compilers
