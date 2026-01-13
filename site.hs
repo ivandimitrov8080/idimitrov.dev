@@ -116,6 +116,12 @@ main = hakyllWith myConfig $ do
       route $ constRoute "js/app.js"
       compile $ elmMakeCompiler ["--optimize"]
 
+  serverDeps <- makePatternDependency "server/**.hs"
+
+  rulesExtraDependencies [serverDeps] $ do
+    match "server/Main.hs" $ do
+      compile $ haskellCompiler []
+
   match "room.html" $ do
     route idRoute
     compile $ do
@@ -160,6 +166,15 @@ elmMakeCompiler extraElmArgs = do
         ["make", entry, "--output", out] ++ extraElmArgs
       readFile out
   makeItem js
+
+haskellCompiler :: [String] -> Compiler (Item String)
+haskellCompiler extraGhcFlags = do
+  entry <- getResourceFilePath
+  unsafeCompiler $ do
+    let out = take (length entry - 3) entry
+    callProcess "ghc" $
+      [entry, "-iserver", "-o", out] ++ extraGhcFlags
+  makeItem ""
 
 --------------------------------------------------------------------------------
 -- Compilers

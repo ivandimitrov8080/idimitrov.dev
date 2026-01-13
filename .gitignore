@@ -9,6 +9,7 @@ node_modules
 result
 elm-stuff
 .pre-commit-config.yaml
-servant/**/*.hi
-servant/**/*.o
-servant/Main
+server/**/*.hi
+server/**/*.o
+server/Main
+server/GenerateLibraryCode

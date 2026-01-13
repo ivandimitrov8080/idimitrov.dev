@@ -161,7 +161,7 @@ view model =
 viewItem : Item -> Html Msg
 viewItem item =
     li []
-        [ Html.text item.itemText ]
+        [ Html.text item.itemText, Html.text item.itemName ]
 
 
 drawPoint : Point -> Shape

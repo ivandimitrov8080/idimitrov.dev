@@ -221,7 +221,6 @@
                       hspec
                       http-client
                       http-types
-                      optparse-applicative
                       wai-cors
                       persistent
                       persistent-template
@@ -253,18 +252,18 @@
                           elm2nix snapshot
                         '';
                     serve =
-                      pkgs.writeScript "sync_elm_deps"
+                      pkgs.writeScript "serve"
                         # bash
                         ''
-                          ghc servant/Main.hs
-                          servant/Main serve
+                          server/Main
                         '';
                     restartServer =
-                      pkgs.writeScript "sync_elm_deps"
+                      pkgs.writeScript "restart_server"
                         # bash
                         ''
                           process-compose process restart server
-                          servant/Main gen
+                          ghc server/GenerateLibraryCode.hs -iserver -o server/GenerateLibraryCode
+                          server/GenerateLibraryCode
                           elm-format --yes src/Generated/Api.elm
                         '';
                     frontendWatcher = "runghc site.hs watch";
@@ -273,7 +272,7 @@
                     serverWatcher =
                       # bash
                       ''
-                        watchexec -r -w servant --exts hs -- ${restartServer}
+                        watchexec -r -w server -f Main -- ${restartServer}
                       '';
                     elm2nixWatcher =
                       # bash

@@ -15,14 +15,16 @@ import Url.Builder
 type alias Item =
     { itemId : Int
     , itemText : String
+    , itemName : String
     }
 
 
 jsonDecItem : Json.Decode.Decoder Item
 jsonDecItem =
-    Json.Decode.succeed (\pitemId pitemText -> { itemId = pitemId, itemText = pitemText })
+    Json.Decode.succeed (\pitemId pitemText pitemName -> { itemId = pitemId, itemText = pitemText, itemName = pitemName })
         |> required "itemId" Json.Decode.int
         |> required "itemText" Json.Decode.string
+        |> required "itemName" Json.Decode.string
 
 
 jsonEncItem : Item -> Value
@@ -30,6 +32,7 @@ jsonEncItem val =
     Json.Encode.object
         [ ( "itemId", Json.Encode.int val.itemId )
         , ( "itemText", Json.Encode.string val.itemText )
+        , ( "itemName", Json.Encode.string val.itemName )
         ]
 
 
