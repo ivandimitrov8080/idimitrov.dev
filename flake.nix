@@ -222,10 +222,9 @@
                       http-client
                       http-types
                       wai-cors
-                      persistent
-                      persistent-template
-                      persistent-redis
-                      persistent-postgresql
+                      hasql
+                      hasql-th
+                      hedis
                     ]
                   ))
                   haskellPackages.hakyll
