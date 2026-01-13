@@ -2,10 +2,22 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 import Data.List (nub)
+import GHC.Internal.Data.Proxy (Proxy)
+import GenerateLibraryCode
 import Hakyll
+import Servant.Elm
+  ( DefineElm (DefineElm),
+    ElmOptions (urlPrefix),
+    Proxy (Proxy),
+    UrlPrefix (Static),
+    defElmImports,
+    defElmOptions,
+    generateElmModuleWith,
+  )
 import Skylighting (Style, monochrome, styleToCss, zenburn)
 import Skylighting.Styles (kate, monochrome, pygments, zenburn)
-import System.FilePath (splitDirectories, (</>))
+import System.Directory (createDirectoryIfMissing)
+import System.FilePath (dropExtension, splitDirectories, takeDirectory, (</>))
 import System.IO.Temp (withSystemTempDirectory)
 import System.Process (callProcess)
 import Text.Pandoc (Block (CodeBlock), Pandoc, WriterOptions (writerHighlightStyle))
@@ -20,7 +32,7 @@ myConfig =
     { ignoreFile = ignoreFile'
     }
   where
-    ignoreFile' p = ignoreFile defaultConfiguration p || (any (`elem` splitDirectories p) ["elm-stuff", "servant"])
+    ignoreFile' p = ignoreFile defaultConfiguration p || (any (`elem` splitDirectories p) ["elm-stuff", "servant", "bin", "Generated"])
 
 --------------------------------------------------------------------------------
 -- Hakyll config
@@ -52,6 +64,9 @@ myWriterOptions = defaultHakyllWriterOptions {writerHighlightStyle = Just codeSt
 --------------------------------------------------------------------------------
 main :: IO ()
 main = hakyllWith myConfig $ do
+  match "site.hs" $ do
+    compile $ haskellCompiler []
+
   match "images/*" $ do
     route idRoute
     compile copyFileCompiler
@@ -108,19 +123,21 @@ main = hakyllWith myConfig $ do
 
   match "templates/*" $ compile templateBodyCompiler
 
-  -- Rebuild the JS if *any* Elm file changes (not just the entrypoint).
+  serverDeps <- makePatternDependency "server/**.hs"
+
+  rulesExtraDependencies [serverDeps] $ do
+    match "server/Main.hs" $ do
+      compile $ haskellCompiler []
+
+    match "server/Api.hs" $ do
+      compile $ libraryCompiler
+
   elmDeps <- makePatternDependency ("src/**.elm" .||. "elm.json")
 
   rulesExtraDependencies [elmDeps] $ do
     match "src/Main.elm" $ do
       route $ constRoute "js/app.js"
       compile $ elmMakeCompiler ["--optimize"]
-
-  serverDeps <- makePatternDependency "server/**.hs"
-
-  rulesExtraDependencies [serverDeps] $ do
-    match "server/Main.hs" $ do
-      compile $ haskellCompiler []
 
   match "room.html" $ do
     route idRoute
@@ -167,14 +184,22 @@ elmMakeCompiler extraElmArgs = do
       readFile out
   makeItem js
 
-haskellCompiler :: [String] -> Compiler (Item String)
+haskellCompiler :: [String] -> Compiler (Item ())
 haskellCompiler extraGhcFlags = do
   entry <- getResourceFilePath
   unsafeCompiler $ do
-    let out = take (length entry - 3) entry
+    let out = "bin" </> dropExtension entry
+    createDirectoryIfMissing True (takeDirectory out)
     callProcess "ghc" $
-      [entry, "-iserver", "-o", out] ++ extraGhcFlags
-  makeItem ""
+      ["-outputdir", "bin", entry, "-iserver", "-o", out] ++ extraGhcFlags
+  makeItem ()
+
+libraryCompiler :: Compiler (Item ())
+libraryCompiler = do
+  unsafeCompiler $ do
+    generateElm
+    callProcess "elm-format" $ ["--yes", "src/Generated/Api.elm"]
+  makeItem ()
 
 --------------------------------------------------------------------------------
 -- Compilers

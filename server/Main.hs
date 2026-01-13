@@ -59,7 +59,7 @@ exampleItem3 :: Item
 exampleItem3 = Item 2 "example item 3" "c"
 
 exampleItem4 :: Item
-exampleItem4 = Item 3 "example item 4" "f"
+exampleItem4 = Item 3 "example item 4" "a"
 
 --------------------------------------------------------------------------------
 -- Serve

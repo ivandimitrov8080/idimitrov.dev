@@ -11,5 +11,4 @@ elm-stuff
 .pre-commit-config.yaml
 server/**/*.hi
 server/**/*.o
-server/Main
-server/GenerateLibraryCode
+bin/**

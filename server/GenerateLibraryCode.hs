@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Main (IO, main) where
+module GenerateLibraryCode (IO, generateElm) where
 
 import Api
 import GHC.Internal.Data.Proxy (Proxy)
@@ -17,8 +17,6 @@ import Servant.Elm
 --------------------------------------------------------------------------------
 -- Generate client lib
 --------------------------------------------------------------------------------
-main :: IO ()
-main = generateElm
 
 generateElm :: IO ()
 generateElm =
