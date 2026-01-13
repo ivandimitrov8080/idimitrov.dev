@@ -269,8 +269,11 @@
                     server-watcher.exec = serverWatcher;
                   };
                 tasks = {
+                  "clean:site" = {
+                    exec = "rm -rf bin _site _cache";
+                  };
                   "build:init" = {
-                    exec = "mkdir -p bin";
+                    exec = "mkdir -p bin/Generators";
                     before = [
                       "build:server"
                       "build:site"
@@ -287,7 +290,8 @@
                   };
                   "build:library" = {
                     exec = ''
-                      ghc -outputdir bin server/Generators/Main.hs -iserver -o bin/gen && bin/gen
+                      ghc -outputdir bin/Generators server/Generators/Main.hs -iserver -o bin/Generators/gen
+                      bin/Generators/gen
                       elm-format --yes src/Generated/Api.elm
                     '';
                     before = [
