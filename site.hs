@@ -123,22 +123,6 @@ main = hakyllWith myConfig $ do
 
   match "templates/*" $ compile templateBodyCompiler
 
-  serverDeps <- makePatternDependency "server/**.hs"
-
-  rulesExtraDependencies [serverDeps] $ do
-    match "server/Main.hs" $ do
-      compile $ haskellCompiler []
-
-    match "server/Api.hs" $ do
-      compile $ libraryCompiler
-
-  elmDeps <- makePatternDependency ("src/**.elm" .||. "elm.json")
-
-  rulesExtraDependencies [elmDeps] $ do
-    match "src/Main.elm" $ do
-      route $ constRoute "js/app.js"
-      compile $ elmMakeCompiler ["--optimize"]
-
   match "room.html" $ do
     route idRoute
     compile $ do
@@ -153,6 +137,13 @@ main = hakyllWith myConfig $ do
   match "static/**" $ do
     route idRoute
     compile $ copyFileCompiler
+
+  elmDeps <- makePatternDependency ("src/**.elm" .||. "elm.json")
+
+  rulesExtraDependencies [elmDeps] $ do
+    match "src/Main.elm" $ do
+      route $ constRoute "js/app.js"
+      compile $ elmMakeCompiler ["--optimize"]
 
 --------------------------------------------------------------------------------
 -- Site config
@@ -192,13 +183,6 @@ haskellCompiler extraGhcFlags = do
     createDirectoryIfMissing True (takeDirectory out)
     callProcess "ghc" $
       ["-outputdir", "bin", entry, "-iserver", "-o", out] ++ extraGhcFlags
-  makeItem ()
-
-libraryCompiler :: Compiler (Item ())
-libraryCompiler = do
-  unsafeCompiler $ do
-    generateElm
-    callProcess "elm-format" $ ["--yes", "src/Generated/Api.elm"]
   makeItem ()
 
 --------------------------------------------------------------------------------
