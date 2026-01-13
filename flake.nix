@@ -281,7 +281,7 @@
                     ];
                   };
                   "build:server" = {
-                    exec = "ghc -outputdir bin server/Main.hs -iserver -o bin/server";
+                    exec = "ghc -outputdir bin server/Main.hs -iserver -o bin/server && browser-sync reload";
                     before = [ "devenv:processes:server" ];
                   };
                   "build:site" = {
