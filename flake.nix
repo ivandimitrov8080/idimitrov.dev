@@ -303,46 +303,34 @@
                   "build:server" = {
                     exec = "ghc -outputdir _cache/server server/Main.hs -iserver -o bin/server";
                     before = [ "devenv:processes:server" ];
-                    after = [ "build:site" ];
-                  };
-                  "build:site" = {
-                    exec = "ghc -outputdir _cache/site site.hs -o bin/site";
-                    before = [
-                      "devenv:processes:site"
-                      "build:frontend"
-                    ];
                   };
                   "build:frontend" = {
                     exec = "bin/site build";
-                    after = [
-                      "build:site"
-                    ];
+                    after = [ "build:site" ];
                     before = [ "devenv:processes:site" ];
+                  };
+                  "build:site" = {
+                    exec = "ghc -outputdir _cache/site site.hs -o bin/site";
+                    before = [ "build:frontend" ];
                   };
                   "build:library" = {
                     exec = ''
                       bin/gen
                       elm-format --yes src/Generated/Api.elm
                     '';
-                    before = [
-                      "build:site"
-                      "build:server"
-                    ];
+                    before = [ "build:site" ];
                   };
                   "build:generators" = {
                     exec = ''
                       ghc -outputdir _cache/generators generators/Main.hs -iserver -o bin/gen
                     '';
-                    before = [
-                      "build:library"
-                    ];
+                    before = [ "build:library" ];
                   };
                   "browsersync:reload" = {
                     exec = "browser-sync reload";
                     before = [ "devenv:processes:server" ];
                     after = [
                       "build:server"
-                      "build:site"
                     ];
                   };
                 };
