@@ -3,6 +3,7 @@
 
 module Api where
 
+import Data.Aeson (FromJSON, ToJSON)
 import Elm.Derive (defaultOptions, deriveBoth)
 import GHC.Generics
 import Servant
@@ -21,14 +22,14 @@ data Item
   }
   deriving (Eq, Show, Generic)
 
-deriveBoth defaultOptions ''Item
-
 type ItemApi =
   "item" :> Get '[JSON] [Item]
     :<|> "item" :> Capture "itemId" Integer :> Get '[JSON] Item
 
 itemApi :: Proxy ItemApi
 itemApi = Proxy
+
+$(deriveBoth defaultOptions ''Item)
 
 --------------------------------------------------------------------------------
 -- API types

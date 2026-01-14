@@ -268,7 +268,7 @@
                 processes =
                   let
                     siteWatch = "bin/site watch";
-                    server = "bin/server";
+                    server = "bin/serve";
                     browserSync = "browser-sync start --proxy localhost:8000 --files '_site/**/*'";
                     serverWatcher = "watchexec -w server --exts hs -- process-compose process restart server";
                     syncElmDeps =
@@ -296,7 +296,7 @@
                     exec = "rm -rf bin _site _cache";
                   };
                   "build:init" = {
-                    exec = "mkdir -p bin/Generators";
+                    exec = "mkdir -p bin/server/Generators";
                     before = [
                       "build:server"
                       "build:site"
@@ -304,7 +304,7 @@
                     ];
                   };
                   "build:server" = {
-                    exec = "ghc -outputdir bin server/Main.hs -iserver -o bin/server";
+                    exec = "ghc -outputdir bin/server server/Main.hs -iserver -o bin/serve";
                     before = [ "devenv:processes:server" ];
                     after = [ "build:site" ];
                   };
@@ -322,8 +322,8 @@
                   };
                   "build:library" = {
                     exec = ''
-                      ghc -outputdir bin/Generators server/Generators/Main.hs -iserver -o bin/Generators/gen
-                      bin/Generators/gen
+                      ghc -outputdir bin/server/Generators server/Generators/Main.hs -iserver -o bin/gen
+                      bin/gen
                       elm-format --yes src/Generated/Api.elm
                     '';
                     before = [
