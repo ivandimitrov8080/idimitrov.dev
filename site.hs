@@ -17,7 +17,7 @@ import Skylighting (Style, monochrome, styleToCss, zenburn)
 import Skylighting.Styles (kate, monochrome, pygments, zenburn)
 import System.Directory (createDirectoryIfMissing)
 import System.FilePath (dropExtension, splitDirectories, takeDirectory, (</>))
-import System.IO.Temp (withSystemTempDirectory)
+import System.IO.Temp (withTempDirectory)
 import System.Process (callProcess)
 import Text.Pandoc (Block (CodeBlock), Pandoc, WriterOptions (writerHighlightStyle))
 import Text.Pandoc.Walk (walk)
@@ -25,8 +25,8 @@ import Text.Pandoc.Walk (walk)
 --------------------------------------------------------------------------------
 -- Hakyll config
 --------------------------------------------------------------------------------
-myConfig :: Configuration
-myConfig =
+cfg :: Configuration
+cfg =
   defaultConfiguration
     { ignoreFile = ignoreFile'
     }
@@ -62,7 +62,7 @@ myWriterOptions = defaultHakyllWriterOptions {writerHighlightStyle = Just codeSt
 -- Site config
 --------------------------------------------------------------------------------
 main :: IO ()
-main = hakyllWith myConfig $ do
+main = hakyllWith cfg $ do
   match "images/*" $ do
     route idRoute
     compile copyFileCompiler
@@ -134,7 +134,7 @@ main = hakyllWith myConfig $ do
     route idRoute
     compile $ copyFileCompiler
 
-  elmDeps <- makePatternDependency "src/**.elm"
+  elmDeps <- makePatternDependency ("src/**.elm" .||. "elm.json")
 
   rulesExtraDependencies [elmDeps] $ do
     match "src/Main.elm" $ do
@@ -164,7 +164,7 @@ elmMakeCompiler :: [String] -> Compiler (Item String)
 elmMakeCompiler extraElmArgs = do
   entry <- getResourceFilePath
   js <- unsafeCompiler $
-    withSystemTempDirectory "hakyll-elm" $ \dir -> do
+    withTempDirectory (tmpDirectory cfg) "hakyll-elm" $ \dir -> do
       let out = dir </> "elm.js"
       callProcess "elm" $
         ["make", entry, "--output", out] ++ extraElmArgs

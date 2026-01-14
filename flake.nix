@@ -262,7 +262,7 @@
                 processes =
                   let
                     siteWatch = "bin/site watch";
-                    server = "bin/serve";
+                    server = "bin/server";
                     browserSync = "browser-sync start --proxy localhost:8000 --files '_site/**/*'";
                     serverWatcher = "watchexec -w server --exts hs -- process-compose process restart server";
                     syncElmDeps =
@@ -290,7 +290,10 @@
                     exec = "rm -rf bin _site _cache";
                   };
                   "build:init" = {
-                    exec = "mkdir -p bin/{server,generators}";
+                    exec = ''
+                      mkdir -p bin/
+                      mkdir -p _cache/{tmp,site,server,generators}
+                    '';
                     before = [
                       "build:server"
                       "build:site"
@@ -298,12 +301,12 @@
                     ];
                   };
                   "build:server" = {
-                    exec = "ghc -outputdir bin/server server/Main.hs -iserver -o bin/serve";
+                    exec = "ghc -outputdir _cache/server server/Main.hs -iserver -o bin/server";
                     before = [ "devenv:processes:server" ];
                     after = [ "build:site" ];
                   };
                   "build:site" = {
-                    exec = "ghc -outputdir bin site.hs -o bin/site";
+                    exec = "ghc -outputdir _cache/site site.hs -o bin/site";
                     before = [
                       "devenv:processes:site"
                       "build:frontend"
@@ -328,7 +331,7 @@
                   };
                   "build:generators" = {
                     exec = ''
-                      ghc -outputdir bin/generators generators/Main.hs -iserver -o bin/gen
+                      ghc -outputdir _cache/generators generators/Main.hs -iserver -o bin/gen
                     '';
                     before = [
                       "build:library"
