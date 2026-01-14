@@ -329,9 +329,7 @@
                   "browsersync:reload" = {
                     exec = "browser-sync reload";
                     before = [ "devenv:processes:server" ];
-                    after = [
-                      "build:server"
-                    ];
+                    after = [ "build:server" ];
                   };
                 };
                 git-hooks.hooks = {
