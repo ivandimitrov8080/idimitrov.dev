@@ -322,13 +322,20 @@
                   };
                   "build:library" = {
                     exec = ''
-                      ghc -outputdir bin/generators generators/Main.hs -iserver -o bin/gen
                       bin/gen
                       elm-format --yes src/Generated/Api.elm
                     '';
                     before = [
                       "build:site"
                       "build:server"
+                    ];
+                  };
+                  "build:generators" = {
+                    exec = ''
+                      ghc -outputdir bin/generators generators/Main.hs -iserver -o bin/gen
+                    '';
+                    before = [
+                      "build:library"
                     ];
                   };
                   "browsersync:reload" = {
