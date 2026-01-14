@@ -29,6 +29,7 @@ type ItemApi =
 itemApi :: Proxy ItemApi
 itemApi = Proxy
 
+-- Compile-time execution instead of runtime
 $(deriveBoth defaultOptions ''Item)
 
 --------------------------------------------------------------------------------

@@ -296,7 +296,7 @@
                     exec = "rm -rf bin _site _cache";
                   };
                   "build:init" = {
-                    exec = "mkdir -p bin/server/Generators";
+                    exec = "mkdir -p bin/{server,generators}";
                     before = [
                       "build:server"
                       "build:site"
@@ -322,7 +322,7 @@
                   };
                   "build:library" = {
                     exec = ''
-                      ghc -outputdir bin/server/Generators server/Generators/Main.hs -iserver -o bin/gen
+                      ghc -outputdir bin/generators generators/Main.hs -iserver -o bin/gen
                       bin/gen
                       elm-format --yes src/Generated/Api.elm
                     '';
