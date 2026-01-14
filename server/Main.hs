@@ -14,6 +14,8 @@ import Control.Monad.Reader (ReaderT, ask, runReaderT)
 import Data.Functor.Contravariant
 import Data.Int
 import Data.Text (Text, pack)
+import Data.Vector (Vector)
+import Data.Vector qualified as V
 import Hasql.Connection qualified as Connection
 import Hasql.Connection.Setting qualified as ConnectionSetting
 import Hasql.Connection.Setting.Connection qualified as ConnectionSettingConnection
@@ -78,16 +80,16 @@ getItems = do
     Left err -> do
       liftIO $ hPutStrLn stderr ("DB error: " ++ show err)
       throwError err500
-    Right items -> pure items
+    Right tuples -> pure $ map (\(i, t, n) -> Item (fromIntegral i) (show t) (show n)) (V.toList tuples) -- convert Vector to list and then to Item
 
-selectItemsSession :: Session [Item]
+selectItemsSession :: Session (Vector (Int64, Text, Text))
 selectItemsSession =
   Session.statement () selectItemsStatement
 
-selectItemsStatement :: Statement () [Item]
+selectItemsStatement :: Statement () (Vector (Int64, Text, Text))
 selectItemsStatement =
   [TH.vectorStatement|
-    SELECT (id :: int8, text :: text, name :: text) :: Item
+    SELECT id :: int8, text :: text, name :: text
     FROM item
   |]
 
