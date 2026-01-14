@@ -300,7 +300,7 @@
                     before = [
                       "build:server"
                       "build:site"
-                      "build:library"
+                      "build:generators"
                     ];
                   };
                   "build:server" = {
@@ -310,13 +310,15 @@
                   };
                   "build:site" = {
                     exec = "ghc -outputdir bin site.hs -o bin/site";
-                    before = [ "devenv:processes:site" ];
+                    before = [
+                      "devenv:processes:site"
+                      "build:frontend"
+                    ];
                   };
-                  "build:_site" = {
+                  "build:frontend" = {
                     exec = "bin/site build";
                     after = [
                       "build:site"
-                      "build:server"
                     ];
                     before = [ "devenv:processes:site" ];
                   };
@@ -370,10 +372,13 @@
           programs = {
             nixfmt.enable = true;
             prettier.enable = true;
-            ormolu.enable = true;
             elm-format.enable = true;
             deadnix.enable = true;
             statix.enable = true;
+            ormolu.enable = true;
+            ormolu.ghcOpts = [
+              "ImportQualifiedPost"
+            ];
           };
         }).config.build.wrapper
       );
