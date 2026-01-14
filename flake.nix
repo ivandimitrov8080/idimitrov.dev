@@ -352,10 +352,13 @@
                 git-hooks.hooks = {
                   nixfmt.enable = true;
                   prettier.enable = true;
-                  ormolu.enable = true;
                   elm-format.enable = true;
                   deadnix.enable = true;
                   statix.enable = true;
+                  ormolu.enable = true;
+                  ormolu.settings.defaultExtensions = [
+                    "ImportQualifiedPost"
+                  ];
                 };
               }
             ];

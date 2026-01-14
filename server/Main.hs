@@ -9,6 +9,8 @@
 module Main (IO, main) where
 
 import Api
+import Control.Monad.IO.Class (liftIO)
+import Control.Monad.Reader (ReaderT, ask, runReaderT)
 import Data.Functor.Contravariant
 import Data.Int
 import Data.Text (Text, pack)
@@ -33,6 +35,11 @@ import Prelude
 -- Serve
 --------------------------------------------------------------------------------
 
+type AppM = ReaderT Connection.Connection Handler
+
+runAppM :: Connection.Connection -> AppM a -> Handler a
+runAppM connection app = runReaderT app connection
+
 main :: IO ()
 main = do
   serveCommand
@@ -49,26 +56,44 @@ serveCommand = do
       pstr :: Text
       pstr = "host=" <> host <> " dbname=postgres user=postgres port=5432"
   Right connection <- Connection.acquire (connectionSettings pstr)
-  runSettings settings =<< mkApp
+  runSettings settings =<< mkApp connection
   where
     connectionSettings pstr = [ConnectionSetting.connection $ ConnectionSettingConnection.string pstr]
 
-mkApp :: IO Application
-mkApp = do
-  let apiApp = serve itemApi server
+mkApp :: Connection.Connection -> IO Application
+mkApp connection = do
+  let apiApp = serve itemApi (hoistServer itemApi (runAppM connection) server)
   pure $ cors (const $ Just simpleCorsResourcePolicy) apiApp
 
-server :: Server ItemApi
+server :: ServerT ItemApi AppM
 server =
   getItems
     :<|> getItemById
 
-getItems :: Handler [Item]
-getItems = return [exampleItem, exampleItem2, exampleItem3, exampleItem4]
+getItems :: AppM [Item]
+getItems = do
+  conn <- ask
+  result <- liftIO $ Session.run selectItemsSession conn
+  case result of
+    Left err -> do
+      liftIO $ hPutStrLn stderr ("DB error: " ++ show err)
+      throwError err500
+    Right items -> pure items
 
-getItemById :: Integer -> Handler Item
+selectItemsSession :: Session [Item]
+selectItemsSession =
+  Session.statement () selectItemsStatement
+
+selectItemsStatement :: Statement () [Item]
+selectItemsStatement =
+  [TH.vectorStatement|
+    SELECT (id :: int8, text :: text, name :: text) :: Item
+    FROM item
+  |]
+
+getItemById :: Integer -> AppM Item
 getItemById = \case
-  0 -> return exampleItem
+  0 -> pure exampleItem
   _ -> throwError err404
 
 exampleItem :: Item
