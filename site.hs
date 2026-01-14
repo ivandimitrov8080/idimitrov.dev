@@ -134,7 +134,7 @@ main = hakyllWith myConfig $ do
     route idRoute
     compile $ copyFileCompiler
 
-  elmDeps <- makePatternDependency ("src/**.elm" .||. "elm.json")
+  elmDeps <- makePatternDependency "src/**.elm"
 
   rulesExtraDependencies [elmDeps] $ do
     match "src/Main.elm" $ do
