@@ -80,7 +80,7 @@ getItems = do
     Left err -> do
       liftIO $ hPutStrLn stderr ("DB error: " ++ show err)
       throwError err500
-    Right tuples -> pure $ map (\(i, t, n) -> Item (fromIntegral i) (show t) (show n)) (V.toList tuples) -- convert Vector to list and then to Item
+    Right tuples -> pure $ map (\(i, t, n) -> Item (fromIntegral i) (t) (n)) (V.toList tuples) -- convert Vector to list and then to Item
 
 selectItemsSession :: Session (Vector (Int64, Text, Text))
 selectItemsSession =

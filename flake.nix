@@ -250,19 +250,13 @@
                         name = "postgres";
                         pass = "postgres";
                         user = "postgres";
-                        initialSQL =
-                          # sql
-                          ''
-                            CREATE TABLE items (
-                              item_id   BIGINT PRIMARY KEY,
-                              item_text TEXT   NOT NULL,
-                              item_name TEXT   NOT NULL
-                            );
-                            INSERT INTO items (item_id, item_text, item_name) VALUES (0, "text0", "name0");
-                            INSERT INTO items (item_id, item_text, item_name) VALUES (1, "text1", "name1");
-                          '';
+                        schema = ./schema.sql;
                       }
                     ];
+                    initialScript = ''
+                      CREATE ROLE postgres SUPERUSER;
+                      CREATE USER postgres WITH ENCRYPTED PASSWORD 'postgres' ROLE postgres;
+                    '';
                   };
                 };
                 processes =
