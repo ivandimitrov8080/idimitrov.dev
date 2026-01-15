@@ -224,6 +224,7 @@
                       wai-cors
                       hasql
                       hasql-th
+                      hasql-pool
                       hedis
                       tuple
                     ]
