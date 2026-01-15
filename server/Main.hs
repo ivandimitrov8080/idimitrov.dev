@@ -104,10 +104,26 @@ selectItemsStatement =
     FROM item
   |]
 
-getItemById :: Integer -> AppM Item
-getItemById = \case
-  0 -> pure exampleItem
-  _ -> throwError err404
+selectItemStatement :: Statement Int64 (Int64, Text, Text)
+selectItemStatement =
+  [TH.singletonStatement|
+    SELECT id :: int8, text :: text, name :: text
+    FROM item WHERE id = $1 :: int8
+  |]
+
+selectItemSession :: Int64 -> Session (Int64, Text, Text)
+selectItemSession id =
+  Session.statement (id) selectItemStatement
+
+getItemById :: Int64 -> AppM Item
+getItemById id = do
+  pool <- ask
+  result <- liftIO $ use pool $ selectItemSession id
+  case result of
+    Left err -> do
+      liftIO $ hPutStrLn stderr ("DB UsageError: " ++ show err)
+      throwError err500
+    Right tuple -> pure $ let (i, t, n) = tuple in Item (fromIntegral i) t n
 
 exampleItem :: Item
 exampleItem = Item 0 "example item" "a"

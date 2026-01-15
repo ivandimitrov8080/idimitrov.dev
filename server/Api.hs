@@ -3,6 +3,7 @@
 
 module Api where
 
+import Basement.Compat.Base (Int64)
 import Data.Aeson (FromJSON, ToJSON)
 import Data.Text (Text)
 import Elm.Derive (defaultOptions, deriveBoth)
@@ -17,7 +18,7 @@ import System.IO
 
 data Item
   = Item
-  { itemId :: Integer,
+  { itemId :: Int64,
     itemText :: Text,
     itemName :: Text
   }
@@ -25,7 +26,7 @@ data Item
 
 type ItemApi =
   "item" :> Get '[JSON] [Item]
-    :<|> "item" :> Capture "itemId" Integer :> Get '[JSON] Item
+    :<|> "item" :> Capture "itemId" Int64 :> Get '[JSON] Item
 
 itemApi :: Proxy ItemApi
 itemApi = Proxy

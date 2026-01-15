@@ -1,16 +1,16 @@
 module Main exposing (main)
 
 import Browser
-import Browser.Events exposing (onAnimationFrame)
+import Browser.Events exposing (onAnimationFrame, onClick)
 import Canvas exposing (..)
 import Canvas.Settings exposing (..)
 import Color exposing (Color)
 import Cube
-import Generated.Api exposing (Item, getItem)
+import Generated.Api exposing (Item, getItem, getItemByItemId)
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events
 import Http
-import Json.Decode exposing (errorToString)
 import Time exposing (Posix)
 
 
@@ -24,13 +24,15 @@ type alias Point =
 
 
 type alias Model =
-    { pts : List Point, cubeTheta : Float, items : List Item, error : Maybe String }
+    { pts : List Point, cubeTheta : Float, items : List Item, error : Maybe String, currentItem : Item }
 
 
 type Msg
     = AnimationFrame Posix
     | GotItems (Result Http.Error (List Item))
     | FetchItems
+    | FetchItem Int
+    | GotItem (Result Http.Error Item)
 
 
 main : Program () Model Msg
@@ -94,6 +96,7 @@ init () =
       , cubeTheta = 0
       , items = []
       , error = Just ""
+      , currentItem = Item 0 "" ""
       }
     , getItem GotItems
     )
@@ -143,6 +146,23 @@ update msg model =
                     , Cmd.none
                     )
 
+        FetchItem id ->
+            ( model
+            , getItemByItemId id GotItem
+            )
+
+        GotItem result ->
+            case result of
+                Ok item ->
+                    ( { model | currentItem = item, error = Nothing }
+                    , Cmd.none
+                    )
+
+                Err _ ->
+                    ( { model | error = Just "Problem" }
+                    , Cmd.none
+                    )
+
 
 view : Model -> Html Msg
 view model =
@@ -155,13 +175,14 @@ view model =
             ]
         , Cube.view model.cubeTheta
         , div [] [ ul [] (List.map viewItem model.items) ]
+        , div [] [ Html.text model.currentItem.itemName ]
         ]
 
 
 viewItem : Item -> Html Msg
 viewItem item =
     li []
-        [ Html.text item.itemText, Html.text item.itemName ]
+        [ button [ Html.Events.onClick (FetchItem item.itemId) ] [ Html.text item.itemName ] ]
 
 
 drawPoint : Point -> Shape
