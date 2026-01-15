@@ -95,7 +95,7 @@ main = hakyllWith cfg $ do
     compile $ do
       posts <- recentFirst =<< loadAll "posts/*"
       let archiveCtx =
-            listField "posts" postCtx (return posts)
+            listField "posts" postCtx (pure posts)
               <> constField "title" "Archives"
               <> defaultContext
 
@@ -109,7 +109,7 @@ main = hakyllWith cfg $ do
     compile $ do
       posts <- recentFirst =<< loadAll "posts/*"
       let indexCtx =
-            listField "posts" postCtx (return posts)
+            listField "posts" postCtx (pure posts)
               <> defaultContext
 
       getResourceBody
