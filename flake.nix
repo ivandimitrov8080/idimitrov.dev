@@ -302,7 +302,7 @@
                     ];
                   };
                   "build:server" = {
-                    exec = "ghc -outputdir _cache/server server/Main.hs -iserver -o bin/server";
+                    exec = "ghc -threaded -outputdir _cache/server server/Main.hs -iserver -o bin/server";
                     before = [ "devenv:processes:server" ];
                   };
                   "build:frontend" = {
