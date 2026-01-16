@@ -82,6 +82,7 @@ server :: ServerT ItemApi AppM
 server =
   getItems
     :<|> getItemById
+    :<|> getItemByText
 
 getItems :: AppM [Item]
 getItems = do
@@ -123,6 +124,27 @@ selectItemStatement =
   [TH.singletonStatement|
     SELECT id :: int8, text :: text, name :: text
     FROM item WHERE id = $1 :: int8
+  |]
+
+getItemByText :: Text -> AppM Item
+getItemByText text = do
+  pool <- ask
+  result <- liftIO $ use pool $ selectItemTextSession text
+  case result of
+    Left err -> do
+      liftIO $ hPutStrLn stderr ("DB UsageError: " ++ show err)
+      throwError err500
+    Right tuple -> pure $ let (i, t, n) = tuple in Item (fromIntegral i) t n
+
+selectItemTextSession :: Text -> Session (Int64, Text, Text)
+selectItemTextSession text =
+  Session.statement (text) selectItemTextStatement
+
+selectItemTextStatement :: Statement Text (Int64, Text, Text)
+selectItemTextStatement =
+  [TH.singletonStatement|
+    SELECT id :: int8, text :: text, name :: text
+    FROM item WHERE text = $1 :: text
   |]
 
 --------------------------------------------------------------------------------

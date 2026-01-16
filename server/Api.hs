@@ -27,6 +27,7 @@ data Item
 type ItemApi =
   "item" :> Get '[JSON] [Item]
     :<|> "item" :> Capture "itemId" Int64 :> Get '[JSON] Item
+    :<|> "item" :> Capture "itemText" Text :> Get '[JSON] Item
 
 itemApi :: Proxy ItemApi
 itemApi = Proxy

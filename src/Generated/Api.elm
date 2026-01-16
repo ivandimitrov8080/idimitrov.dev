@@ -95,3 +95,34 @@ getItemByItemId capture_itemId toMsg =
         , tracker =
             Nothing
         }
+
+
+getItemByItemText : String -> (Result Http.Error Item -> msg) -> Cmd msg
+getItemByItemText capture_itemText toMsg =
+    let
+        params =
+            List.filterMap identity
+                (List.concat
+                    []
+                )
+    in
+    Http.request
+        { method =
+            "GET"
+        , headers =
+            []
+        , url =
+            Url.Builder.crossOrigin "http://localhost:8080"
+                [ "item"
+                , capture_itemText
+                ]
+                params
+        , body =
+            Http.emptyBody
+        , expect =
+            Http.expectJson toMsg jsonDecItem
+        , timeout =
+            Nothing
+        , tracker =
+            Nothing
+        }

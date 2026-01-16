@@ -32,6 +32,7 @@ type Msg
     | GotItems (Result Http.Error (List Item))
     | FetchItems
     | FetchItem Int
+    | FetchItemText String
     | GotItem (Result Http.Error Item)
 
 
@@ -151,6 +152,11 @@ update msg model =
             , getItemByItemId id GotItem
             )
 
+        FetchItemText text ->
+            ( model
+            , Generated.Api.getItemByItemText text GotItem
+            )
+
         GotItem result ->
             case result of
                 Ok item ->
@@ -182,7 +188,7 @@ view model =
 viewItem : Item -> Html Msg
 viewItem item =
     li []
-        [ button [ Html.Events.onClick (FetchItem item.itemId) ] [ Html.text item.itemName ] ]
+        [ button [ Html.Events.onClick (FetchItem item.itemId) ] [ Html.text item.itemText ] ]
 
 
 drawPoint : Point -> Shape
