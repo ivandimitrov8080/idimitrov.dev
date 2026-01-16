@@ -9,14 +9,14 @@ Welcome agentic coding agents! This repository follows strict functional, static
 ### Build
 
 - **Haskell Site Generator:**
-  - Compile: `devenv tasks run build:site`
-  - Build static site: `devenv tasks run build:frontend`
+  - Compile: `devenv tasks run build:site --mode before`
+  - Build static site: `devenv tasks run build:frontend --mode before`
 - **Elm Frontend:**
-  - Compile: `devenv tasks run build:frontend`
+  - Compile: `devenv tasks run build:frontend --mode before`
 - **Backend/Generators:**
-  - Server: `devenv tasks run build:server`
-  - Generators: `devenv tasks run build:generators`
-  - API Elm Library: `devenv tasks run build:library`
+  - Server: `devenv tasks run build:server --mode before`
+  - Generators: `devenv tasks run build:generators --mode before`
+  - API Elm Library: `devenv tasks run build:library --mode before`
 - **Combined via Nix/Devenv:**
   - Build everything: `devenv tasks run build`
 
