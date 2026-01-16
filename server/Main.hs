@@ -125,9 +125,6 @@ getItemById id = do
       throwError err500
     Right tuple -> pure $ let (i, t, n) = tuple in Item (fromIntegral i) t n
 
-exampleItem :: Item
-exampleItem = Item 0 "example item" "a"
-
 --------------------------------------------------------------------------------
 -- Serve
 --------------------------------------------------------------------------------
