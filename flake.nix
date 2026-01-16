@@ -229,6 +229,7 @@
                       hasql-pool
                       hedis
                       tuple
+                      argon2
                     ]
                   ))
                   haskellPackages.hakyll
