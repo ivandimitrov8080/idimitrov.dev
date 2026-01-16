@@ -1,0 +1,15 @@
+{-# LANGUAGE OverloadedStrings #-}
+
+module App (mkApp) where
+
+import Api
+import DB (Pool)
+import Handlers (AppM, runAppM, server)
+import Network.Wai (Application)
+import Network.Wai.Middleware.Cors (cors, simpleCorsResourcePolicy)
+import Servant (hoistServer, serve)
+
+mkApp :: Pool -> IO Application
+mkApp pool = do
+  let apiApp = serve itemApi (hoistServer itemApi (runAppM pool) server)
+  pure $ cors (const $ Just simpleCorsResourcePolicy) apiApp
