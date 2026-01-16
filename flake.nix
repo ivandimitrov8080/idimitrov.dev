@@ -217,6 +217,8 @@
                       hakyll
                       servant
                       servant-server
+                      servant-auth
+                      servant-auth-server
                       servant-elm
                       hspec
                       http-client
