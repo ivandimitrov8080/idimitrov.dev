@@ -32,7 +32,8 @@ cfg =
     { ignoreFile = ignoreFile'
     }
   where
-    ignoreFile' p = ignoreFile defaultConfiguration p || (any (`elem` splitDirectories p) ["elm-stuff", "servant", "bin", "Generated", "server", ".devenv", ".direnv", ".git"])
+    dirsToIgnore = ["elm-stuff", "servant", "bin", "Generated", "server", ".devenv", ".direnv", ".git"]
+    ignoreFile' p = ignoreFile defaultConfiguration p || (any (`elem` splitDirectories p) dirsToIgnore)
 
 --------------------------------------------------------------------------------
 -- Hakyll config
