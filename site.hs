@@ -2,6 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 import Data.List (nub)
+import Debug.Trace (trace)
 import GHC.Internal.Data.Proxy (Proxy)
 import Hakyll
 import Servant.Elm
@@ -31,7 +32,7 @@ cfg =
     { ignoreFile = ignoreFile'
     }
   where
-    ignoreFile' p = ignoreFile defaultConfiguration p || (any (`elem` splitDirectories p) ["elm-stuff", "servant", "bin", "Generated", "server"])
+    ignoreFile' p = ignoreFile defaultConfiguration p || (any (`elem` splitDirectories p) ["elm-stuff", "servant", "bin", "Generated", "server", ".devenv", ".direnv", ".git"])
 
 --------------------------------------------------------------------------------
 -- Hakyll config
@@ -163,9 +164,11 @@ postCtx =
 elmMakeCompiler :: [String] -> Compiler (Item String)
 elmMakeCompiler extraElmArgs = do
   entry <- getResourceFilePath
-  js <- unsafeCompiler $
-    withTempDirectory (tmpDirectory cfg) "hakyll-elm" $ \dir -> do
-      let out = dir </> "elm.js"
+  js <- unsafeCompiler $ do
+    let tmp = (tmpDirectory cfg)
+    createDirectoryIfMissing True tmp
+    withTempDirectory tmp "hakyll-elm" $ \dir -> do
+      let out = trace dir $ dir </> "elm.js"
       callProcess "elm" $
         ["make", entry, "--output", out] ++ extraElmArgs
       readFile out
