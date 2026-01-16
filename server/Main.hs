@@ -104,17 +104,6 @@ selectItemsStatement =
     FROM item
   |]
 
-selectItemStatement :: Statement Int64 (Int64, Text, Text)
-selectItemStatement =
-  [TH.singletonStatement|
-    SELECT id :: int8, text :: text, name :: text
-    FROM item WHERE id = $1 :: int8
-  |]
-
-selectItemSession :: Int64 -> Session (Int64, Text, Text)
-selectItemSession id =
-  Session.statement (id) selectItemStatement
-
 getItemById :: Int64 -> AppM Item
 getItemById id = do
   pool <- ask
@@ -124,6 +113,17 @@ getItemById id = do
       liftIO $ hPutStrLn stderr ("DB UsageError: " ++ show err)
       throwError err500
     Right tuple -> pure $ let (i, t, n) = tuple in Item (fromIntegral i) t n
+
+selectItemSession :: Int64 -> Session (Int64, Text, Text)
+selectItemSession id =
+  Session.statement (id) selectItemStatement
+
+selectItemStatement :: Statement Int64 (Int64, Text, Text)
+selectItemStatement =
+  [TH.singletonStatement|
+    SELECT id :: int8, text :: text, name :: text
+    FROM item WHERE id = $1 :: int8
+  |]
 
 --------------------------------------------------------------------------------
 -- Serve
