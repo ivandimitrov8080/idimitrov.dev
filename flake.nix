@@ -266,6 +266,7 @@
                     server = "bin/server";
                     browserSync = "browser-sync start --proxy localhost:8000 --files '_site/**/*'";
                     serverWatcher = "watchexec -w server --exts hs -- process-compose process restart server";
+                    apiWatcher = "watchexec -w server -f Api.hs -- devenv tasks run build:library --mode before";
                     syncElmDeps =
                       pkgs.writeScript "sync_elm_deps"
                         # bash
@@ -285,6 +286,7 @@
                     browser-sync.exec = browserSync;
                     elm-watcher.exec = elm2nixWatcher;
                     server-watcher.exec = serverWatcher;
+                    api-watcher.exec = apiWatcher;
                   };
                 tasks = {
                   "clean:site" = {
