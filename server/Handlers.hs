@@ -18,6 +18,8 @@ import Hasql.Pool (Pool, UsageError)
 import Servant (Handler, ServerT, err500, throwError, (:<|>) (..))
 import System.IO (hPutStrLn, stderr)
 
+-- Helpers extracted by refactor for reusability (see below)
+
 -- AppM is now the reader over Pool for Handler
 -- Move the ServerT API implementation here as well
 
@@ -30,32 +32,35 @@ server :: ServerT ItemApi AppM
 server =
   getItems :<|> getItemById :<|> getItemByText
 
-getItems :: AppM [Item]
-getItems = do
+-- Helper to log DB errors
+logDbError :: UsageError -> AppM ()
+logDbError err = liftIO $ hPutStrLn stderr ("DB UsageError: " ++ show err)
+
+-- Abstract runner for DB sessions
+runDbSession :: (Pool -> IO (Either UsageError a)) -> (a -> AppM b) -> AppM b
+runDbSession action onSuccess = do
   pool <- ask
-  result <- liftIO $ runSession pool selectItemsSession
+  result <- liftIO $ action pool
   case result of
     Left err -> do
-      liftIO $ hPutStrLn stderr ("DB UsageError: " ++ show err)
+      logDbError err
       throwError err500
-    Right tuples -> pure $ map (\(i, t, n) -> Item (fromIntegral i) t n) (V.toList tuples)
+    Right val -> onSuccess val
+
+getItems :: AppM [Item]
+getItems =
+  runDbSession
+    (\pool -> runSession pool selectItemsSession)
+    (\tuples -> pure $ map (\(i, t, n) -> Item (fromIntegral i) t n) (V.toList tuples))
 
 getItemById :: Int64 -> AppM Item
-getItemById itemId = do
-  pool <- ask
-  result <- liftIO $ runSession pool (selectItemSession itemId)
-  case result of
-    Left err -> do
-      liftIO $ hPutStrLn stderr ("DB UsageError: " ++ show err)
-      throwError err500
-    Right (i, t, n) -> pure $ Item (fromIntegral i) t n
+getItemById itemId =
+  runDbSession
+    (\pool -> runSession pool (selectItemSession itemId))
+    (\(i, t, n) -> pure $ Item (fromIntegral i) t n)
 
 getItemByText :: Text -> AppM Item
-getItemByText text = do
-  pool <- ask
-  result <- liftIO $ runSession pool (selectItemTextSession text)
-  case result of
-    Left err -> do
-      liftIO $ hPutStrLn stderr ("DB UsageError: " ++ show err)
-      throwError err500
-    Right (i, t, n) -> pure $ Item (fromIntegral i) t n
+getItemByText text =
+  runDbSession
+    (\pool -> runSession pool (selectItemTextSession text))
+    (\(i, t, n) -> pure $ Item (fromIntegral i) t n)
