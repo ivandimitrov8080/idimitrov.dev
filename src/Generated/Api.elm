@@ -126,3 +126,65 @@ getItemByItemText capture_itemText toMsg =
         , tracker =
             Nothing
         }
+
+
+postUserRegister : User -> (Result Http.Error User -> msg) -> Cmd msg
+postUserRegister body toMsg =
+    let
+        params =
+            List.filterMap identity
+                (List.concat
+                    []
+                )
+    in
+    Http.request
+        { method =
+            "POST"
+        , headers =
+            []
+        , url =
+            Url.Builder.crossOrigin "http://localhost:8080"
+                [ "user"
+                , "register"
+                ]
+                params
+        , body =
+            Http.jsonBody (jsonEncUser body)
+        , expect =
+            Http.expectJson toMsg jsonDecUser
+        , timeout =
+            Nothing
+        , tracker =
+            Nothing
+        }
+
+
+postUserLogin : User -> (Result Http.Error User -> msg) -> Cmd msg
+postUserLogin body toMsg =
+    let
+        params =
+            List.filterMap identity
+                (List.concat
+                    []
+                )
+    in
+    Http.request
+        { method =
+            "POST"
+        , headers =
+            []
+        , url =
+            Url.Builder.crossOrigin "http://localhost:8080"
+                [ "user"
+                , "login"
+                ]
+                params
+        , body =
+            Http.jsonBody (jsonEncUser body)
+        , expect =
+            Http.expectJson toMsg jsonDecUser
+        , timeout =
+            Nothing
+        , tracker =
+            Nothing
+        }

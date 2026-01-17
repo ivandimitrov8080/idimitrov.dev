@@ -24,10 +24,20 @@ data Item
   }
   deriving (Eq, Show, Generic)
 
+data User
+  = User
+  { userId :: Int64,
+    userName :: Text,
+    userPassword :: Text
+  }
+  deriving (Eq, Show, Generic)
+
 type ItemApi =
   "item" :> Get '[JSON] [Item]
     :<|> "item" :> Capture "itemId" Int64 :> Get '[JSON] Item
     :<|> "item" :> Capture "itemText" Text :> Get '[JSON] Item
+    :<|> "user" :> "register" :> ReqBody '[JSON] User :> Post '[JSON] User
+    :<|> "user" :> "login" :> ReqBody '[JSON] User :> Post '[JSON] User
 
 itemApi :: Proxy ItemApi
 itemApi = Proxy
