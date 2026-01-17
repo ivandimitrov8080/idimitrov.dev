@@ -41,6 +41,7 @@ type Msg
     | FetchItemText String
     | GotItem (Result Http.Error Item)
     | Register Account
+    | Login Account
     | RegisterSuccess (Result Http.Error Account)
     | AccountNameChanged String
     | AccountPasswordChanged String
@@ -209,6 +210,9 @@ update msg model =
             in
             ( { model | account = { acc | accountPassword = p } }, Cmd.none )
 
+        Login account ->
+            ( { model | account = account }, Cmd.none )
+
 
 view : Model -> Html Msg
 view model =
@@ -247,6 +251,7 @@ view model =
                     []
                 ]
             , button [ Html.Events.onClick (Register model.account) ] [ Html.text "Register" ]
+            , button [ Html.Events.onClick (Login model.account) ] [ Html.text "Login" ]
             ]
         ]
 
