@@ -15,11 +15,11 @@ module DB
   )
 where
 
-import Api (Account (..))
+import Api (Account (..), Item (..))
 import Config (Config (..))
 import Data.Int (Int64)
 import Data.Text (Text)
-import Data.Vector (Vector)
+import Data.Vector qualified as V
 import Hasql.Connection.Setting qualified as ConnectionSetting
 import Hasql.Connection.Setting.Connection qualified as ConnectionSettingConnection
 import Hasql.Pool (Pool, UsageError, acquire, use)
@@ -44,26 +44,25 @@ withPool cfg action = do
 runSession :: Pool -> Session a -> IO (Either UsageError a)
 runSession = use
 
-selectItemsSession :: Session (Vector (Int64, Text, Text))
+selectItemsSession :: Session [Item]
 selectItemsSession =
-  Session.statement () selectItemsStatement
+  fmap
+    (\v -> map (\(i, t, n) -> Item i t n) $ V.toList v)
+    (Session.statement () [TH.vectorStatement|SELECT id :: int8, text :: text, name :: text FROM item|])
 
-selectItemsStatement :: Statement () (Vector (Int64, Text, Text))
-selectItemsStatement = [TH.vectorStatement|SELECT id :: int8, text :: text, name :: text FROM item|]
-
-selectItemSession :: Int64 -> Session (Int64, Text, Text)
+selectItemSession :: Int64 -> Session Item
 selectItemSession i =
-  Session.statement i selectItemStatement
+  fmap (\(i, n, p) -> Item i n p) $
+    Session.statement
+      i
+      [TH.singletonStatement|SELECT id :: int8, text :: text, name :: text FROM item WHERE id = $1 :: int8|]
 
-selectItemStatement :: Statement Int64 (Int64, Text, Text)
-selectItemStatement = [TH.singletonStatement|SELECT id :: int8, text :: text, name :: text FROM item WHERE id = $1 :: int8|]
-
-selectItemTextSession :: Text -> Session (Int64, Text, Text)
+selectItemTextSession :: Text -> Session Item
 selectItemTextSession t =
-  Session.statement t selectItemTextStatement
-
-selectItemTextStatement :: Statement Text (Int64, Text, Text)
-selectItemTextStatement = [TH.singletonStatement|SELECT id :: int8, text :: text, name :: text FROM item WHERE text = $1 :: text|]
+  fmap (\(i, n, p) -> Item i n p) $
+    Session.statement
+      t
+      [TH.singletonStatement|SELECT id :: int8, text :: text, name :: text FROM item WHERE text = $1 :: text|]
 
 accountRegisterSession :: Account -> Session Account
 accountRegisterSession (Account _ name password) =

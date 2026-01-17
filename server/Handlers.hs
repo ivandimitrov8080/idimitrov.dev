@@ -14,7 +14,6 @@ import Control.Monad.Trans.Resource (register)
 import DB
 import Data.Int (Int64)
 import Data.Text (Text)
-import Data.Vector qualified as V
 import Hasql.Pool (Pool, UsageError)
 import Servant (Handler, ServerT, err500, throwError, (:<|>) (..))
 import System.IO (hPutStrLn, stderr)
@@ -52,19 +51,19 @@ getItems :: AppM [Item]
 getItems =
   runDbSession
     (\pool -> runSession pool selectItemsSession)
-    (\tuples -> pure $ map (\(i, t, n) -> Item (fromIntegral i) t n) (V.toList tuples))
+    (\items -> pure $ items)
 
 getItemById :: Int64 -> AppM Item
 getItemById itemId =
   runDbSession
     (\pool -> runSession pool (selectItemSession itemId))
-    (\(i, t, n) -> pure $ Item (fromIntegral i) t n)
+    (\item -> pure $ item)
 
 getItemByText :: Text -> AppM Item
 getItemByText text =
   runDbSession
     (\pool -> runSession pool (selectItemTextSession text))
-    (\(i, t, n) -> pure $ Item (fromIntegral i) t n)
+    (\item -> pure $ item)
 
 accountRegister :: Account -> AppM Account
 accountRegister account =
