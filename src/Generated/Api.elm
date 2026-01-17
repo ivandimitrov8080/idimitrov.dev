@@ -36,6 +36,30 @@ jsonEncItem val =
         ]
 
 
+type alias Account =
+    { accountId : Int
+    , accountName : String
+    , accountPassword : String
+    }
+
+
+jsonDecAccount : Json.Decode.Decoder Account
+jsonDecAccount =
+    Json.Decode.succeed (\paccountId paccountName paccountPassword -> { accountId = paccountId, accountName = paccountName, accountPassword = paccountPassword })
+        |> required "accountId" Json.Decode.int
+        |> required "accountName" Json.Decode.string
+        |> required "accountPassword" Json.Decode.string
+
+
+jsonEncAccount : Account -> Value
+jsonEncAccount val =
+    Json.Encode.object
+        [ ( "accountId", Json.Encode.int val.accountId )
+        , ( "accountName", Json.Encode.string val.accountName )
+        , ( "accountPassword", Json.Encode.string val.accountPassword )
+        ]
+
+
 getItem : (Result Http.Error (List Item) -> msg) -> Cmd msg
 getItem toMsg =
     let

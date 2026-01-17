@@ -70,17 +70,17 @@ accountRegisterSession (Account _ name password) =
     Session.statement
       (name, password)
       [TH.singletonStatement|
-      INSERT INTO account (name, password)
-      VALUES ($1 :: text, $2 :: text)
-      RETURNING id :: int8, name :: text, password :: text
-    |]
+        INSERT INTO account (name, password)
+        VALUES ($1 :: text, $2 :: text)
+        RETURNING id :: int8, name :: text, password :: text
+      |]
 
 accountLoginSession (Account _ name password) =
   fmap (\(i, n, p) -> Account i n p) $
     Session.statement
       (name, password)
       [TH.singletonStatement|
-      SELECT id :: int8, name :: text, password :: text
-      FROM account
-      WHERE name = $1 :: text AND password = $2 :: text
-    |]
+        SELECT id :: int8, name :: text, password :: text
+        FROM account
+        WHERE name = $1 :: text AND password = $2 :: text
+      |]

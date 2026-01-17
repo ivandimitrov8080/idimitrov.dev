@@ -6,11 +6,11 @@ import Canvas exposing (..)
 import Canvas.Settings exposing (..)
 import Color exposing (Color)
 import Cube
-import Generated.Api exposing (Item, getItem, getItemByItemId)
+import Generated.Api exposing (Account, Item, getItem, getItemByItemId, postRegister)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events
-import Http
+import Html.Events exposing (onInput)
+import Http exposing (Error)
 import Time exposing (Posix)
 
 
@@ -24,7 +24,13 @@ type alias Point =
 
 
 type alias Model =
-    { pts : List Point, cubeTheta : Float, items : List Item, error : Maybe String, currentItem : Item }
+    { pts : List Point
+    , cubeTheta : Float
+    , items : List Item
+    , errors : List Error
+    , currentItem : Item
+    , account : Account
+    }
 
 
 type Msg
@@ -34,6 +40,10 @@ type Msg
     | FetchItem Int
     | FetchItemText String
     | GotItem (Result Http.Error Item)
+    | Register Account
+    | RegisterSuccess (Result Http.Error Account)
+    | AccountNameChanged String
+    | AccountPasswordChanged String
 
 
 main : Program () Model Msg
@@ -96,8 +106,9 @@ init () =
                     )
       , cubeTheta = 0
       , items = []
-      , error = Just ""
+      , errors = []
       , currentItem = Item 0 "" ""
+      , account = Account -1 "" ""
       }
     , getItem GotItems
     )
@@ -138,12 +149,12 @@ update msg model =
         GotItems result ->
             case result of
                 Ok items ->
-                    ( { model | items = items, error = Nothing }
+                    ( { model | items = items }
                     , Cmd.none
                     )
 
-                Err _ ->
-                    ( { model | error = Just "Problem" }
+                Err err ->
+                    ( { model | errors = model.errors ++ [ err ] }
                     , Cmd.none
                     )
 
@@ -160,14 +171,43 @@ update msg model =
         GotItem result ->
             case result of
                 Ok item ->
-                    ( { model | currentItem = item, error = Nothing }
+                    ( { model | currentItem = item }
                     , Cmd.none
                     )
 
-                Err _ ->
-                    ( { model | error = Just "Problem" }
+                Err err ->
+                    ( { model | errors = model.errors ++ [ err ] }
                     , Cmd.none
                     )
+
+        Register account ->
+            ( model, postRegister account RegisterSuccess )
+
+        RegisterSuccess result ->
+            case result of
+                Ok account ->
+                    ( { model | account = account }
+                    , Cmd.none
+                    )
+
+                Err err ->
+                    ( { model | errors = model.errors ++ [ err ] }
+                    , Cmd.none
+                    )
+
+        AccountNameChanged n ->
+            let
+                acc =
+                    model.account
+            in
+            ( { model | account = { acc | accountName = n } }, Cmd.none )
+
+        AccountPasswordChanged p ->
+            let
+                acc =
+                    model.account
+            in
+            ( { model | account = { acc | accountPassword = p } }, Cmd.none )
 
 
 view : Model -> Html Msg
@@ -182,6 +222,32 @@ view model =
         , Cube.view model.cubeTheta
         , div [] [ ul [] (List.map viewItem model.items) ]
         , div [] [ Html.text model.currentItem.itemName ]
+        , div [] [ Html.text model.account.accountName ]
+        , div []
+            [ div []
+                [ label [ for "username" ] [ Html.text "Username" ]
+                , input
+                    [ id "username"
+                    , type_ "text"
+                    , placeholder "your username"
+                    , value model.account.accountName
+                    , onInput AccountNameChanged
+                    ]
+                    []
+                ]
+            , div []
+                [ label [ for "password" ] [ Html.text "Password" ]
+                , input
+                    [ id "password"
+                    , type_ "password"
+                    , placeholder "your password"
+                    , value model.account.accountPassword
+                    , onInput AccountPasswordChanged
+                    ]
+                    []
+                ]
+            , button [ Html.Events.onClick (Register model.account) ] [ Html.text "Register" ]
+            ]
         ]
 
 
