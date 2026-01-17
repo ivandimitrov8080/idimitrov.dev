@@ -128,8 +128,8 @@ getItemByItemText capture_itemText toMsg =
         }
 
 
-postUserRegister : User -> (Result Http.Error User -> msg) -> Cmd msg
-postUserRegister body toMsg =
+postRegister : Account -> (Result Http.Error Account -> msg) -> Cmd msg
+postRegister body toMsg =
     let
         params =
             List.filterMap identity
@@ -144,14 +144,13 @@ postUserRegister body toMsg =
             []
         , url =
             Url.Builder.crossOrigin "http://localhost:8080"
-                [ "user"
-                , "register"
+                [ "register"
                 ]
                 params
         , body =
-            Http.jsonBody (jsonEncUser body)
+            Http.jsonBody (jsonEncAccount body)
         , expect =
-            Http.expectJson toMsg jsonDecUser
+            Http.expectJson toMsg jsonDecAccount
         , timeout =
             Nothing
         , tracker =
@@ -159,8 +158,8 @@ postUserRegister body toMsg =
         }
 
 
-postUserLogin : User -> (Result Http.Error User -> msg) -> Cmd msg
-postUserLogin body toMsg =
+postLogin : Account -> (Result Http.Error Account -> msg) -> Cmd msg
+postLogin body toMsg =
     let
         params =
             List.filterMap identity
@@ -175,14 +174,13 @@ postUserLogin body toMsg =
             []
         , url =
             Url.Builder.crossOrigin "http://localhost:8080"
-                [ "user"
-                , "login"
+                [ "login"
                 ]
                 params
         , body =
-            Http.jsonBody (jsonEncUser body)
+            Http.jsonBody (jsonEncAccount body)
         , expect =
-            Http.expectJson toMsg jsonDecUser
+            Http.expectJson toMsg jsonDecAccount
         , timeout =
             Nothing
         , tracker =

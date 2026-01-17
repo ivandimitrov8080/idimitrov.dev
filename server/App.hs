@@ -11,5 +11,5 @@ import Servant (hoistServer, serve)
 
 mkApp :: Pool -> IO Application
 mkApp pool = do
-  let apiApp = serve itemApi (hoistServer itemApi (runAppM pool) server)
+  let apiApp = serve api (hoistServer api (runAppM pool) server)
   pure $ cors (const $ Just simpleCorsResourcePolicy) apiApp

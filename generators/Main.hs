@@ -32,7 +32,7 @@ generateElm =
     "src"
     [ DefineElm (Proxy :: Proxy Item)
     ]
-    (Proxy :: Proxy ItemApi)
+    (Proxy :: Proxy Api)
 
 --------------------------------------------------------------------------------
 -- Generate client lib

@@ -24,26 +24,27 @@ data Item
   }
   deriving (Eq, Show, Generic)
 
-data User
-  = User
-  { userId :: Int64,
-    userName :: Text,
-    userPassword :: Text
+data Account
+  = Account
+  { accountId :: Int64,
+    accountName :: Text,
+    accountPassword :: Text
   }
   deriving (Eq, Show, Generic)
 
-type ItemApi =
+type Api =
   "item" :> Get '[JSON] [Item]
     :<|> "item" :> Capture "itemId" Int64 :> Get '[JSON] Item
     :<|> "item" :> Capture "itemText" Text :> Get '[JSON] Item
-    :<|> "user" :> "register" :> ReqBody '[JSON] User :> Post '[JSON] User
-    :<|> "user" :> "login" :> ReqBody '[JSON] User :> Post '[JSON] User
+    :<|> "register" :> ReqBody '[JSON] Account :> Post '[JSON] Account
+    :<|> "login" :> ReqBody '[JSON] Account :> Post '[JSON] Account
 
-itemApi :: Proxy ItemApi
-itemApi = Proxy
+api :: Proxy Api
+api = Proxy
 
 -- Compile-time execution instead of runtime
 $(deriveBoth defaultOptions ''Item)
+$(deriveBoth defaultOptions ''Account)
 
 --------------------------------------------------------------------------------
 -- API types

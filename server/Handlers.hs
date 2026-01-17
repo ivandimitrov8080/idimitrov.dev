@@ -10,6 +10,7 @@ where
 import Api
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Reader (ReaderT, ask, runReaderT)
+import Control.Monad.Trans.Resource (register)
 import DB
 import Data.Int (Int64)
 import Data.Text (Text)
@@ -28,9 +29,9 @@ type AppM = ReaderT Pool Handler
 runAppM :: Pool -> AppM a -> Handler a
 runAppM pool app = runReaderT app pool
 
-server :: ServerT ItemApi AppM
+server :: ServerT Api AppM
 server =
-  getItems :<|> getItemById :<|> getItemByText
+  getItems :<|> getItemById :<|> getItemByText :<|> accountRegister :<|> login
 
 -- Helper to log DB errors
 logDbError :: UsageError -> AppM ()
@@ -64,3 +65,15 @@ getItemByText text =
   runDbSession
     (\pool -> runSession pool (selectItemTextSession text))
     (\(i, t, n) -> pure $ Item (fromIntegral i) t n)
+
+accountRegister :: Account -> AppM Account
+accountRegister account =
+  runDbSession
+    (\pool -> runSession pool (accountRegisterSession account))
+    (\acc -> pure acc)
+
+login :: Account -> AppM Account
+login account =
+  runDbSession
+    (\pool -> runSession pool (accountLoginSession account))
+    (\acc -> pure acc)
