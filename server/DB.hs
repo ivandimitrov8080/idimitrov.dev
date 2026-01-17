@@ -1,7 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TemplateHaskell #-}
-{-# OPTIONS_GHC -XTemplateHaskell -XQuasiQuotes #-}
 
 module DB
   ( withPool,
@@ -18,6 +17,7 @@ where
 import Api (Account (..), Item (..))
 import Config (Config (..))
 import Data.Int (Int64)
+import Data.Password.Argon2 (Password, PasswordHash (unPasswordHash), hashPassword, mkPassword)
 import Data.Text (Text)
 import Data.Vector qualified as V
 import Hasql.Connection.Setting qualified as ConnectionSetting
@@ -65,20 +65,23 @@ selectItemTextSession t =
       [TH.singletonStatement|SELECT id :: int8, text :: text, name :: text FROM item WHERE text = $1 :: text|]
 
 accountRegisterSession :: Account -> Session Account
-accountRegisterSession (Account _ name password) =
+accountRegisterSession (Account _ name password) = do
+  hashed <- hashPassword $ mkPassword password
   fmap (\(i, n, p) -> Account i n p) $
     Session.statement
-      (name, password)
+      (name, unPasswordHash hashed)
       [TH.singletonStatement|
         INSERT INTO account (name, password)
         VALUES ($1 :: text, $2 :: text)
         RETURNING id :: int8, name :: text, password :: text
       |]
 
-accountLoginSession (Account _ name password) =
+accountLoginSession :: Account -> Session Account
+accountLoginSession (Account _ name password) = do
+  hashed <- hashPassword $ mkPassword password
   fmap (\(i, n, p) -> Account i n p) $
     Session.statement
-      (name, password)
+      (name, unPasswordHash hashed)
       [TH.singletonStatement|
         SELECT id :: int8, name :: text, password :: text
         FROM account

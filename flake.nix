@@ -228,7 +228,7 @@
                       hasql-th
                       hasql-pool
                       tuple
-                      argon2
+                      password
                     ]
                   ))
                   haskellPackages.hakyll
