@@ -227,7 +227,6 @@
                       hasql
                       hasql-th
                       hasql-pool
-                      hedis
                       tuple
                       argon2
                     ]
