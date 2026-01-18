@@ -5,15 +5,6 @@ import Data.List (nub)
 import Debug.Trace (trace)
 import GHC.Internal.Data.Proxy (Proxy)
 import Hakyll
-import Servant.Elm
-  ( DefineElm (DefineElm),
-    ElmOptions (urlPrefix),
-    Proxy (Proxy),
-    UrlPrefix (Static),
-    defElmImports,
-    defElmOptions,
-    generateElmModuleWith,
-  )
 import Skylighting (Style, monochrome, styleToCss, zenburn)
 import Skylighting.Styles (kate, monochrome, pygments, zenburn)
 import System.Directory (createDirectoryIfMissing)
