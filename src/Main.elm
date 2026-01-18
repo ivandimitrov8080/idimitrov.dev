@@ -109,7 +109,7 @@ init () =
       , items = []
       , errors = []
       , currentItem = Item 0 "" ""
-      , account = Account -1 "" ""
+      , account = Account Nothing "anon" Nothing
       }
     , getItem GotItems
     )

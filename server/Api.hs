@@ -26,9 +26,16 @@ data Item
 
 data Account
   = Account
-  { accountId :: Int64,
+  { accountId :: Maybe Int64,
     accountName :: Text,
-    accountPassword :: Text
+    accountPassword :: Text,
+    accountProfile :: Profile
+  }
+  deriving (Eq, Show, Generic)
+
+data Profile
+  = Profile
+  { profileName :: Text
   }
   deriving (Eq, Show, Generic)
 
@@ -36,8 +43,8 @@ type Api =
   "item" :> Get '[JSON] [Item]
     :<|> "item" :> Capture "itemId" Int64 :> Get '[JSON] Item
     :<|> "item" :> Capture "itemText" Text :> Get '[JSON] Item
-    :<|> "register" :> ReqBody '[JSON] Account :> Post '[JSON] Account
-    :<|> "login" :> ReqBody '[JSON] Account :> Post '[JSON] Account
+    :<|> "register" :> ReqBody '[JSON] Account :> Post '[JSON] Profile
+    :<|> "login" :> ReqBody '[JSON] Account :> Post '[JSON] Profile
 
 api :: Proxy Api
 api = Proxy
@@ -45,6 +52,7 @@ api = Proxy
 -- Compile-time execution instead of runtime
 $(deriveBoth defaultOptions ''Item)
 $(deriveBoth defaultOptions ''Account)
+$(deriveBoth defaultOptions ''Profile)
 
 --------------------------------------------------------------------------------
 -- API types

@@ -8,13 +8,14 @@ module Handlers
 where
 
 import Api
+import Api (Profile)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Reader (ReaderT, ask, runReaderT)
 import Control.Monad.Trans.Resource (register)
 import DB
 import Data.Int (Int64)
 import Data.Text (Text)
-import Hasql.Pool (Pool, UsageError)
+import Hasql.Pool (Pool, UsageError, use)
 import Servant (Handler, ServerT, err500, throwError, (:<|>) (..))
 import System.IO (hPutStrLn, stderr)
 
@@ -50,29 +51,29 @@ runDbSession action onSuccess = do
 getItems :: AppM [Item]
 getItems =
   runDbSession
-    (\pool -> runSession pool selectItemsSession)
+    (\pool -> use pool selectItemsSession)
     (\items -> pure $ items)
 
 getItemById :: Int64 -> AppM Item
 getItemById itemId =
   runDbSession
-    (\pool -> runSession pool (selectItemSession itemId))
+    (\pool -> use pool (selectItemSession itemId))
     (\item -> pure $ item)
 
 getItemByText :: Text -> AppM Item
 getItemByText text =
   runDbSession
-    (\pool -> runSession pool (selectItemTextSession text))
+    (\pool -> use pool (selectItemTextSession text))
     (\item -> pure $ item)
 
-accountRegister :: Account -> AppM Account
+accountRegister :: Account -> AppM Profile
 accountRegister account =
   runDbSession
-    (\pool -> runSession pool (accountRegisterSession account))
+    (\pool -> use pool (accountRegisterSession account))
     (\acc -> pure acc)
 
-login :: Account -> AppM Account
+login :: Account -> AppM Profile
 login account =
   runDbSession
-    (\pool -> runSession pool (accountLoginSession account))
+    (\pool -> use pool (accountLoginSession account))
     (\acc -> pure acc)

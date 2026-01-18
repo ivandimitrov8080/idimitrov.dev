@@ -4,7 +4,6 @@
 
 module DB
   ( withPool,
-    runSession,
     selectItemsSession,
     selectItemSession,
     selectItemTextSession,
@@ -14,7 +13,7 @@ module DB
   )
 where
 
-import Api (Account (..), Item (..))
+import Api (Account (..), Item (..), Profile (..))
 import Config (Config (..))
 import Data.Int (Int64)
 import Data.Password.Argon2 (Password, PasswordHash (unPasswordHash), hashPassword, mkPassword)
@@ -41,9 +40,6 @@ withPool cfg action = do
   pool <- acquire poolConfig
   action pool
 
-runSession :: Pool -> Session a -> IO (Either UsageError a)
-runSession = use
-
 selectItemsSession :: Session [Item]
 selectItemsSession =
   fmap
@@ -64,26 +60,25 @@ selectItemTextSession t =
       t
       [TH.singletonStatement|SELECT id :: int8, text :: text, name :: text FROM item WHERE text = $1 :: text|]
 
-accountRegisterSession :: Account -> Session Account
+accountRegisterSession :: Account -> Session Profile
 accountRegisterSession (Account _ name password) = do
   hashed <- hashPassword $ mkPassword password
-  fmap (\(i, n, p) -> Account i n p) $
+  fmap (\(name) -> Profile name) $
     Session.statement
       (name, unPasswordHash hashed)
       [TH.singletonStatement|
         INSERT INTO account (name, password)
         VALUES ($1 :: text, $2 :: text)
-        RETURNING id :: int8, name :: text, password :: text
+        RETURNING name :: text
       |]
 
-accountLoginSession :: Account -> Session Account
+accountLoginSession :: Account -> Session Profile
 accountLoginSession (Account _ name password) = do
-  hashed <- hashPassword $ mkPassword password
-  fmap (\(i, n, p) -> Account i n p) $
+  fmap (\(name) -> Profile name) $
     Session.statement
-      (name, unPasswordHash hashed)
+      (name)
       [TH.singletonStatement|
-        SELECT id :: int8, name :: text, password :: text
+        SELECT name :: text
         FROM account
-        WHERE name = $1 :: text AND password = $2 :: text
+        WHERE name = $1 :: text
       |]
