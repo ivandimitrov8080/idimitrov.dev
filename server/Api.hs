@@ -51,8 +51,8 @@ api = Proxy
 
 -- Compile-time execution instead of runtime
 $(deriveBoth defaultOptions ''Item)
-$(deriveBoth defaultOptions ''Account)
 $(deriveBoth defaultOptions ''Profile)
+$(deriveBoth defaultOptions ''Account)
 
 --------------------------------------------------------------------------------
 -- API types

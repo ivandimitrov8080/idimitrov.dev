@@ -6,7 +6,7 @@ import Canvas exposing (..)
 import Canvas.Settings exposing (..)
 import Color exposing (Color)
 import Cube
-import Generated.Api exposing (Account, Item, getItem, getItemByItemId, postRegister)
+import Generated.Api exposing (Account, Item, Profile, getItem, getItemByItemId, postRegister)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
@@ -42,7 +42,7 @@ type Msg
     | GotItem (Result Http.Error Item)
     | Register Account
     | Login Account
-    | RegisterSuccess (Result Http.Error Account)
+    | RegisterSuccess (Result Http.Error Profile)
     | AccountNameChanged String
     | AccountPasswordChanged String
 
@@ -109,7 +109,7 @@ init () =
       , items = []
       , errors = []
       , currentItem = Item 0 "" ""
-      , account = Account Nothing "anon" Nothing
+      , account = Account Nothing "anon" "" (Profile "anon")
       }
     , getItem GotItems
     )
@@ -186,8 +186,8 @@ update msg model =
 
         RegisterSuccess result ->
             case result of
-                Ok account ->
-                    ( { model | account = account }
+                Ok _ ->
+                    ( model
                     , Cmd.none
                     )
 

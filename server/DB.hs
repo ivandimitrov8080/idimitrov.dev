@@ -61,7 +61,7 @@ selectItemTextSession t =
       [TH.singletonStatement|SELECT id :: int8, text :: text, name :: text FROM item WHERE text = $1 :: text|]
 
 accountRegisterSession :: Account -> Session Profile
-accountRegisterSession (Account _ name password) = do
+accountRegisterSession (Account _ name password _) = do
   hashed <- hashPassword $ mkPassword password
   fmap (\(name) -> Profile name) $
     Session.statement
@@ -73,7 +73,7 @@ accountRegisterSession (Account _ name password) = do
       |]
 
 accountLoginSession :: Account -> Session Profile
-accountLoginSession (Account _ name password) = do
+accountLoginSession (Account _ name password _) = do
   fmap (\(name) -> Profile name) $
     Session.statement
       (name)

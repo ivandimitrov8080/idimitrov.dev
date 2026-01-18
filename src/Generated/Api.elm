@@ -39,16 +39,18 @@ jsonEncItem val =
 type alias Account =
     { accountId : Maybe Int
     , accountName : String
-    , accountPassword : Maybe String
+    , accountPassword : String
+    , accountProfile : Profile
     }
 
 
 jsonDecAccount : Json.Decode.Decoder Account
 jsonDecAccount =
-    Json.Decode.succeed (\paccountId paccountName paccountPassword -> { accountId = paccountId, accountName = paccountName, accountPassword = paccountPassword })
+    Json.Decode.succeed (\paccountId paccountName paccountPassword paccountProfile -> { accountId = paccountId, accountName = paccountName, accountPassword = paccountPassword, accountProfile = paccountProfile })
         |> fnullable "accountId" Json.Decode.int
         |> required "accountName" Json.Decode.string
-        |> fnullable "accountPassword" Json.Decode.string
+        |> required "accountPassword" Json.Decode.string
+        |> required "accountProfile" jsonDecProfile
 
 
 jsonEncAccount : Account -> Value
@@ -56,7 +58,8 @@ jsonEncAccount val =
     Json.Encode.object
         [ ( "accountId", maybeEncode Json.Encode.int val.accountId )
         , ( "accountName", Json.Encode.string val.accountName )
-        , ( "accountPassword", maybeEncode Json.Encode.string val.accountPassword )
+        , ( "accountPassword", Json.Encode.string val.accountPassword )
+        , ( "accountProfile", jsonEncProfile val.accountProfile )
         ]
 
 
