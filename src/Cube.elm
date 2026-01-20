@@ -1,27 +1,14 @@
-module Cube exposing (main, view)
+module Cube exposing (view)
 
 {-
    Rotating cube with colored sides.
 -}
 
-import Browser
-import Browser.Events exposing (onAnimationFrameDelta)
 import Html exposing (Html)
 import Html.Attributes exposing (height, style, width)
-import Json.Decode exposing (Value)
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import Math.Vector3 as Vec3 exposing (Vec3, vec3)
 import WebGL exposing (Mesh, Shader)
-
-
-main : Program Value Float Float
-main =
-    Browser.element
-        { init = \_ -> ( 0, Cmd.none )
-        , view = view
-        , subscriptions = \_ -> onAnimationFrameDelta Basics.identity
-        , update = \dt theta -> ( theta + dt / 5000, Cmd.none )
-        }
 
 
 view : Float -> Html msg
