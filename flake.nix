@@ -244,6 +244,7 @@
                   })
                   nodePackages.browser-sync
                   watchexec
+                  wkhtmltopdf
                 ];
                 services = {
                   postgres = {
