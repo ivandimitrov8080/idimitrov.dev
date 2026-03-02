@@ -270,7 +270,7 @@
                     serverWatcher = "watchexec -w server --exts hs -- process-compose process restart server";
                     apiWatcher = "watchexec -w server -f Api.hs -- devenv tasks run build:library --mode before";
                     syncElmDeps =
-                      pkgs.writeScript "sync_elm_deps"
+                      pkgs.writers.writeBash "sync_elm_deps"
                         # bash
                         ''
                           elm2nix convert | ${pkgs.nixfmt}/bin/nixfmt -f elm-srcs.nix > elm-srcs.nix
