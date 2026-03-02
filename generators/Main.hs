@@ -1,8 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Main (IO, main) where
+module Main (IO, Main.main) where
 
-import Api
 import GHC.Internal.Data.Proxy (Proxy)
 import Servant.Elm
   ( DefineElm (DefineElm),
@@ -13,6 +12,7 @@ import Servant.Elm
     defElmOptions,
     generateElmModuleWith,
   )
+import Server
 
 --------------------------------------------------------------------------------
 -- Generate client lib
