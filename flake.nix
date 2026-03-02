@@ -242,7 +242,7 @@
                       hls.enable = true;
                     };
                   })
-                  nodePackages.browser-sync
+                  python3Packages.livereload
                   watchexec
                 ];
                 services = {
@@ -266,7 +266,7 @@
                   let
                     siteWatch = "bin/site watch";
                     server = "bin/server";
-                    browserSync = "browser-sync start --proxy localhost:8000 --files '_site/**/*'";
+                    livereload = "livereload --host localhost --port 3000 -o 1 -t _site _site";
                     serverWatcher = "watchexec -w server --exts hs -- process-compose process restart server";
                     apiWatcher = "watchexec -w server -f Api.hs -- devenv tasks run build:library --mode before";
                     syncElmDeps =
@@ -285,7 +285,7 @@
                   {
                     site.exec = siteWatch;
                     server.exec = server;
-                    browser-sync.exec = browserSync;
+                    livereload.exec = livereload;
                     elm-watcher.exec = elm2nixWatcher;
                     server-watcher.exec = serverWatcher;
                     api-watcher.exec = apiWatcher;
@@ -331,8 +331,8 @@
                     '';
                     before = [ "build:library" ];
                   };
-                  "browsersync:reload" = {
-                    exec = "browser-sync reload";
+                  "livereload:reload" = {
+                    exec = "touch _site/index.html";
                     before = [ "devenv:processes:server" ];
                     after = [ "build:server" ];
                   };

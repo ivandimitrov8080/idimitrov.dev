@@ -118,7 +118,7 @@ Do not commit if a hook fails. Format/clean up before each commit.
 ## Tooling Reference
 
 - **Editors:** neovim with lsp for Haskell/Elm/Nix (see devenv/nixvim config)
-- **Watch/reload:** watchexec, browser-sync
+- **Watch/reload:** watchexec, livereload
 - **Database:** built-in postgres service for development
 
 ---
