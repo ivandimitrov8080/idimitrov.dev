@@ -140,7 +140,7 @@
         system:
         let
           pkgs = mkPkgs system;
-          inherit (pkgs) stdenv;
+          inherit (pkgs) stdenv writers;
           # to update -> elm2nix --help
           fetchElmDeps = pkgs.elmPackages.fetchElmDeps {
             elmPackages = import ./elm-srcs.nix;
@@ -178,6 +178,18 @@
               runHook postInstall
             '';
           };
+          update = writers.writeNuBin "update" {
+            makeWrapperArgs = with pkgs; [
+              "--prefix"
+              "PATH"
+              ":"
+              "${lib.makeBinPath [
+                elmPackages.elm-json
+                elm2nix
+                nixfmt
+              ]}"
+            ];
+          } (builtins.readFile ./update.nu);
         }
       );
       checks = eachSystem (
