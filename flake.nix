@@ -198,8 +198,10 @@
           pkgs = mkPkgs system;
         in
         {
-          default = pkgs.testers.runNixOSTest nixosTest;
+          integrationTest = pkgs.testers.runNixOSTest nixosTest;
         }
+        // packages.${system}
+        // devShells.${system}
       );
       devShells = eachSystem (
         system:
