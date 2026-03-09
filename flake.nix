@@ -27,113 +27,6 @@
     let
       eachSystem = nixpkgs.lib.genAttrs (import systems);
       mkPkgs = system: import nixpkgs { inherit system; };
-      nixosModules = {
-        default =
-          {
-            system,
-            lib,
-            config,
-            ...
-          }:
-          let
-            inherit (lib) mkIf mkEnableOption;
-            cfg = config.webshite;
-            extensions = [
-              "html"
-              "txt"
-              "png"
-              "jpg"
-              "jpeg"
-            ];
-            serveStatic = exts: ''
-              try_files ${lib.strings.concatStringsSep " " (builtins.map (x: "$uri.${x}") exts)} $uri $uri/ =404;
-            '';
-            webshiteConfig = {
-              locations = {
-                "/" = {
-                  root = "${packages.${system}.default}";
-                  extraConfig = serveStatic extensions;
-                };
-              };
-              extraConfig = ''
-                add_header 'Referrer-Policy' 'origin-when-cross-origin';
-                add_header X-Content-Type-Options nosniff;
-              '';
-            };
-          in
-          {
-            options.webshite = {
-              enable = mkEnableOption "enable webshite config";
-            };
-            config = mkIf cfg.enable {
-              services.nginx.virtualHosts = {
-                "idimitrov.dev" = webshiteConfig;
-                "www.idimitrov.dev" = webshiteConfig;
-              };
-            };
-          };
-      };
-      client = {
-        default =
-          { pkgs, ... }:
-          {
-            environment.systemPackages = with pkgs; [
-              curl
-              gnugrep
-            ];
-            systemd.network.enable = true;
-            networking.useNetworkd = true;
-          };
-      };
-      server = {
-        default =
-          { ... }:
-          {
-            _module.args.system = "x86_64-linux";
-            imports = [ nixosModules.default ];
-            networking = {
-              useNetworkd = true;
-              firewall = {
-                allowedTCPPorts = [
-                  80
-                  443
-                ];
-                allowedUDPPorts = [
-                  80
-                  443
-                ];
-              };
-            };
-            systemd.network.enable = true;
-            webshite.enable = true;
-            services.nginx.enable = true;
-            security = {
-              acme = {
-                defaults = {
-                  server = "https://acme-staging-v02.api.letsencrypt.org/directory";
-                  email = "test@example.com";
-                };
-                acceptTerms = true;
-              };
-            };
-          };
-      };
-      nixosTest = {
-        name = "test";
-        nodes = {
-          server = server.default;
-          client1 = client.default;
-        };
-        testScript =
-          #py
-          ''
-            start_all()
-            client1.wait_for_unit("default.target")
-            server.wait_for_unit("nginx.service")
-            client1.succeed("curl http://server | grep -o '301'")
-            client1.succeed("curl -k https://server | grep -o 'Home | idimitrov.dev'")
-          '';
-      };
       packages = eachSystem (
         system:
         let
@@ -190,17 +83,7 @@
           } (builtins.readFile ./update.nu);
         }
       );
-      checks = eachSystem (
-        system:
-        let
-          pkgs = mkPkgs system;
-        in
-        {
-          integrationTest = pkgs.testers.runNixOSTest nixosTest;
-        }
-        // packages.${system}
-        // devShells.${system}
-      );
+      checks = eachSystem (system: packages.${system} // devShells.${system});
       devShells = eachSystem (
         system:
         let
@@ -391,7 +274,6 @@
         checks
         devShells
         formatter
-        nixosModules
         packages
         ;
     };
