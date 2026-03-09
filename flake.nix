@@ -49,8 +49,6 @@
               try_files ${lib.strings.concatStringsSep " " (builtins.map (x: "$uri.${x}") exts)} $uri $uri/ =404;
             '';
             webshiteConfig = {
-              enableACME = true;
-              forceSSL = true;
               locations = {
                 "/" = {
                   root = "${packages.${system}.default}";
