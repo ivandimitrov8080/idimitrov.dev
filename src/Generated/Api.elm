@@ -12,30 +12,6 @@ import String
 import Url.Builder
 
 
-type alias Item =
-    { itemId : Int
-    , itemText : String
-    , itemName : String
-    }
-
-
-jsonDecItem : Json.Decode.Decoder Item
-jsonDecItem =
-    Json.Decode.succeed (\pitemId pitemText pitemName -> { itemId = pitemId, itemText = pitemText, itemName = pitemName })
-        |> required "itemId" Json.Decode.int
-        |> required "itemText" Json.Decode.string
-        |> required "itemName" Json.Decode.string
-
-
-jsonEncItem : Item -> Value
-jsonEncItem val =
-    Json.Encode.object
-        [ ( "itemId", Json.Encode.int val.itemId )
-        , ( "itemText", Json.Encode.string val.itemText )
-        , ( "itemName", Json.Encode.string val.itemName )
-        ]
-
-
 type alias Account =
     { accountId : Maybe Int
     , accountName : String
@@ -76,98 +52,6 @@ jsonDecProfile =
 jsonEncProfile : Profile -> Value
 jsonEncProfile val =
     Json.Encode.string val.profileName
-
-
-getItem : (Result Http.Error (List Item) -> msg) -> Cmd msg
-getItem toMsg =
-    let
-        params =
-            List.filterMap identity
-                (List.concat
-                    []
-                )
-    in
-    Http.request
-        { method =
-            "GET"
-        , headers =
-            []
-        , url =
-            Url.Builder.crossOrigin "http://localhost:8080"
-                [ "item"
-                ]
-                params
-        , body =
-            Http.emptyBody
-        , expect =
-            Http.expectJson toMsg (Json.Decode.list jsonDecItem)
-        , timeout =
-            Nothing
-        , tracker =
-            Nothing
-        }
-
-
-getItemByItemId : Int -> (Result Http.Error Item -> msg) -> Cmd msg
-getItemByItemId capture_itemId toMsg =
-    let
-        params =
-            List.filterMap identity
-                (List.concat
-                    []
-                )
-    in
-    Http.request
-        { method =
-            "GET"
-        , headers =
-            []
-        , url =
-            Url.Builder.crossOrigin "http://localhost:8080"
-                [ "item"
-                , capture_itemId |> String.fromInt
-                ]
-                params
-        , body =
-            Http.emptyBody
-        , expect =
-            Http.expectJson toMsg jsonDecItem
-        , timeout =
-            Nothing
-        , tracker =
-            Nothing
-        }
-
-
-getItemByItemText : String -> (Result Http.Error Item -> msg) -> Cmd msg
-getItemByItemText capture_itemText toMsg =
-    let
-        params =
-            List.filterMap identity
-                (List.concat
-                    []
-                )
-    in
-    Http.request
-        { method =
-            "GET"
-        , headers =
-            []
-        , url =
-            Url.Builder.crossOrigin "http://localhost:8080"
-                [ "item"
-                , capture_itemText
-                ]
-                params
-        , body =
-            Http.emptyBody
-        , expect =
-            Http.expectJson toMsg jsonDecItem
-        , timeout =
-            Nothing
-        , tracker =
-            Nothing
-        }
 
 
 postRegister : Account -> (Result Http.Error Profile -> msg) -> Cmd msg

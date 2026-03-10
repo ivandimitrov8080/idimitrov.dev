@@ -3,7 +3,7 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Server (IO, main, Item, Account, Profile, Api) where
+module Server (IO, main, Account, Profile, Api) where
 
 -- \| Combined server module: contains Api, DB, Handlers, Config, App wiring, and Main.
 -- Each original file's content is marked with a section comment.
@@ -45,13 +45,6 @@ import System.IO (hPutStrLn, stderr)
 -- SECTION: Types and API (from Api.hs)
 --------------------------------------------------------------------------------
 
-data Item = Item
-  { itemId :: Int64,
-    itemText :: Text,
-    itemName :: Text
-  }
-  deriving (Eq, Show, Generic)
-
 data Account = Account
   { accountId :: Maybe Int64,
     accountName :: Text,
@@ -66,17 +59,13 @@ data Profile = Profile
   deriving (Eq, Show, Generic)
 
 -- Compile-time Elm/JSON derives (leave as hooks for later extraction)
-$(deriveBoth defaultOptions ''Item)
 $(deriveBoth defaultOptions ''Profile)
 $(deriveBoth defaultOptions ''Account)
 
 -- Servant API Type
 
 type Api =
-  "item" :> Get '[JSON] [Item]
-    :<|> "item" :> Capture "itemId" Int64 :> Get '[JSON] Item
-    :<|> "item" :> Capture "itemText" Text :> Get '[JSON] Item
-    :<|> "register" :> ReqBody '[JSON] Account :> Post '[JSON] Profile
+  "register" :> ReqBody '[JSON] Account :> Post '[JSON] Profile
     :<|> "login" :> ReqBody '[JSON] Account :> Post '[JSON] Profile
 
 api :: Proxy Api
@@ -120,24 +109,6 @@ withPool cfg action = do
           ]
   pool <- acquire poolConfig
   action pool
-
-selectItemsSession :: Session [Item]
-selectItemsSession =
-  fmap
-    (\v -> map (\(i, t, n) -> Item i t n) $ V.toList v)
-    (Session.statement () [TH.vectorStatement|SELECT id :: int8, text :: text, name :: text FROM item|])
-
-selectItemSession :: Int64 -> Session Item
-selectItemSession i =
-  fmap
-    (\(i, n, p) -> Item i n p)
-    (Session.statement i [TH.singletonStatement|SELECT id :: int8, text :: text, name :: text FROM item WHERE id = $1 :: int8|])
-
-selectItemTextSession :: Text -> Session Item
-selectItemTextSession t =
-  fmap
-    (\(i, n, p) -> Item i n p)
-    (Session.statement t [TH.singletonStatement|SELECT id :: int8, text :: text, name :: text FROM item WHERE text = $1 :: text|])
 
 accountRegisterSession :: Account -> Session Profile
 accountRegisterSession (Account _ name password _) = do
@@ -186,24 +157,6 @@ runDbSession action onSuccess = do
       throwError err500
     Right val -> onSuccess val
 
-getItems :: AppM [Item]
-getItems =
-  runDbSession
-    (\pool -> use pool selectItemsSession)
-    pure
-
-getItemById :: Int64 -> AppM Item
-getItemById itemId =
-  runDbSession
-    (\pool -> use pool (selectItemSession itemId))
-    pure
-
-getItemByText :: Text -> AppM Item
-getItemByText text =
-  runDbSession
-    (\pool -> use pool (selectItemTextSession text))
-    pure
-
 accountRegister :: Account -> AppM Profile
 accountRegister account =
   runDbSession
@@ -217,12 +170,7 @@ login account =
     pure
 
 server :: ServerT Api AppM
-server =
-  getItems
-    :<|> getItemById
-    :<|> getItemByText
-    :<|> accountRegister
-    :<|> login
+server = accountRegister :<|> login
 
 --------------------------------------------------------------------------------
 -- SECTION: App Wiring (from App.hs)

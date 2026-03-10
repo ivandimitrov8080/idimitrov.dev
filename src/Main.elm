@@ -6,7 +6,7 @@ import Canvas exposing (..)
 import Canvas.Settings exposing (..)
 import Color exposing (Color)
 import Cube
-import Generated.Api exposing (Account, Item, Profile, getItem, getItemByItemId, postRegister)
+import Generated.Api exposing (Account, Profile, postRegister)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
@@ -26,20 +26,13 @@ type alias Point =
 type alias Model =
     { pts : List Point
     , cubeTheta : Float
-    , items : List Item
     , errors : List Error
-    , currentItem : Item
     , account : Account
     }
 
 
 type Msg
     = AnimationFrame Posix
-    | GotItems (Result Http.Error (List Item))
-    | FetchItems
-    | FetchItem Int
-    | FetchItemText String
-    | GotItem (Result Http.Error Item)
     | Register Account
     | Login Account
     | RegisterSuccess (Result Http.Error Profile)
@@ -106,12 +99,10 @@ init () =
                         }
                     )
       , cubeTheta = 0
-      , items = []
       , errors = []
-      , currentItem = Item 0 "" ""
       , account = Account Nothing "anon" "" (Profile "anon")
       }
-    , getItem GotItems
+    , Cmd.none
     )
 
 
@@ -141,45 +132,6 @@ update msg model =
             ( { model | pts = List.map updatePoint model.pts, cubeTheta = model.cubeTheta + 0.005 }
             , Cmd.none
             )
-
-        FetchItems ->
-            ( model
-            , getItem GotItems
-            )
-
-        GotItems result ->
-            case result of
-                Ok items ->
-                    ( { model | items = items }
-                    , Cmd.none
-                    )
-
-                Err err ->
-                    ( { model | errors = model.errors ++ [ err ] }
-                    , Cmd.none
-                    )
-
-        FetchItem id ->
-            ( model
-            , getItemByItemId id GotItem
-            )
-
-        FetchItemText text ->
-            ( model
-            , Generated.Api.getItemByItemText text GotItem
-            )
-
-        GotItem result ->
-            case result of
-                Ok item ->
-                    ( { model | currentItem = item }
-                    , Cmd.none
-                    )
-
-                Err err ->
-                    ( { model | errors = model.errors ++ [ err ] }
-                    , Cmd.none
-                    )
 
         Register account ->
             ( model, postRegister account RegisterSuccess )
@@ -224,8 +176,6 @@ view model =
             , shapes [ fill particleColor ] (List.map drawPoint model.pts)
             ]
         , Cube.view model.cubeTheta
-        , div [] [ ul [] (List.map viewItem model.items) ]
-        , div [] [ Html.text model.currentItem.itemName ]
         , div [] [ Html.text model.account.accountName ]
         , div []
             [ div []
@@ -254,12 +204,6 @@ view model =
             , button [ Html.Events.onClick (Login model.account) ] [ Html.text "Login" ]
             ]
         ]
-
-
-viewItem : Item -> Html Msg
-viewItem item =
-    li []
-        [ button [ Html.Events.onClick (FetchItem item.itemId) ] [ Html.text item.itemText ] ]
 
 
 drawPoint : Point -> Shape
