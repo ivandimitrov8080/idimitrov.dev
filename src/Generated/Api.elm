@@ -54,7 +54,28 @@ jsonEncProfile val =
     Json.Encode.string val.profileName
 
 
-postRegister : Account -> (Result Http.Error Profile -> msg) -> Cmd msg
+type alias LoginResponse =
+    { token : String
+    , profile : Profile
+    }
+
+
+jsonDecLoginResponse : Json.Decode.Decoder LoginResponse
+jsonDecLoginResponse =
+    Json.Decode.succeed (\ptoken pprofile -> { token = ptoken, profile = pprofile })
+        |> required "token" Json.Decode.string
+        |> required "profile" jsonDecProfile
+
+
+jsonEncLoginResponse : LoginResponse -> Value
+jsonEncLoginResponse val =
+    Json.Encode.object
+        [ ( "token", Json.Encode.string val.token )
+        , ( "profile", jsonEncProfile val.profile )
+        ]
+
+
+postRegister : Account -> (Result Http.Error LoginResponse -> msg) -> Cmd msg
 postRegister body toMsg =
     let
         params =
@@ -76,7 +97,7 @@ postRegister body toMsg =
         , body =
             Http.jsonBody (jsonEncAccount body)
         , expect =
-            Http.expectJson toMsg jsonDecProfile
+            Http.expectJson toMsg jsonDecLoginResponse
         , timeout =
             Nothing
         , tracker =
@@ -84,7 +105,7 @@ postRegister body toMsg =
         }
 
 
-postLogin : Account -> (Result Http.Error Profile -> msg) -> Cmd msg
+postLogin : Account -> (Result Http.Error LoginResponse -> msg) -> Cmd msg
 postLogin body toMsg =
     let
         params =
@@ -106,7 +127,7 @@ postLogin body toMsg =
         , body =
             Http.jsonBody (jsonEncAccount body)
         , expect =
-            Http.expectJson toMsg jsonDecProfile
+            Http.expectJson toMsg jsonDecLoginResponse
         , timeout =
             Nothing
         , tracker =

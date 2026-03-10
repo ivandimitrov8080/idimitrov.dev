@@ -31,7 +31,8 @@ generateElm =
     defElmImports
     "src"
     [ DefineElm (Proxy :: Proxy Account),
-      DefineElm (Proxy :: Proxy Profile)
+      DefineElm (Proxy :: Proxy Profile),
+      DefineElm (Proxy :: Proxy LoginResponse)
     ]
     (Proxy :: Proxy Api)
 

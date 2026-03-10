@@ -6,7 +6,7 @@ import Canvas exposing (..)
 import Canvas.Settings exposing (..)
 import Color exposing (Color)
 import Cube
-import Generated.Api exposing (Account, Profile, postRegister)
+import Generated.Api exposing (Account, LoginResponse, Profile, postRegister)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
@@ -35,7 +35,7 @@ type Msg
     = AnimationFrame Posix
     | Register Account
     | Login Account
-    | RegisterSuccess (Result Http.Error Profile)
+    | RegisterSuccess (Result Http.Error LoginResponse)
     | AccountNameChanged String
     | AccountPasswordChanged String
 

@@ -3,7 +3,7 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Server (IO, main, Account, Profile, Api) where
+module Server (IO, main, Account, Profile, LoginResponse, Api) where
 
 -- \| Combined server module: contains Api, DB, Handlers, Config, App wiring, and Main.
 -- Each original file's content is marked with a section comment.
@@ -15,13 +15,21 @@ module Server (IO, main, Account, Profile, Api) where
 import Basement.Compat.Base (Int64)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Reader (ReaderT, ask, runReaderT)
-import Data.Aeson (FromJSON, ToJSON)
+import Data.Aeson (toJSON)
 import Data.Int (Int64)
 import Data.Maybe (fromMaybe)
-import Data.Password.Argon2 (Password, PasswordHash (unPasswordHash), hashPassword, mkPassword)
-import Data.Text (Text, pack)
+import Data.Password.Argon2 (Password, PasswordHash (unPasswordHash), hashPassword, mkPassword, checkPassword, Argon2, PasswordCheck(..))
+import Data.Text (Text, pack, unpack)
+import qualified Data.ByteString.Lazy.Char8 as BL8
 import Data.Vector qualified as V
 import Distribution.Simple.Hpc (Way (Prof))
+-- JWT imports
+import qualified Web.JWT as JWT
+import qualified Data.Map.Strict as Map
+import Data.Time.Clock.POSIX (utcTimeToPOSIXSeconds)
+import Data.Time.Clock (getCurrentTime)
+
+
 import Elm.Derive (defaultOptions, deriveBoth)
 import GHC.Generics
 import Hasql.Connection.Setting qualified as ConnectionSetting
@@ -58,27 +66,40 @@ data Profile = Profile
   }
   deriving (Eq, Show, Generic)
 
+-- LoginResponse type for JWT 
+
+data LoginResponse = LoginResponse
+  { token :: Text,
+    profile :: Profile
+  }
+  deriving (Eq, Show, Generic)
+
 -- Compile-time Elm/JSON derives (leave as hooks for later extraction)
 $(deriveBoth defaultOptions ''Profile)
 $(deriveBoth defaultOptions ''Account)
+$(deriveBoth defaultOptions ''LoginResponse)
+
 
 -- Servant API Type
 
 type Api =
-  "register" :> ReqBody '[JSON] Account :> Post '[JSON] Profile
-    :<|> "login" :> ReqBody '[JSON] Account :> Post '[JSON] Profile
+  "register" :> ReqBody '[JSON] Account :> Post '[JSON] LoginResponse
+    :<|> "login" :> ReqBody '[JSON] Account :> Post '[JSON] LoginResponse
 
 api :: Proxy Api
 api = Proxy
 
---------------------------------------------------------------------------------
--- SECTION: Config (from Config.hs)
---------------------------------------------------------------------------------
+data Env = Env
+  { envConfig :: Config
+  , envPool :: Pool
+  }
+
 
 data Config = Config
   { cfgPgHost :: Text,
     cfgPgPoolSize :: Int,
-    cfgPort :: Int
+    cfgPort :: Int,
+    cfgJwtSecret :: Text
   }
   deriving (Show, Eq)
 
@@ -92,8 +113,9 @@ readConfig :: IO Config
 readConfig = do
   host <- pack <$> getEnv "PGHOST"
   mPoolSz <- lookupEnv "PGPOOLSIZE"
+  jwtSecret <- pack <$> getEnv "JWT_SECRET"
   let poolSz = maybe defaultPoolSize read mPoolSz
-  pure Config {cfgPgHost = host, cfgPgPoolSize = poolSz, cfgPort = defaultPort}
+  pure Config {cfgPgHost = host, cfgPgPoolSize = poolSz, cfgPort = defaultPort, cfgJwtSecret = jwtSecret}
 
 --------------------------------------------------------------------------------
 -- SECTION: DB (from DB.hs)
@@ -113,7 +135,7 @@ withPool cfg action = do
 accountRegisterSession :: Account -> Session Profile
 accountRegisterSession (Account _ name password _) = do
   hashed <- hashPassword $ mkPassword password
-  fmap (\(name) -> Profile name) $
+  fmap (\name' -> Profile name') $
     Session.statement
       (name, unPasswordHash hashed)
       [TH.singletonStatement|
@@ -124,7 +146,7 @@ accountRegisterSession (Account _ name password _) = do
 
 accountLoginSession :: Account -> Session Profile
 accountLoginSession (Account _ name password _) = do
-  fmap (\(name) -> Profile name) $
+  fmap (\name' -> Profile name') $
     Session.statement
       (name)
       [TH.singletonStatement|
@@ -137,10 +159,10 @@ accountLoginSession (Account _ name password _) = do
 -- SECTION: AppM and Handlers (from Handlers.hs)
 --------------------------------------------------------------------------------
 
-type AppM = ReaderT Pool Handler
+type AppM = ReaderT Env Handler
 
-runAppM :: Pool -> AppM a -> Handler a
-runAppM pool app = runReaderT app pool
+runAppM :: Env -> AppM a -> Handler a
+runAppM env app = runReaderT app env
 
 -- Helper to log DB errors
 logDbError :: UsageError -> AppM ()
@@ -149,7 +171,8 @@ logDbError err = liftIO $ hPutStrLn stderr ("DB UsageError: " ++ show err)
 -- Abstract runner for DB sessions
 runDbSession :: (Pool -> IO (Either UsageError a)) -> (a -> AppM b) -> AppM b
 runDbSession action onSuccess = do
-  pool <- ask
+  env <- ask
+  let pool = envPool env
   result <- liftIO $ action pool
   case result of
     Left err -> do
@@ -157,28 +180,80 @@ runDbSession action onSuccess = do
       throwError err500
     Right val -> onSuccess val
 
-accountRegister :: Account -> AppM Profile
+accountRegister :: Account -> AppM LoginResponse
 accountRegister account =
   runDbSession
     (\pool -> use pool (accountRegisterSession account))
-    pure
+    $ \profile -> do
+      env <- ask
+      let secret = cfgJwtSecret (envConfig env)
+          jwtKey = JWT.hmacSecret secret
+      now <- liftIO getCurrentTime
+      case JWT.numericDate (utcTimeToPOSIXSeconds now) of
+        Just iatVal -> do
+          let claims = JWT.JWTClaimsSet
+                { JWT.sub = JWT.stringOrURI (accountName account)
+                , JWT.iat = Just iatVal
+                , JWT.exp = Nothing
+                , JWT.nbf = Nothing
+                , JWT.iss = Nothing
+                , JWT.aud = Nothing
+                , JWT.jti = Nothing
+                , JWT.unregisteredClaims = JWT.ClaimsMap $ Map.fromList [("profile", toJSON profile)]
+                }
+              token = JWT.encodeSigned jwtKey mempty claims
+          pure LoginResponse { token = token, profile = profile }
+        Nothing -> throwError err500 { Servant.errBody = BL8.pack "Failed to generate JWT iat" }
 
-login :: Account -> AppM Profile
-login account =
-  runDbSession
-    (\pool -> use pool (accountLoginSession account))
-    pure
 
 server :: ServerT Api AppM
 server = accountRegister :<|> login
+
+-- Login handler
+login :: Account -> AppM LoginResponse
+login account =
+  runDbSession
+    (\pool -> use pool $ Session.statement
+      (accountName account)
+      [TH.maybeStatement|
+        SELECT name :: text, password :: text FROM account WHERE name = $1 :: text
+      |])
+    $ \res -> case res of
+      Nothing -> throwError err401 { Servant.errBody = BL8.pack "Invalid login or password" }
+      Just (name', dbHash) ->
+        let pwdInput = mkPassword (accountPassword account)
+            pwdDb = read (unpack dbHash) :: PasswordHash Argon2
+        in case checkPassword pwdInput pwdDb of
+             PasswordCheckSuccess -> do
+               env <- ask
+               let secret = cfgJwtSecret (envConfig env)
+                   jwtKey = JWT.hmacSecret secret
+               now <- liftIO getCurrentTime
+               case JWT.numericDate (utcTimeToPOSIXSeconds now) of
+                 Just iatVal -> do
+                   let profile = Profile name'
+                       claims = JWT.JWTClaimsSet
+                         { JWT.sub = JWT.stringOrURI (accountName account)
+                         , JWT.iat = Just iatVal
+                         , JWT.exp = Nothing
+                         , JWT.nbf = Nothing
+                         , JWT.iss = Nothing
+                         , JWT.aud = Nothing
+                         , JWT.jti = Nothing
+                         , JWT.unregisteredClaims = JWT.ClaimsMap $ Map.fromList [("profile", toJSON profile)]
+                         }
+                       token = JWT.encodeSigned jwtKey mempty claims
+                   pure LoginResponse { token = token, profile = profile }
+                 Nothing -> throwError err500 { Servant.errBody = BL8.pack "Failed to generate JWT iat" }
+             PasswordCheckFail -> throwError err401 { Servant.errBody = BL8.pack "Invalid login or password" }
 
 --------------------------------------------------------------------------------
 -- SECTION: App Wiring (from App.hs)
 --------------------------------------------------------------------------------
 
-mkApp :: Pool -> IO Application
-mkApp pool = do
-  let apiApp = serve api (hoistServer api (runAppM pool) server)
+mkApp :: Env -> IO Application
+mkApp env = do
+  let apiApp = serve api (hoistServer api (runAppM env) server)
   pure $
     cors
       ( const $
@@ -203,7 +278,8 @@ main = do
           setBeforeMainLoop (hPutStrLn stderr ("listening on port " ++ show port)) $
             defaultSettings
   withPool config $ \pool -> do
-    app <- mkApp pool
+    let env = Env { envConfig = config, envPool = pool }
+    app <- mkApp env
     runSettings settings app
 
 --------------------------------------------------------------------------------
