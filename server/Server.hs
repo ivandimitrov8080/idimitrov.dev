@@ -31,7 +31,7 @@ import Hasql.Connection.Setting qualified as ConnectionSetting
 import Hasql.Connection.Setting.Connection qualified as ConnectionSettingConnection
 import Hasql.Pool (Pool, UsageError (SessionUsageError), acquire, use)
 import Hasql.Pool.Config qualified as PoolConfig
-import Hasql.Session (Session)
+import Hasql.Session (CommandError (..), ResultError (..), Session, SessionError (..))
 import Hasql.Session qualified as Session
 import Hasql.Statement (Statement (..))
 import Hasql.TH qualified as TH
@@ -241,12 +241,10 @@ register account =
 handleRegisterDbError :: UsageError -> AppM LoginResponse
 handleRegisterDbError err =
   case err of
-    SessionUsageError sessionErr ->
-      case sessionErr of
-        _ ->
-          if "23505" `elem` words (show err)
-            then throwError err409 {Servant.errBody = BL8.pack "Username already exists"}
-            else throwError err500
+    SessionUsageError (QueryError _ _ (ResultError (Session.ServerError code _ _ _ _))) ->
+      if code == "23505"
+        then throwError err409 {Servant.errBody = BL8.pack "Username already exists"}
+        else throwError err500
     _ -> throwError err500
 
 -- | Dedicated session for login
