@@ -18,7 +18,7 @@ import Control.Monad.Reader (ReaderT, ask, runReaderT)
 import Data.Aeson (toJSON)
 import Data.Int (Int64)
 import Data.Maybe (fromMaybe)
-import Data.Password.Argon2 (Password, PasswordHash (unPasswordHash), hashPassword, mkPassword, checkPassword, Argon2, PasswordCheck(..))
+import Data.Password.Argon2 (Password, PasswordHash(..), hashPassword, mkPassword, checkPassword, Argon2, PasswordCheck(..))
 import Data.Text (Text, pack, unpack)
 import qualified Data.ByteString.Lazy.Char8 as BL8
 import Data.Vector qualified as V
@@ -222,7 +222,7 @@ login account =
       Nothing -> throwError err401 { Servant.errBody = BL8.pack "Invalid login or password" }
       Just (name', dbHash) ->
         let pwdInput = mkPassword (accountPassword account)
-            pwdDb = read (unpack dbHash) :: PasswordHash Argon2
+            pwdDb = PasswordHash dbHash
         in case checkPassword pwdInput pwdDb of
              PasswordCheckSuccess -> do
                env <- ask
