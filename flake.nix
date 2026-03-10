@@ -106,6 +106,16 @@
             modules = [
               {
                 devenv.root = "/home/ivand/src/idimitrov.dev";
+                languages = {
+                  haskell = {
+                    enable = true;
+                    lsp.enable = true;
+                    cabal.enable = false;
+                    stack.enable = false;
+                  };
+                  elm.enable = true;
+                  nix.enable = true;
+                };
                 packages = with pkgs; [
                   (ghc.withPackages (
                     p: with p; [
