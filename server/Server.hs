@@ -29,7 +29,7 @@ import Elm.Derive (defaultOptions, deriveBoth)
 import GHC.Generics
 import Hasql.Connection.Setting qualified as ConnectionSetting
 import Hasql.Connection.Setting.Connection qualified as ConnectionSettingConnection
-import Hasql.Pool (Pool, UsageError, acquire, use)
+import Hasql.Pool (Pool, UsageError (SessionUsageError), acquire, use)
 import Hasql.Pool.Config qualified as PoolConfig
 import Hasql.Session (Session)
 import Hasql.Session qualified as Session
@@ -160,15 +160,18 @@ accountLoginSession acc =
 logDbError :: UsageError -> AppM ()
 logDbError err = liftIO $ hPutStrLn stderr ("DB UsageError: " ++ show err)
 
-runDbSession :: (Pool -> IO (Either UsageError a)) -> (a -> AppM b) -> AppM b
-runDbSession action onSuccess = do
+-- | Optionally handle UsageError specially, e.g. for unique constraint
+runDbSession :: (Pool -> IO (Either UsageError a)) -> (a -> AppM b) -> Maybe (UsageError -> AppM b) -> AppM b
+runDbSession action onSuccess mErrHandler = do
   env <- ask
   let pool = envPool env
   result <- liftIO $ action pool
   case result of
     Left err -> do
       logDbError err
-      throwError err500
+      case mErrHandler of
+        Just handle -> handle err
+        Nothing -> throwError err500
     Right val -> onSuccess val
 
 --------------------------------------------------------------------------------
@@ -232,6 +235,19 @@ register account =
           Just iatVal -> pure $ mkAuthResponse secret (accountName account) profile iatVal
           Nothing -> throwError err500 {Servant.errBody = BL8.pack "Failed to generate JWT iat"}
     )
+    (Just handleRegisterDbError)
+
+-- | Custom handler for register DB errors
+handleRegisterDbError :: UsageError -> AppM LoginResponse
+handleRegisterDbError err =
+  case err of
+    SessionUsageError sessionErr ->
+      case sessionErr of
+        _ ->
+          if "23505" `elem` words (show err)
+            then throwError err409 {Servant.errBody = BL8.pack "Username already exists."}
+            else throwError err500
+    _ -> throwError err500
 
 -- | Dedicated session for login
 login :: Account -> AppM LoginResponse
@@ -252,6 +268,7 @@ login account =
                 Nothing -> throwError err500 {Servant.errBody = BL8.pack "Failed to generate JWT iat"}
             else throwError err401 {Servant.errBody = BL8.pack "Invalid login or password"}
     )
+    Nothing
 
 server :: ServerT Api AppM
 server = register :<|> login
