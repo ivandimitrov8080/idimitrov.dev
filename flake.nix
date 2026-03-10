@@ -293,6 +293,27 @@
           };
         }).config.build.wrapper
       );
+      templates = {
+        default = {
+          description = ''
+            A web flake for web projects
+          '';
+          welcomeText = ''
+            # Web
+            Create maintainable, reproducible full stack web apps using purely-functional programming languages: Haskell, Elm, Nix
+
+
+            ## Other tips
+            For a quick license setup use license-cli:
+
+            ```
+                # SPDX is the license id like MIT or GPL-3.0
+                nix shell p#license-cli --command "license text MIT"
+            ```
+          '';
+          path = ./.;
+        };
+      };
     in
     {
       inherit
@@ -300,6 +321,7 @@
         devShells
         formatter
         packages
+        templates
         ;
     };
 }
