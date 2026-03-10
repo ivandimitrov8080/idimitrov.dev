@@ -109,6 +109,26 @@
                 languages = {
                   haskell = {
                     enable = true;
+                    package = pkgs.ghc.withPackages (
+                      p: with p; [
+                        hakyll
+                        servant
+                        servant-server
+                        servant-auth
+                        servant-auth-server
+                        servant-elm
+                        hspec
+                        http-client
+                        http-types
+                        wai-cors
+                        hasql
+                        hasql-th
+                        hasql-pool
+                        tuple
+                        password
+                        jwt
+                      ]
+                    );
                     lsp.enable = true;
                     cabal.enable = false;
                     stack.enable = false;
@@ -117,26 +137,6 @@
                   nix.enable = true;
                 };
                 packages = with pkgs; [
-                  (ghc.withPackages (
-                    p: with p; [
-                      hakyll
-                      servant
-                      servant-server
-                      servant-auth
-                      servant-auth-server
-                      servant-elm
-                      hspec
-                      http-client
-                      http-types
-                      wai-cors
-                      hasql
-                      hasql-th
-                      hasql-pool
-                      tuple
-                      password
-                      jwt
-                    ]
-                  ))
                   haskellPackages.hakyll
                   elmPackages.elm
                   elmPackages.elm-format
