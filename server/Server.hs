@@ -2,6 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE LambdaCase #-}
 
 module Server (IO, main, Account, Profile, LoginResponse, Api) where
 
@@ -137,17 +138,6 @@ accountRegisterSession (Account _ name password _) = do
       RETURNING name :: text
     |]
 
-accountLoginSession :: Account -> Session Profile
-accountLoginSession (Account _ name password _) = do
-  fmap (\name' -> Profile name') $
-    Session.statement
-      (name)
-      [TH.singletonStatement|
-      SELECT name :: text
-      FROM account
-      WHERE name = $1 :: text
-    |]
-
 logDbError :: UsageError -> AppM ()
 logDbError err = liftIO $ hPutStrLn stderr ("DB UsageError: " ++ show err)
 
@@ -197,6 +187,20 @@ mkJWTClaims accountName profile iatVal =
 mkLoginResponse :: Text -> Profile -> LoginResponse
 mkLoginResponse token profile = LoginResponse {token = token, profile = profile}
 
+pureJWTToken :: Text -> JWT.JWTClaimsSet -> Text
+pureJWTToken secret claims = JWT.encodeSigned (JWT.hmacSecret secret) mempty claims
+
+pureLoginResponse :: Text -> Profile -> LoginResponse
+pureLoginResponse token profile = LoginResponse {token = token, profile = profile}
+
+mkAuthToken :: Text -> Text -> Profile -> JWT.NumericDate -> Text
+mkAuthToken secret accountName profile iatVal =
+  pureJWTToken secret (mkJWTClaims accountName profile iatVal)
+
+mkAuthResponse :: Text -> Text -> Profile -> JWT.NumericDate -> LoginResponse
+mkAuthResponse secret accountName profile iatVal =
+  pureLoginResponse (mkAuthToken secret accountName profile iatVal) profile
+
 register :: Account -> AppM LoginResponse
 register account =
   runDbSession
@@ -204,42 +208,45 @@ register account =
     ( \profile -> do
         env <- ask
         let secret = cfgJwtSecret (envConfig env)
-            jwtKey = JWT.hmacSecret secret
         now <- liftIO getCurrentTime
         case JWT.numericDate (utcTimeToPOSIXSeconds now) of
-          Just iatVal -> do
-            let claims = mkJWTClaims (accountName account) profile iatVal
-                token = JWT.encodeSigned jwtKey mempty claims
-            pure $ mkLoginResponse token profile
+          Just iatVal -> pure $ mkAuthResponse secret (accountName account) profile iatVal
           Nothing -> throwError err500 {Servant.errBody = BL8.pack "Failed to generate JWT iat"}
     )
+
+-- | Dedicated session for login
+accountLoginSession :: Account -> Session (Maybe Account)
+accountLoginSession acc =
+  Session.statement
+    (accountName acc)
+    [TH.maybeStatement|
+      SELECT id :: int8, name :: text, password :: text FROM account WHERE name = $1 :: text
+    |]
+    >>= \case
+      Nothing -> pure Nothing
+      Just (aid, name', dbHash) ->
+        pure $ Just $ Account
+          { accountId = Just aid
+          , accountName = name'
+          , accountPassword = dbHash
+          , accountProfile = accountProfile acc
+          }
 
 login :: Account -> AppM LoginResponse
 login account =
   runDbSession
-    ( \pool ->
-        use pool $
-          Session.statement
-            (accountName account)
-            [TH.maybeStatement|
-        SELECT name :: text, password :: text FROM account WHERE name = $1 :: text
-      |]
-    )
-    ( \res -> case res of
+    (\pool -> use pool (accountLoginSession account))
+    (\res -> case res of
         Nothing -> throwError err401 {Servant.errBody = BL8.pack "Invalid login or password"}
-        Just (name', dbHash) ->
-          if validatePassword (accountPassword account) dbHash
+        Just dbAccount ->
+          if validatePassword (accountPassword account) (accountPassword dbAccount)
             then do
               env <- ask
               let secret = cfgJwtSecret (envConfig env)
-                  jwtKey = JWT.hmacSecret secret
-                  profile = mkProfile name'
+                  profile = accountProfile dbAccount
               now <- liftIO getCurrentTime
               case JWT.numericDate (utcTimeToPOSIXSeconds now) of
-                Just iatVal -> do
-                  let claims = mkJWTClaims (accountName account) profile iatVal
-                      token = JWT.encodeSigned jwtKey mempty claims
-                  pure $ mkLoginResponse token profile
+                Just iatVal -> pure $ mkAuthResponse secret (accountName account) profile iatVal
                 Nothing -> throwError err500 {Servant.errBody = BL8.pack "Failed to generate JWT iat"}
             else throwError err401 {Servant.errBody = BL8.pack "Invalid login or password"}
     )
