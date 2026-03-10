@@ -1,8 +1,8 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE LambdaCase #-}
 
 module Server (IO, main, Account, Profile, LoginResponse, Api) where
 
@@ -138,6 +138,25 @@ accountRegisterSession (Account _ name password _) = do
       RETURNING name :: text
     |]
 
+accountLoginSession :: Account -> Session (Maybe Account)
+accountLoginSession acc =
+  Session.statement
+    (accountName acc)
+    [TH.maybeStatement|
+      SELECT id :: int8, name :: text, password :: text FROM account WHERE name = $1 :: text
+    |]
+    >>= \case
+      Nothing -> pure Nothing
+      Just (aid, name', dbHash) ->
+        pure $
+          Just $
+            Account
+              { accountId = Just aid,
+                accountName = name',
+                accountPassword = dbHash,
+                accountProfile = accountProfile acc
+              }
+
 logDbError :: UsageError -> AppM ()
 logDbError err = liftIO $ hPutStrLn stderr ("DB UsageError: " ++ show err)
 
@@ -215,28 +234,11 @@ register account =
     )
 
 -- | Dedicated session for login
-accountLoginSession :: Account -> Session (Maybe Account)
-accountLoginSession acc =
-  Session.statement
-    (accountName acc)
-    [TH.maybeStatement|
-      SELECT id :: int8, name :: text, password :: text FROM account WHERE name = $1 :: text
-    |]
-    >>= \case
-      Nothing -> pure Nothing
-      Just (aid, name', dbHash) ->
-        pure $ Just $ Account
-          { accountId = Just aid
-          , accountName = name'
-          , accountPassword = dbHash
-          , accountProfile = accountProfile acc
-          }
-
 login :: Account -> AppM LoginResponse
 login account =
   runDbSession
     (\pool -> use pool (accountLoginSession account))
-    (\res -> case res of
+    ( \res -> case res of
         Nothing -> throwError err401 {Servant.errBody = BL8.pack "Invalid login or password"}
         Just dbAccount ->
           if validatePassword (accountPassword account) (accountPassword dbAccount)
