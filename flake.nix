@@ -132,10 +132,12 @@
                   elmPackages.elm-format
                   elmPackages.elm-json
                   elm2nix
+                  hurl
                   (nixvim.web.extend {
                     lsp.servers = {
                       elmls.enable = true;
                       hls.enable = true;
+                      sqls.enable = true;
                     };
                   })
                   python3Packages.livereload
@@ -146,16 +148,13 @@
                     enable = true;
                     initialDatabases = [
                       {
-                        name = "postgres";
-                        pass = "postgres";
-                        user = "postgres";
-                        schema = ./schema.sql;
+                        name = "app";
+                        pass = "app";
+                        user = "app";
+                        schema = ./sql/schema.sql;
                       }
                     ];
-                    initialScript = ''
-                      CREATE ROLE postgres SUPERUSER;
-                      CREATE USER postgres WITH ENCRYPTED PASSWORD 'postgres' ROLE postgres;
-                    '';
+                    initialScript = builtins.readFile ./sql/initial.sql;
                   };
                 };
                 processes =
@@ -189,6 +188,12 @@
                 tasks = {
                   "clean:site" = {
                     exec = "rm -rf bin _site _cache";
+                  };
+                  "db:seed" = {
+                    exec = ''
+                      psql -U app -d app -f sql/clean.sql
+                      psql -U app -d app -f sql/seed.sql
+                    '';
                   };
                   "build:init" = {
                     exec = ''
