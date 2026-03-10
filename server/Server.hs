@@ -13,6 +13,7 @@ import Basement.Compat.Base (Int64)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Reader (ReaderT, ask, runReaderT)
 import Data.Aeson (toJSON)
+import Data.ByteString (ByteString)
 import Data.ByteString.Lazy.Char8 qualified as BL8
 import Data.Int (Int64)
 import Data.Map.Strict qualified as Map
@@ -147,9 +148,42 @@ accountLoginSession (Account _ name password _) = do
       WHERE name = $1 :: text
     |]
 
+---------------------------------------------------------------------------------
+-- SECTION: Pure Functions for Handlers
+--------------------------------------------------------------------------------
+
+-- Build a Profile from the DB name field (pure)
+mkProfile :: Text -> Profile
+mkProfile name = Profile name
+
+-- Validate password using Argon2
+validatePassword :: Text -> Text -> Bool
+validatePassword input dbHash =
+  case checkPassword (mkPassword input) (PasswordHash dbHash) of
+    PasswordCheckSuccess -> True
+    _ -> False
+
+-- Build JWT claims for a user (pure)
+mkJWTClaims :: Text -> Profile -> JWT.NumericDate -> JWT.JWTClaimsSet
+mkJWTClaims accountName profile iatVal =
+  JWT.JWTClaimsSet
+    { JWT.sub = JWT.stringOrURI accountName
+    , JWT.iat = Just iatVal
+    , JWT.exp = Nothing
+    , JWT.nbf = Nothing
+    , JWT.iss = Nothing
+    , JWT.aud = Nothing
+    , JWT.jti = Nothing
+    , JWT.unregisteredClaims = JWT.ClaimsMap $ Map.fromList [("profile", toJSON profile)]
+    }
+
+-- Build LoginResponse (pure)
+mkLoginResponse :: Text -> Profile -> LoginResponse
+mkLoginResponse token profile = LoginResponse {token = token, profile = profile}
+
 --------------------------------------------------------------------------------
 -- SECTION: AppM and Handlers (from Handlers.hs)
---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
 
 type AppM = ReaderT Env Handler
 
@@ -176,27 +210,19 @@ accountRegister :: Account -> AppM LoginResponse
 accountRegister account =
   runDbSession
     (\pool -> use pool (accountRegisterSession account))
-    $ \profile -> do
-      env <- ask
-      let secret = cfgJwtSecret (envConfig env)
-          jwtKey = JWT.hmacSecret secret
-      now <- liftIO getCurrentTime
-      case JWT.numericDate (utcTimeToPOSIXSeconds now) of
-        Just iatVal -> do
-          let claims =
-                JWT.JWTClaimsSet
-                  { JWT.sub = JWT.stringOrURI (accountName account),
-                    JWT.iat = Just iatVal,
-                    JWT.exp = Nothing,
-                    JWT.nbf = Nothing,
-                    JWT.iss = Nothing,
-                    JWT.aud = Nothing,
-                    JWT.jti = Nothing,
-                    JWT.unregisteredClaims = JWT.ClaimsMap $ Map.fromList [("profile", toJSON profile)]
-                  }
-              token = JWT.encodeSigned jwtKey mempty claims
-          pure LoginResponse {token = token, profile = profile}
-        Nothing -> throwError err500 {Servant.errBody = BL8.pack "Failed to generate JWT iat"}
+    (
+      \profile -> do
+        env <- ask
+        let secret = cfgJwtSecret (envConfig env)
+            jwtKey = JWT.hmacSecret secret
+        now <- liftIO getCurrentTime
+        case JWT.numericDate (utcTimeToPOSIXSeconds now) of
+          Just iatVal -> do
+            let claims = mkJWTClaims (accountName account) profile iatVal
+                token = JWT.encodeSigned jwtKey mempty claims
+            pure $ mkLoginResponse token profile
+          Nothing -> throwError err500 {Servant.errBody = BL8.pack "Failed to generate JWT iat"}
+    )
 
 server :: ServerT Api AppM
 server = accountRegister :<|> login
@@ -212,35 +238,25 @@ login account =
         SELECT name :: text, password :: text FROM account WHERE name = $1 :: text
       |]
     )
-    $ \res -> case res of
-      Nothing -> throwError err401 {Servant.errBody = BL8.pack "Invalid login or password"}
-      Just (name', dbHash) ->
-        let pwdInput = mkPassword (accountPassword account)
-            pwdDb = PasswordHash dbHash
-         in case checkPassword pwdInput pwdDb of
-              PasswordCheckSuccess -> do
-                env <- ask
-                let secret = cfgJwtSecret (envConfig env)
-                    jwtKey = JWT.hmacSecret secret
-                now <- liftIO getCurrentTime
-                case JWT.numericDate (utcTimeToPOSIXSeconds now) of
-                  Just iatVal -> do
-                    let profile = Profile name'
-                        claims =
-                          JWT.JWTClaimsSet
-                            { JWT.sub = JWT.stringOrURI (accountName account),
-                              JWT.iat = Just iatVal,
-                              JWT.exp = Nothing,
-                              JWT.nbf = Nothing,
-                              JWT.iss = Nothing,
-                              JWT.aud = Nothing,
-                              JWT.jti = Nothing,
-                              JWT.unregisteredClaims = JWT.ClaimsMap $ Map.fromList [("profile", toJSON profile)]
-                            }
-                        token = JWT.encodeSigned jwtKey mempty claims
-                    pure LoginResponse {token = token, profile = profile}
-                  Nothing -> throwError err500 {Servant.errBody = BL8.pack "Failed to generate JWT iat"}
-              PasswordCheckFail -> throwError err401 {Servant.errBody = BL8.pack "Invalid login or password"}
+    (
+      \res -> case res of
+        Nothing -> throwError err401 {Servant.errBody = BL8.pack "Invalid login or password"}
+        Just (name', dbHash) ->
+          if validatePassword (accountPassword account) dbHash
+          then do
+            env <- ask
+            let secret = cfgJwtSecret (envConfig env)
+                jwtKey = JWT.hmacSecret secret
+                profile = mkProfile name'
+            now <- liftIO getCurrentTime
+            case JWT.numericDate (utcTimeToPOSIXSeconds now) of
+              Just iatVal -> do
+                let claims = mkJWTClaims (accountName account) profile iatVal
+                    token = JWT.encodeSigned jwtKey mempty claims
+                pure $ mkLoginResponse token profile
+              Nothing -> throwError err500 {Servant.errBody = BL8.pack "Failed to generate JWT iat"}
+          else throwError err401 {Servant.errBody = BL8.pack "Invalid login or password"}
+    )
 
 mkApp :: Env -> IO Application
 mkApp env = do
