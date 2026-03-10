@@ -124,6 +124,7 @@
                       hasql-pool
                       tuple
                       password
+                      jwt
                     ]
                   ))
                   haskellPackages.hakyll
