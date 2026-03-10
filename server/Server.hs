@@ -245,7 +245,7 @@ handleRegisterDbError err =
       case sessionErr of
         _ ->
           if "23505" `elem` words (show err)
-            then throwError err409 {Servant.errBody = BL8.pack "Username already exists."}
+            then throwError err409 {Servant.errBody = BL8.pack "Username already exists"}
             else throwError err500
     _ -> throwError err500
 
