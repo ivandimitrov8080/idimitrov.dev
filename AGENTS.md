@@ -26,7 +26,7 @@ Welcome agentic coding agents! This repository follows strict functional, static
 
 ### Test
 
-- **No tests for now** `No tests`
+- **Hurl API tests ran with devenv** `devenv tasks run test --mode before`
 
 ---
 

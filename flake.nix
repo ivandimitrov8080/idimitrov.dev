@@ -189,11 +189,17 @@
                   "clean:site" = {
                     exec = "rm -rf bin _site _cache";
                   };
-                  "db:seed" = {
+                  "db:clean" = {
                     exec = ''
                       psql -U app -d app -f sql/clean.sql
+                    '';
+                    before = [ "db:seed" ];
+                  };
+                  "db:seed" = {
+                    exec = ''
                       psql -U app -d app -f sql/seed.sql
                     '';
+                    before = [ "test:server" ];
                   };
                   "build:init" = {
                     exec = ''
@@ -236,6 +242,9 @@
                     exec = "touch _site/index.html";
                     before = [ "devenv:processes:server" ];
                     after = [ "build:server" ];
+                  };
+                  "test:server" = {
+                    exec = "hurl test/server/login.hurl";
                   };
                 };
                 # git-hooks.hooks = {
