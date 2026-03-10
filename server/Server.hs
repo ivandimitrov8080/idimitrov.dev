@@ -20,8 +20,8 @@ import Data.Int (Int64)
 import Data.Map.Strict qualified as Map
 import Data.Maybe (fromMaybe)
 import Data.Password.Argon2 (Argon2, Password, PasswordCheck (..), PasswordHash (..), checkPassword, hashPassword, mkPassword)
-import Data.Text (Text, pack, unpack)
-import Data.Time.Clock (getCurrentTime)
+import Data.Text (Text, length, null, pack, unpack)
+import Data.Time.Clock (NominalDiffTime, getCurrentTime)
 import Data.Time.Clock.POSIX (utcTimeToPOSIXSeconds)
 import Data.Vector qualified as V
 import Distribution.Simple.Hpc (Way (Prof))
@@ -102,6 +102,9 @@ defaultPort = 1337
 
 defaultPoolSize :: Int
 defaultPoolSize = 10
+
+defaultJwtExpiry :: NominalDiffTime
+defaultJwtExpiry = 3600
 
 readConfig :: IO Config
 readConfig = do
@@ -193,18 +196,27 @@ validatePassword input dbHash =
     _ -> False
 
 -- Build JWT claims for a user (pure)
-mkJWTClaims :: Text -> Profile -> JWT.NumericDate -> JWT.JWTClaimsSet
-mkJWTClaims accountName profile iatVal =
+mkJWTClaims :: Text -> Profile -> JWT.NumericDate -> Maybe JWT.NumericDate -> JWT.JWTClaimsSet
+mkJWTClaims accountName profile iatVal mExpVal =
   JWT.JWTClaimsSet
     { JWT.sub = JWT.stringOrURI accountName,
       JWT.iat = Just iatVal,
-      JWT.exp = Nothing,
+      JWT.exp = mExpVal,
       JWT.nbf = Nothing,
       JWT.iss = Nothing,
       JWT.aud = Nothing,
       JWT.jti = Nothing,
       JWT.unregisteredClaims = JWT.ClaimsMap $ Map.fromList [("profile", toJSON profile)]
     }
+
+-- | Updated token generation to include expiry
+mkAuthToken :: Text -> Text -> Profile -> JWT.NumericDate -> Maybe JWT.NumericDate -> Text
+mkAuthToken secret accountName profile iatVal mExpVal =
+  pureJWTToken secret (mkJWTClaims accountName profile iatVal mExpVal)
+
+mkAuthResponse :: Text -> Text -> Profile -> JWT.NumericDate -> Maybe JWT.NumericDate -> LoginResponse
+mkAuthResponse secret accountName profile iatVal mExpVal =
+  pureLoginResponse (mkAuthToken secret accountName profile iatVal mExpVal) profile
 
 mkLoginResponse :: Text -> Profile -> LoginResponse
 mkLoginResponse token profile = LoginResponse {token = token, profile = profile}
@@ -215,27 +227,32 @@ pureJWTToken secret claims = JWT.encodeSigned (JWT.hmacSecret secret) mempty cla
 pureLoginResponse :: Text -> Profile -> LoginResponse
 pureLoginResponse token profile = LoginResponse {token = token, profile = profile}
 
-mkAuthToken :: Text -> Text -> Profile -> JWT.NumericDate -> Text
-mkAuthToken secret accountName profile iatVal =
-  pureJWTToken secret (mkJWTClaims accountName profile iatVal)
-
-mkAuthResponse :: Text -> Text -> Profile -> JWT.NumericDate -> LoginResponse
-mkAuthResponse secret accountName profile iatVal =
-  pureLoginResponse (mkAuthToken secret accountName profile iatVal) profile
+-- | Validate account registration input
+validateRegisterInput :: Account -> Either Text Account
+validateRegisterInput acc
+  | Data.Text.null (accountName acc) = Left "Missing or empty accountName"
+  | Data.Text.null (accountPassword acc) = Left "Missing or empty accountPassword"
+  | Data.Text.length (accountPassword acc) < 8 = Left "Password must be at least 8 characters"
+  | otherwise = Right acc
 
 register :: Account -> AppM LoginResponse
 register account =
-  runDbSession
-    (\pool -> use pool (accountRegisterSession account))
-    ( \profile -> do
-        env <- ask
-        let secret = cfgJwtSecret (envConfig env)
-        now <- liftIO getCurrentTime
-        case JWT.numericDate (utcTimeToPOSIXSeconds now) of
-          Just iatVal -> pure $ mkAuthResponse secret (accountName account) profile iatVal
-          Nothing -> throwError err500 {Servant.errBody = BL8.pack "Failed to generate JWT iat"}
-    )
-    (Just handleRegisterDbError)
+  case validateRegisterInput account of
+    Left errMsg -> throwError Servant.err400 {Servant.errBody = BL8.pack (unpack errMsg)}
+    Right validAcc ->
+      runDbSession
+        (\pool -> use pool (accountRegisterSession validAcc))
+        ( \profile -> do
+            env <- ask
+            let secret = cfgJwtSecret (envConfig env)
+            now <- liftIO getCurrentTime
+            case JWT.numericDate (utcTimeToPOSIXSeconds now) of
+              Just iatVal -> do
+                let expiry = JWT.numericDate (utcTimeToPOSIXSeconds now + 3600) -- 1 hour
+                pure $ mkAuthResponse secret (accountName validAcc) profile iatVal expiry
+              Nothing -> throwError err500 {Servant.errBody = BL8.pack "Failed to generate JWT iat"}
+        )
+        (Just handleRegisterDbError)
 
 -- | Custom handler for register DB errors
 handleRegisterDbError :: UsageError -> AppM LoginResponse
@@ -248,25 +265,37 @@ handleRegisterDbError err =
     _ -> throwError err500
 
 -- | Dedicated session for login
+-- | Validate account login input
+validateLoginInput :: Account -> Either Text Account
+validateLoginInput acc
+  | Data.Text.null (accountName acc) = Left "Missing or empty accountName"
+  | Data.Text.null (accountPassword acc) = Left "Missing or empty accountPassword"
+  | otherwise = Right acc
+
 login :: Account -> AppM LoginResponse
 login account =
-  runDbSession
-    (\pool -> use pool (accountLoginSession account))
-    ( \res -> case res of
-        Nothing -> throwError err401 {Servant.errBody = BL8.pack "Invalid login or password"}
-        Just dbAccount ->
-          if validatePassword (accountPassword account) (accountPassword dbAccount)
-            then do
-              env <- ask
-              let secret = cfgJwtSecret (envConfig env)
-                  profile = accountProfile dbAccount
-              now <- liftIO getCurrentTime
-              case JWT.numericDate (utcTimeToPOSIXSeconds now) of
-                Just iatVal -> pure $ mkAuthResponse secret (accountName account) profile iatVal
-                Nothing -> throwError err500 {Servant.errBody = BL8.pack "Failed to generate JWT iat"}
-            else throwError err401 {Servant.errBody = BL8.pack "Invalid login or password"}
-    )
-    Nothing
+  case validateLoginInput account of
+    Left errMsg -> throwError Servant.err400 {Servant.errBody = BL8.pack (unpack errMsg)}
+    Right validAcc ->
+      runDbSession
+        (\pool -> use pool (accountLoginSession validAcc))
+        ( \res -> case res of
+            Nothing -> throwError err401 {Servant.errBody = BL8.pack "Invalid login or password"}
+            Just dbAccount ->
+              if validatePassword (accountPassword validAcc) (accountPassword dbAccount)
+                then do
+                  env <- ask
+                  let secret = cfgJwtSecret (envConfig env)
+                      profile = accountProfile dbAccount
+                  now <- liftIO getCurrentTime
+                  case JWT.numericDate (utcTimeToPOSIXSeconds now) of
+                    Just iatVal -> do
+                      let expiry = JWT.numericDate (utcTimeToPOSIXSeconds now + defaultJwtExpiry) -- 1 hour
+                      pure $ mkAuthResponse secret (accountName validAcc) profile iatVal expiry
+                    Nothing -> throwError err500 {Servant.errBody = BL8.pack "Failed to generate JWT iat"}
+                else throwError err401 {Servant.errBody = BL8.pack "Invalid login or password"}
+        )
+        Nothing
 
 server :: ServerT Api AppM
 server = register :<|> login
