@@ -123,7 +123,7 @@ readConfig = do
 
 withPool :: Config -> (Pool -> IO a) -> IO a
 withPool cfg action = do
-  let pstr = "host=" <> cfgPgHost cfg <> " dbname=postgres user=postgres port=5432"
+  let pstr = "host=" <> cfgPgHost cfg <> " dbname=app user=app port=5432"
       poolConfig =
         PoolConfig.settings
           [ PoolConfig.size (cfgPgPoolSize cfg),
