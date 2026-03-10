@@ -6,7 +6,7 @@ import Canvas exposing (..)
 import Canvas.Settings exposing (..)
 import Color exposing (Color)
 import Cube
-import Generated.Api exposing (Account, LoginResponse, Profile, postRegister)
+import Generated.Api exposing (Account, LoginResponse, Profile, postLogin, postRegister)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
@@ -36,6 +36,7 @@ type Msg
     | Register Account
     | Login Account
     | RegisterSuccess (Result Http.Error LoginResponse)
+    | LoginSuccess (Result Http.Error LoginResponse)
     | AccountNameChanged String
     | AccountPasswordChanged String
 
@@ -148,6 +149,18 @@ update msg model =
                     , Cmd.none
                     )
 
+        LoginSuccess result ->
+            case result of
+                Ok _ ->
+                    ( model
+                    , Cmd.none
+                    )
+
+                Err err ->
+                    ( { model | errors = model.errors ++ [ err ] }
+                    , Cmd.none
+                    )
+
         AccountNameChanged n ->
             let
                 acc =
@@ -163,7 +176,7 @@ update msg model =
             ( { model | account = { acc | accountPassword = p } }, Cmd.none )
 
         Login account ->
-            ( { model | account = account }, Cmd.none )
+            ( model, postLogin account LoginSuccess )
 
 
 view : Model -> Html Msg

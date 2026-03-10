@@ -90,7 +90,7 @@ postRegister body toMsg =
         , headers =
             []
         , url =
-            Url.Builder.crossOrigin "http://localhost:8080"
+            Url.Builder.crossOrigin "http://localhost:1337"
                 [ "register"
                 ]
                 params
@@ -120,7 +120,7 @@ postLogin body toMsg =
         , headers =
             []
         , url =
-            Url.Builder.crossOrigin "http://localhost:8080"
+            Url.Builder.crossOrigin "http://localhost:1337"
                 [ "login"
                 ]
                 params

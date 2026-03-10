@@ -24,7 +24,7 @@ main = generateElm
 generateElm :: IO ()
 generateElm =
   generateElmModuleWith
-    (defElmOptions {urlPrefix = Static "http://localhost:8080"})
+    (defElmOptions {urlPrefix = Static "http://localhost:1337"})
     [ "Generated",
       "Api"
     ]
