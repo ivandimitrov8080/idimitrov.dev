@@ -98,7 +98,7 @@ data Config = Config
   deriving (Show, Eq)
 
 defaultPort :: Int
-defaultPort = 8080
+defaultPort = 1337
 
 defaultPoolSize :: Int
 defaultPoolSize = 10

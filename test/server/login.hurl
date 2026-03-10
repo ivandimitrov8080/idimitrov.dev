@@ -1,20 +1,24 @@
-# Variables (with defaults, can be overridden via CLI)
-# Usage: hurl ./test/server/login.hurl --variable endpoint=localhost --variable port=8080
-
-# Test 1: Successful Login (user1/password1)
-POST http://localhost:8080/login
+# Register a new user
+POST http://localhost:1337/register
 Content-Type: application/json
-{ "accountName": "user1", "accountPassword": "password1", "accountProfile": "" }
+{ "accountName": "newuser", "accountPassword": "newpassword", "accountProfile": "" }
 HTTP/1.1 200
 
-# Test 2: Incorrect Password (user1/wrongpassword)
-POST http://localhost:8080/login
+# Login with newly registered user
+POST http://localhost:1337/login
 Content-Type: application/json
-{ "accountName": "user1", "accountPassword": "Incorrect", "accountProfile": "" }
+{ "accountName": "newuser", "accountPassword": "newpassword", "accountProfile": "" }
+HTTP/1.1 200
+
+# Fail login for new user with wrong pass
+POST http://localhost:1337/login
+Content-Type: application/json
+{ "accountName": "newuser", "accountPassword": "wrongpassword", "accountProfile": "" }
 HTTP/1.1 401
 
-# Test 3: Unknown User
-POST http://localhost:8080/login
+# Unknown User
+POST http://localhost:1337/login
 Content-Type: application/json
 { "accountName": "notreal", "accountPassword": "password1", "accountProfile": "" }
 HTTP/1.1 401
+
