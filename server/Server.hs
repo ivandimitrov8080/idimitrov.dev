@@ -13,7 +13,7 @@ module Server (IO, main, Account, Profile, LoginResponse, Api) where
 import Basement.Compat.Base (Int64)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Reader (ReaderT, ask, runReaderT)
-import Data.Aeson (toJSON)
+import Data.Aeson (Result (..), fromJSON, toJSON)
 import Data.ByteString (ByteString)
 import Data.ByteString.Lazy.Char8 qualified as BL8
 import Data.Int (Int64)
@@ -76,6 +76,7 @@ $(deriveBoth defaultOptions ''LoginResponse)
 type Api =
   "register" :> ReqBody '[JSON] Account :> Post '[JSON] LoginResponse
     :<|> "login" :> ReqBody '[JSON] Account :> Post '[JSON] LoginResponse
+    :<|> "profile" :> Header "Authorization" Text :> Get '[JSON] Profile
 
 api :: Proxy Api
 api = Proxy
@@ -297,9 +298,36 @@ login account =
         )
         Nothing
 
-server :: ServerT Api AppM
-server = register :<|> login
+profileHandler :: Maybe Text -> AppM Profile
+profileHandler mAuthHeader = do
+  env <- ask
+  let secret = cfgJwtSecret (envConfig env)
+  case mAuthHeader of
+    Nothing -> throwError err401 {Servant.errBody = "Missing Authorization header"}
+    Just authHeader ->
+      -- Expect header format: "Bearer <token>"
+      let authStr = unpack authHeader
+          token = case words authStr of
+            ["Bearer", t] -> t
+            [t] -> t -- fallback: accept plain token
+            _ -> authStr
+       in case JWT.decodeAndVerifySignature (JWT.toVerify (JWT.hmacSecret secret)) (pack token) of
+            Nothing -> throwError err401 {Servant.errBody = "Invalid or expired token"}
+            Just jwt ->
+              let claims = JWT.claims jwt
+                  JWT.ClaimsMap claimsMap = JWT.unregisteredClaims claims
+                  profileVal = Map.lookup "profile" claimsMap
+               in case profileVal of
+                    Just profJson ->
+                      case fromJSON profJson of
+                        Success prof -> pure prof
+                        Error msg -> throwError err500 {Servant.errBody = BL8.pack msg}
+                    Nothing -> throwError err500 {Servant.errBody = "Malformed token: no profile present"}
 
+server :: ServerT Api AppM
+server = register :<|> login :<|> profileHandler
+
+-- | Handler for getting the profile of the currently authenticated user.
 mkApp :: Env -> IO Application
 mkApp env = do
   let apiApp = serve api (hoistServer api (runAppM env) server)

@@ -6,7 +6,7 @@ import Canvas exposing (..)
 import Canvas.Settings exposing (..)
 import Color exposing (Color)
 import Cube
-import Generated.Api exposing (Account, LoginResponse, Profile, postLogin, postRegister)
+import Generated.Api exposing (Account, LoginResponse, Profile, getProfile, postLogin, postRegister)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
@@ -28,6 +28,8 @@ type alias Model =
     , cubeTheta : Float
     , errors : List Error
     , account : Account
+    , token : Maybe String
+    , profile : Profile
     }
 
 
@@ -37,6 +39,7 @@ type Msg
     | Login Account
     | RegisterSuccess (Result Http.Error LoginResponse)
     | LoginSuccess (Result Http.Error LoginResponse)
+    | FetchProfile (Result Http.Error Profile)
     | AccountNameChanged String
     | AccountPasswordChanged String
 
@@ -102,6 +105,8 @@ init () =
       , cubeTheta = 0
       , errors = []
       , account = Account Nothing "anon" "" (Profile "anon")
+      , token = Nothing
+      , profile = { profileName = "anon" }
       }
     , Cmd.none
     )
@@ -151,8 +156,20 @@ update msg model =
 
         LoginSuccess result ->
             case result of
-                Ok _ ->
-                    ( model
+                Ok loginResponse ->
+                    ( { model | token = Just loginResponse.token }
+                    , getProfile (Just loginResponse.token) FetchProfile
+                    )
+
+                Err err ->
+                    ( { model | errors = model.errors ++ [ err ] }
+                    , Cmd.none
+                    )
+
+        FetchProfile result ->
+            case result of
+                Ok profile ->
+                    ( { model | profile = profile }
                     , Cmd.none
                     )
 
@@ -215,6 +232,8 @@ view model =
                 ]
             , button [ Html.Events.onClick (Register model.account) ] [ Html.text "Register" ]
             , button [ Html.Events.onClick (Login model.account) ] [ Html.text "Login" ]
+            , div [] [ span [] [ Html.text "Current profile name" ] ]
+            , div [] [ span [] [ Html.text model.profile.profileName ] ]
             ]
         ]
 

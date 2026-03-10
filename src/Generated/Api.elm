@@ -133,3 +133,35 @@ postLogin body toMsg =
         , tracker =
             Nothing
         }
+
+
+getProfile : Maybe String -> (Result Http.Error Profile -> msg) -> Cmd msg
+getProfile header_Authorization toMsg =
+    let
+        params =
+            List.filterMap identity
+                (List.concat
+                    []
+                )
+    in
+    Http.request
+        { method =
+            "GET"
+        , headers =
+            List.filterMap identity
+                [ Maybe.map (Http.header "Authorization") header_Authorization
+                ]
+        , url =
+            Url.Builder.crossOrigin "http://localhost:1337"
+                [ "profile"
+                ]
+                params
+        , body =
+            Http.emptyBody
+        , expect =
+            Http.expectJson toMsg jsonDecProfile
+        , timeout =
+            Nothing
+        , tracker =
+            Nothing
+        }
