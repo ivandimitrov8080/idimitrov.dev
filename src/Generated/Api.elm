@@ -9,12 +9,23 @@ import Json.Encode exposing (Value)
 import Json.Helpers exposing (..)
 import Set
 import String
+import Time exposing (Posix)
 import Url.Builder
+
+
+jsonDecPosix : Json.Decode.Decoder Posix
+jsonDecPosix =
+    Json.Decode.int |> Json.Decode.map Time.millisToPosix
+
+
+jsonEncPosix : Posix -> Value
+jsonEncPosix posix =
+    Json.Encode.int (Time.posixToMillis posix)
 
 
 type alias Account =
     { accountId : Maybe Int
-    , accountEmail : String
+    , accountName : String
     , accountPassword : String
     , accountProfile : Maybe Profile
     }
@@ -22,9 +33,9 @@ type alias Account =
 
 jsonDecAccount : Json.Decode.Decoder Account
 jsonDecAccount =
-    Json.Decode.succeed (\paccountId paccountEmail paccountPassword paccountProfile -> { accountId = paccountId, accountEmail = paccountEmail, accountPassword = paccountPassword, accountProfile = paccountProfile })
+    Json.Decode.succeed (\paccountId paccountName paccountPassword paccountProfile -> { accountId = paccountId, accountName = paccountName, accountPassword = paccountPassword, accountProfile = paccountProfile })
         |> fnullable "accountId" Json.Decode.int
-        |> required "accountEmail" Json.Decode.string
+        |> required "accountName" Json.Decode.string
         |> required "accountPassword" Json.Decode.string
         |> fnullable "accountProfile" jsonDecProfile
 
@@ -33,7 +44,7 @@ jsonEncAccount : Account -> Value
 jsonEncAccount val =
     Json.Encode.object
         [ ( "accountId", maybeEncode Json.Encode.int val.accountId )
-        , ( "accountEmail", Json.Encode.string val.accountEmail )
+        , ( "accountName", Json.Encode.string val.accountName )
         , ( "accountPassword", Json.Encode.string val.accountPassword )
         , ( "accountProfile", maybeEncode jsonEncProfile val.accountProfile )
         ]
@@ -41,43 +52,43 @@ jsonEncAccount val =
 
 type alias Profile =
     { profileName : String
-    , test : Bool
+    , profileCreatedAt : Posix
     }
 
 
 jsonDecProfile : Json.Decode.Decoder Profile
 jsonDecProfile =
-    Json.Decode.succeed (\pprofileName ptest -> { profileName = pprofileName, test = ptest })
+    Json.Decode.succeed (\pprofileName pprofileCreatedAt -> { profileName = pprofileName, profileCreatedAt = pprofileCreatedAt })
         |> required "profileName" Json.Decode.string
-        |> required "test" Json.Decode.bool
+        |> required "profileCreatedAt" jsonDecPosix
 
 
 jsonEncProfile : Profile -> Value
 jsonEncProfile val =
     Json.Encode.object
         [ ( "profileName", Json.Encode.string val.profileName )
-        , ( "test", Json.Encode.bool val.test )
+        , ( "profileCreatedAt", jsonEncPosix val.profileCreatedAt )
         ]
 
 
 type alias LoginResponse =
     { token : String
-    , profile : Maybe Profile
+    , responseProfile : Maybe Profile
     }
 
 
 jsonDecLoginResponse : Json.Decode.Decoder LoginResponse
 jsonDecLoginResponse =
-    Json.Decode.succeed (\ptoken pprofile -> { token = ptoken, profile = pprofile })
+    Json.Decode.succeed (\ptoken presponseProfile -> { token = ptoken, responseProfile = presponseProfile })
         |> required "token" Json.Decode.string
-        |> fnullable "profile" jsonDecProfile
+        |> fnullable "responseProfile" jsonDecProfile
 
 
 jsonEncLoginResponse : LoginResponse -> Value
 jsonEncLoginResponse val =
     Json.Encode.object
         [ ( "token", Json.Encode.string val.token )
-        , ( "profile", maybeEncode jsonEncProfile val.profile )
+        , ( "responseProfile", maybeEncode jsonEncProfile val.responseProfile )
         ]
 
 
@@ -134,38 +145,6 @@ postLogin body toMsg =
             Http.jsonBody (jsonEncAccount body)
         , expect =
             Http.expectJson toMsg jsonDecLoginResponse
-        , timeout =
-            Nothing
-        , tracker =
-            Nothing
-        }
-
-
-getProfile : Maybe String -> (Result Http.Error Profile -> msg) -> Cmd msg
-getProfile header_Authorization toMsg =
-    let
-        params =
-            List.filterMap identity
-                (List.concat
-                    []
-                )
-    in
-    Http.request
-        { method =
-            "GET"
-        , headers =
-            List.filterMap identity
-                [ Maybe.map (Http.header "Authorization") header_Authorization
-                ]
-        , url =
-            Url.Builder.crossOrigin "http://localhost:1337"
-                [ "profile"
-                ]
-                params
-        , body =
-            Http.emptyBody
-        , expect =
-            Http.expectJson toMsg jsonDecProfile
         , timeout =
             Nothing
         , tracker =

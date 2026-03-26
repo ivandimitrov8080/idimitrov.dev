@@ -109,3 +109,21 @@ Content-Type: application/json
 { "accountName": "newuser", "accountPassword": "wrongpassword" }
 HTTP/1.1 401
 `Invalid login or password`
+
+GET http://localhost:1337/profile
+Content-Type: application/json
+Authorization: {{TOKEN}}
+HTTP/1.1 200
+[Asserts]
+jsonpath "$.profileName" == "newuser"
+
+GET http://localhost:1337/profile
+Content-Type: application/json
+HTTP/1.1 401
+`Missing Authorization header`
+
+GET http://localhost:1337/profile
+Content-Type: application/json
+Authorization: wrong token
+HTTP/1.1 401
+`Invalid or expired token`

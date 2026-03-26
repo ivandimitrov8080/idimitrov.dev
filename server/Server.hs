@@ -43,6 +43,7 @@ import Servant (Handler, ServerT, err500, hoistServer, serve, throwError, (:<|>)
 import Servant.API (Capture, Get, JSON, (:>))
 import System.Environment (getEnv, lookupEnv)
 import System.IO (hPutStrLn, stderr)
+import Web.JWT (stringOrURIToText)
 import Web.JWT qualified as JWT
 
 --------------------------------------------------------------------------------
@@ -77,6 +78,7 @@ $(deriveBoth defaultOptions ''LoginResponse)
 type Api =
   "register" :> ReqBody '[JSON] Account :> Post '[JSON] LoginResponse
     :<|> "login" :> ReqBody '[JSON] Account :> Post '[JSON] LoginResponse
+    :<|> "profile" :> Header "Authorization" Text :> Get '[JSON] Profile
 
 api :: Proxy Api
 api = Proxy
@@ -131,35 +133,67 @@ withPool cfg action = do
   action pool
 
 accountRegisterSession :: Account -> Session Account
-accountRegisterSession (Account _ email password _) = do
+accountRegisterSession (Account _ email password mProfile) = do
   hashed <- hashPassword $ mkPassword password
-  fmap (\email -> Account Nothing email "" Nothing) $
+  aid <-
     Session.statement
       (email, unPasswordHash hashed)
       [TH.singletonStatement|
       INSERT INTO account (name, password)
       VALUES ($1 :: text, $2 :: text)
-      RETURNING name :: text
+      RETURNING id :: int8
     |]
+  let profileName' = maybe email profileName mProfile
+  (pName, pCreatedAt) <-
+    Session.statement
+      (aid, profileName')
+      [TH.singletonStatement|
+      INSERT INTO profile (account_id, name)
+      VALUES ($1 :: int8, $2 :: text)
+      RETURNING name :: text, created_at :: timestamptz
+    |]
+  pure $
+    Account
+      { accountId = Just aid,
+        accountName = email,
+        accountPassword = "",
+        accountProfile = Just (Profile pName pCreatedAt)
+      }
 
 accountLoginSession :: Account -> Session (Maybe Account)
 accountLoginSession acc =
   Session.statement
     (accountName acc)
     [TH.maybeStatement|
-      SELECT id :: int8, name :: text, password :: text FROM account WHERE name = $1 :: text
+      SELECT a.id :: int8, a.name :: text, a.password :: text,
+             p.name :: text?, p.created_at :: timestamptz?
+      FROM account a
+      LEFT JOIN profile p ON p.account_id = a.id
+      WHERE a.name = $1 :: text
     |]
     >>= \case
       Nothing -> pure Nothing
-      Just (aid, name', dbHash) ->
+      Just (aid, name', dbHash, mProfName, mProfCreatedAt) ->
         pure $
           Just $
             Account
               { accountId = Just aid,
                 accountName = name',
                 accountPassword = dbHash,
-                accountProfile = accountProfile acc
+                accountProfile = Profile <$> mProfName <*> mProfCreatedAt
               }
+
+profileSession :: Text -> Session (Maybe Profile)
+profileSession accountName = do
+  Session.statement
+    accountName
+    [TH.maybeStatement|
+      SELECT name :: text, created_at :: timestamptz FROM profile WHERE account_id = (SELECT id FROM account WHERE name = $1 :: text)
+    |]
+    >>= \case
+      Nothing -> pure Nothing
+      Just (name, createdAt) ->
+        pure $ Just $ Profile name createdAt
 
 logDbError :: UsageError -> App ()
 logDbError err = liftIO $ hPutStrLn stderr ("DB UsageError: " ++ show err)
@@ -194,8 +228,8 @@ validatePassword input dbHash =
     _ -> False
 
 -- Build JWT claims for a user (pure)
-mkJWTClaims :: Text -> Maybe Profile -> JWT.NumericDate -> Maybe JWT.NumericDate -> JWT.JWTClaimsSet
-mkJWTClaims accountName profile iatVal mExpVal =
+mkJWTClaims :: Text -> JWT.NumericDate -> Maybe JWT.NumericDate -> JWT.JWTClaimsSet
+mkJWTClaims accountName iatVal mExpVal =
   JWT.JWTClaimsSet
     { JWT.sub = JWT.stringOrURI accountName,
       JWT.iat = Just iatVal,
@@ -204,17 +238,17 @@ mkJWTClaims accountName profile iatVal mExpVal =
       JWT.iss = Nothing,
       JWT.aud = Nothing,
       JWT.jti = Nothing,
-      JWT.unregisteredClaims = JWT.ClaimsMap $ Map.fromList [("profile", toJSON profile)]
+      JWT.unregisteredClaims = JWT.ClaimsMap $ Map.fromList []
     }
 
 -- | Updated token generation to include expiry
-mkAuthToken :: Text -> Text -> Maybe Profile -> JWT.NumericDate -> Maybe JWT.NumericDate -> Text
-mkAuthToken secret accountName profile iatVal mExpVal =
-  pureJWTToken secret (mkJWTClaims accountName profile iatVal mExpVal)
+mkAuthToken :: Text -> Text -> JWT.NumericDate -> Maybe JWT.NumericDate -> Text
+mkAuthToken secret accountName iatVal mExpVal =
+  pureJWTToken secret (mkJWTClaims accountName iatVal mExpVal)
 
-mkAuthResponse :: Text -> Text -> Maybe Profile -> JWT.NumericDate -> Maybe JWT.NumericDate -> LoginResponse
-mkAuthResponse secret accountName profile iatVal mExpVal =
-  pureLoginResponse (mkAuthToken secret accountName profile iatVal mExpVal) profile
+mkAuthResponse :: Text -> Text -> JWT.NumericDate -> Maybe JWT.NumericDate -> LoginResponse
+mkAuthResponse secret accountName iatVal mExpVal =
+  pureLoginResponse (mkAuthToken secret accountName iatVal mExpVal)
 
 mkLoginResponse :: Text -> Maybe Profile -> LoginResponse
 mkLoginResponse token profile = LoginResponse {token = token, responseProfile = profile}
@@ -222,8 +256,8 @@ mkLoginResponse token profile = LoginResponse {token = token, responseProfile = 
 pureJWTToken :: Text -> JWT.JWTClaimsSet -> Text
 pureJWTToken secret claims = JWT.encodeSigned (JWT.hmacSecret secret) mempty claims
 
-pureLoginResponse :: Text -> Maybe Profile -> LoginResponse
-pureLoginResponse token profile = LoginResponse {token = token, responseProfile = profile}
+pureLoginResponse :: Text -> LoginResponse
+pureLoginResponse token = LoginResponse {token = token, responseProfile = Nothing}
 
 -- | Validate account registration input
 validateRegisterInput :: Account -> Either Text Account
@@ -247,7 +281,7 @@ register account =
             case JWT.numericDate (utcTimeToPOSIXSeconds now) of
               Just iatVal -> do
                 let expiry = JWT.numericDate (utcTimeToPOSIXSeconds now + 3600) -- 1 hour
-                pure $ mkAuthResponse secret (accountName validAcc) (accountProfile account) iatVal expiry
+                pure $ mkAuthResponse secret (accountName validAcc) iatVal expiry
               Nothing -> throwError err500 {Servant.errBody = BL8.pack "Failed to generate JWT iat"}
         )
         (Just handleRegisterDbError)
@@ -284,19 +318,44 @@ login account =
                 then do
                   env <- ask
                   let secret = cfgJwtSecret (envConfig env)
-                      profile = accountProfile dbAccount
                   now <- liftIO getCurrentTime
                   case JWT.numericDate (utcTimeToPOSIXSeconds now) of
                     Just iatVal -> do
                       let expiry = JWT.numericDate (utcTimeToPOSIXSeconds now + defaultJwtExpiry) -- 1 hour
-                      pure $ mkAuthResponse secret (accountName validAcc) profile iatVal expiry
+                      pure $ mkAuthResponse secret (accountName validAcc) iatVal expiry
                     Nothing -> throwError err500 {Servant.errBody = BL8.pack "Failed to generate JWT iat"}
                 else throwError err401 {Servant.errBody = BL8.pack "Invalid login or password"}
         )
         Nothing
 
+profile :: Maybe Text -> App Profile
+profile auth = do
+  env <- ask
+  let secret = cfgJwtSecret (envConfig env)
+  case auth of
+    Nothing -> throwError err401 {Servant.errBody = "Missing Authorization header"}
+    Just authHeader ->
+      let authStr = unpack authHeader
+          token = case words authStr of
+            ["Bearer", t] -> t
+            [t] -> t -- fallback: accept plain token
+            _ -> authStr
+       in case JWT.decodeAndVerifySignature (JWT.toVerify (JWT.hmacSecret secret)) (pack token) of
+            Nothing -> throwError err401 {Servant.errBody = "Invalid or expired token"}
+            Just jwt -> do
+              aName <- case stringOrURIToText <$> JWT.sub (JWT.claims jwt) of
+                Nothing -> throwError err401 {Servant.errBody = ""}
+                Just n -> pure n
+              runDbSession
+                (\pool -> use pool (profileSession aName))
+                ( \res -> case res of
+                    Nothing -> throwError err401 {Servant.errBody = BL8.pack "Invalid login or password"}
+                    Just profile -> pure profile
+                )
+                Nothing
+
 server :: ServerT Api App
-server = register :<|> login
+server = register :<|> login :<|> profile
 
 -- | Handler for getting the profile of the currently authenticated user.
 mkApp :: Env -> IO Application
