@@ -14,49 +14,55 @@ import Url.Builder
 
 type alias Account =
     { accountId : Maybe Int
-    , accountName : String
+    , accountEmail : String
     , accountPassword : String
-    , accountProfile : Profile
+    , accountProfile : Maybe Profile
     }
 
 
 jsonDecAccount : Json.Decode.Decoder Account
 jsonDecAccount =
-    Json.Decode.succeed (\paccountId paccountName paccountPassword paccountProfile -> { accountId = paccountId, accountName = paccountName, accountPassword = paccountPassword, accountProfile = paccountProfile })
+    Json.Decode.succeed (\paccountId paccountEmail paccountPassword paccountProfile -> { accountId = paccountId, accountEmail = paccountEmail, accountPassword = paccountPassword, accountProfile = paccountProfile })
         |> fnullable "accountId" Json.Decode.int
-        |> required "accountName" Json.Decode.string
+        |> required "accountEmail" Json.Decode.string
         |> required "accountPassword" Json.Decode.string
-        |> required "accountProfile" jsonDecProfile
+        |> fnullable "accountProfile" jsonDecProfile
 
 
 jsonEncAccount : Account -> Value
 jsonEncAccount val =
     Json.Encode.object
         [ ( "accountId", maybeEncode Json.Encode.int val.accountId )
-        , ( "accountName", Json.Encode.string val.accountName )
+        , ( "accountEmail", Json.Encode.string val.accountEmail )
         , ( "accountPassword", Json.Encode.string val.accountPassword )
-        , ( "accountProfile", jsonEncProfile val.accountProfile )
+        , ( "accountProfile", maybeEncode jsonEncProfile val.accountProfile )
         ]
 
 
 type alias Profile =
     { profileName : String
+    , test : Bool
     }
 
 
 jsonDecProfile : Json.Decode.Decoder Profile
 jsonDecProfile =
-    Json.Decode.succeed (\pprofileName -> { profileName = pprofileName }) |> custom Json.Decode.string
+    Json.Decode.succeed (\pprofileName ptest -> { profileName = pprofileName, test = ptest })
+        |> required "profileName" Json.Decode.string
+        |> required "test" Json.Decode.bool
 
 
 jsonEncProfile : Profile -> Value
 jsonEncProfile val =
-    Json.Encode.string val.profileName
+    Json.Encode.object
+        [ ( "profileName", Json.Encode.string val.profileName )
+        , ( "test", Json.Encode.bool val.test )
+        ]
 
 
 type alias LoginResponse =
     { token : String
-    , profile : Profile
+    , profile : Maybe Profile
     }
 
 
@@ -64,14 +70,14 @@ jsonDecLoginResponse : Json.Decode.Decoder LoginResponse
 jsonDecLoginResponse =
     Json.Decode.succeed (\ptoken pprofile -> { token = ptoken, profile = pprofile })
         |> required "token" Json.Decode.string
-        |> required "profile" jsonDecProfile
+        |> fnullable "profile" jsonDecProfile
 
 
 jsonEncLoginResponse : LoginResponse -> Value
 jsonEncLoginResponse val =
     Json.Encode.object
         [ ( "token", Json.Encode.string val.token )
-        , ( "profile", jsonEncProfile val.profile )
+        , ( "profile", maybeEncode jsonEncProfile val.profile )
         ]
 
 

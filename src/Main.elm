@@ -10,7 +10,7 @@ import Generated.Api exposing (Account, LoginResponse, Profile, getProfile, post
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
-import Http exposing (Error)
+import Http exposing (Error(..))
 import Time exposing (Posix)
 
 
@@ -29,7 +29,7 @@ type alias Model =
     , errors : List Error
     , account : Account
     , token : Maybe String
-    , profile : Profile
+    , profile : Maybe Profile
     }
 
 
@@ -104,9 +104,9 @@ init () =
                     )
       , cubeTheta = 0
       , errors = []
-      , account = Account Nothing "anon" "" (Profile "anon")
+      , account = Account Nothing "anon" "" Nothing
       , token = Nothing
-      , profile = { profileName = "anon" }
+      , profile = Nothing
       }
     , Cmd.none
     )
@@ -169,7 +169,7 @@ update msg model =
         FetchProfile result ->
             case result of
                 Ok profile ->
-                    ( { model | profile = profile }
+                    ( { model | profile = Just profile }
                     , Cmd.none
                     )
 
@@ -183,7 +183,7 @@ update msg model =
                 acc =
                     model.account
             in
-            ( { model | account = { acc | accountName = n } }, Cmd.none )
+            ( { model | account = { acc | accountEmail = n } }, Cmd.none )
 
         AccountPasswordChanged p ->
             let
@@ -196,6 +196,25 @@ update msg model =
             ( model, postLogin account LoginSuccess )
 
 
+errorToString : Error -> String
+errorToString e =
+    case e of
+        BadUrl u ->
+            u
+
+        Timeout ->
+            ""
+
+        NetworkError ->
+            ""
+
+        BadStatus i ->
+            String.fromInt i
+
+        BadBody m ->
+            m
+
+
 view : Model -> Html Msg
 view model =
     div []
@@ -206,7 +225,7 @@ view model =
             , shapes [ fill particleColor ] (List.map drawPoint model.pts)
             ]
         , Cube.view model.cubeTheta
-        , div [] [ Html.text model.account.accountName ]
+        , div [] [ Html.text model.account.accountEmail ]
         , div []
             [ div []
                 [ label [ for "username" ] [ Html.text "Username" ]
@@ -214,7 +233,7 @@ view model =
                     [ id "username"
                     , type_ "text"
                     , placeholder "your username"
-                    , value model.account.accountName
+                    , value model.account.accountEmail
                     , onInput AccountNameChanged
                     ]
                     []
@@ -233,7 +252,17 @@ view model =
             , button [ Html.Events.onClick (Register model.account) ] [ Html.text "Register" ]
             , button [ Html.Events.onClick (Login model.account) ] [ Html.text "Login" ]
             , div [] [ span [] [ Html.text "Current profile name" ] ]
-            , div [] [ span [] [ Html.text model.profile.profileName ] ]
+            , div []
+                [ span []
+                    [ case model.profile of
+                        Just p ->
+                            Html.text p.profileName
+
+                        Nothing ->
+                            Html.text ""
+                    ]
+                ]
+            , div [] (List.map (\e -> span [] [ Html.text (errorToString e) ]) model.errors)
             ]
         ]
 

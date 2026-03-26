@@ -21,7 +21,7 @@ import Data.Map.Strict qualified as Map
 import Data.Maybe (fromMaybe)
 import Data.Password.Argon2 (Argon2, Password, PasswordCheck (..), PasswordHash (..), checkPassword, hashPassword, mkPassword)
 import Data.Text (Text, length, null, pack, unpack)
-import Data.Time.Clock (NominalDiffTime, getCurrentTime)
+import Data.Time.Clock (NominalDiffTime, UTCTime, getCurrentTime)
 import Data.Time.Clock.POSIX (utcTimeToPOSIXSeconds)
 import Data.Vector qualified as V
 import Distribution.Simple.Hpc (Way (Prof))
@@ -53,18 +53,19 @@ data Account = Account
   { accountId :: Maybe Int64,
     accountName :: Text,
     accountPassword :: Text,
-    accountProfile :: Profile
+    accountProfile :: Maybe Profile
   }
   deriving (Eq, Show, Generic)
 
 data Profile = Profile
-  { profileName :: Text
+  { profileName :: Text,
+    profileCreatedAt :: UTCTime
   }
   deriving (Eq, Show, Generic)
 
 data LoginResponse = LoginResponse
   { token :: Text,
-    profile :: Profile
+    responseProfile :: Maybe Profile
   }
   deriving (Eq, Show, Generic)
 
@@ -76,7 +77,6 @@ $(deriveBoth defaultOptions ''LoginResponse)
 type Api =
   "register" :> ReqBody '[JSON] Account :> Post '[JSON] LoginResponse
     :<|> "login" :> ReqBody '[JSON] Account :> Post '[JSON] LoginResponse
-    :<|> "profile" :> Header "Authorization" Text :> Get '[JSON] Profile
 
 api :: Proxy Api
 api = Proxy
@@ -130,12 +130,12 @@ withPool cfg action = do
   pool <- acquire poolConfig
   action pool
 
-accountRegisterSession :: Account -> Session Profile
-accountRegisterSession (Account _ name password _) = do
+accountRegisterSession :: Account -> Session Account
+accountRegisterSession (Account _ email password _) = do
   hashed <- hashPassword $ mkPassword password
-  fmap (\name' -> Profile name') $
+  fmap (\email -> Account Nothing email "" Nothing) $
     Session.statement
-      (name, unPasswordHash hashed)
+      (email, unPasswordHash hashed)
       [TH.singletonStatement|
       INSERT INTO account (name, password)
       VALUES ($1 :: text, $2 :: text)
@@ -161,11 +161,11 @@ accountLoginSession acc =
                 accountProfile = accountProfile acc
               }
 
-logDbError :: UsageError -> AppM ()
+logDbError :: UsageError -> App ()
 logDbError err = liftIO $ hPutStrLn stderr ("DB UsageError: " ++ show err)
 
 -- | Optionally handle UsageError specially, e.g. for unique constraint
-runDbSession :: (Pool -> IO (Either UsageError a)) -> (a -> AppM b) -> Maybe (UsageError -> AppM b) -> AppM b
+runDbSession :: (Pool -> IO (Either UsageError a)) -> (a -> App b) -> Maybe (UsageError -> App b) -> App b
 runDbSession action onSuccess mErrHandler = do
   env <- ask
   let pool = envPool env
@@ -182,13 +182,10 @@ runDbSession action onSuccess mErrHandler = do
 -- SECTION: AppM and Handlers
 ---------------------------------------------------------------------------------
 
-type AppM = ReaderT Env Handler
+type App = ReaderT Env Handler
 
-runAppM :: Env -> AppM a -> Handler a
-runAppM env app = runReaderT app env
-
-mkProfile :: Text -> Profile
-mkProfile name = Profile name
+runApp :: Env -> App a -> Handler a
+runApp env app = runReaderT app env
 
 validatePassword :: Text -> Text -> Bool
 validatePassword input dbHash =
@@ -197,7 +194,7 @@ validatePassword input dbHash =
     _ -> False
 
 -- Build JWT claims for a user (pure)
-mkJWTClaims :: Text -> Profile -> JWT.NumericDate -> Maybe JWT.NumericDate -> JWT.JWTClaimsSet
+mkJWTClaims :: Text -> Maybe Profile -> JWT.NumericDate -> Maybe JWT.NumericDate -> JWT.JWTClaimsSet
 mkJWTClaims accountName profile iatVal mExpVal =
   JWT.JWTClaimsSet
     { JWT.sub = JWT.stringOrURI accountName,
@@ -211,22 +208,22 @@ mkJWTClaims accountName profile iatVal mExpVal =
     }
 
 -- | Updated token generation to include expiry
-mkAuthToken :: Text -> Text -> Profile -> JWT.NumericDate -> Maybe JWT.NumericDate -> Text
+mkAuthToken :: Text -> Text -> Maybe Profile -> JWT.NumericDate -> Maybe JWT.NumericDate -> Text
 mkAuthToken secret accountName profile iatVal mExpVal =
   pureJWTToken secret (mkJWTClaims accountName profile iatVal mExpVal)
 
-mkAuthResponse :: Text -> Text -> Profile -> JWT.NumericDate -> Maybe JWT.NumericDate -> LoginResponse
+mkAuthResponse :: Text -> Text -> Maybe Profile -> JWT.NumericDate -> Maybe JWT.NumericDate -> LoginResponse
 mkAuthResponse secret accountName profile iatVal mExpVal =
   pureLoginResponse (mkAuthToken secret accountName profile iatVal mExpVal) profile
 
-mkLoginResponse :: Text -> Profile -> LoginResponse
-mkLoginResponse token profile = LoginResponse {token = token, profile = profile}
+mkLoginResponse :: Text -> Maybe Profile -> LoginResponse
+mkLoginResponse token profile = LoginResponse {token = token, responseProfile = profile}
 
 pureJWTToken :: Text -> JWT.JWTClaimsSet -> Text
 pureJWTToken secret claims = JWT.encodeSigned (JWT.hmacSecret secret) mempty claims
 
-pureLoginResponse :: Text -> Profile -> LoginResponse
-pureLoginResponse token profile = LoginResponse {token = token, profile = profile}
+pureLoginResponse :: Text -> Maybe Profile -> LoginResponse
+pureLoginResponse token profile = LoginResponse {token = token, responseProfile = profile}
 
 -- | Validate account registration input
 validateRegisterInput :: Account -> Either Text Account
@@ -236,27 +233,27 @@ validateRegisterInput acc
   | Data.Text.length (accountPassword acc) < 8 = Left "Password must be at least 8 characters"
   | otherwise = Right acc
 
-register :: Account -> AppM LoginResponse
+register :: Account -> App LoginResponse
 register account =
   case validateRegisterInput account of
     Left errMsg -> throwError Servant.err400 {Servant.errBody = BL8.pack (unpack errMsg)}
     Right validAcc ->
       runDbSession
         (\pool -> use pool (accountRegisterSession validAcc))
-        ( \profile -> do
+        ( \account -> do
             env <- ask
             let secret = cfgJwtSecret (envConfig env)
             now <- liftIO getCurrentTime
             case JWT.numericDate (utcTimeToPOSIXSeconds now) of
               Just iatVal -> do
                 let expiry = JWT.numericDate (utcTimeToPOSIXSeconds now + 3600) -- 1 hour
-                pure $ mkAuthResponse secret (accountName validAcc) profile iatVal expiry
+                pure $ mkAuthResponse secret (accountName validAcc) (accountProfile account) iatVal expiry
               Nothing -> throwError err500 {Servant.errBody = BL8.pack "Failed to generate JWT iat"}
         )
         (Just handleRegisterDbError)
 
 -- | Custom handler for register DB errors
-handleRegisterDbError :: UsageError -> AppM LoginResponse
+handleRegisterDbError :: UsageError -> App LoginResponse
 handleRegisterDbError err =
   case err of
     SessionUsageError (QueryError _ _ (ResultError (Session.ServerError code _ _ _ _))) ->
@@ -273,7 +270,7 @@ validateLoginInput acc
   | Data.Text.null (accountPassword acc) = Left "Missing or empty accountPassword"
   | otherwise = Right acc
 
-login :: Account -> AppM LoginResponse
+login :: Account -> App LoginResponse
 login account =
   case validateLoginInput account of
     Left errMsg -> throwError Servant.err400 {Servant.errBody = BL8.pack (unpack errMsg)}
@@ -298,39 +295,13 @@ login account =
         )
         Nothing
 
-profileHandler :: Maybe Text -> AppM Profile
-profileHandler mAuthHeader = do
-  env <- ask
-  let secret = cfgJwtSecret (envConfig env)
-  case mAuthHeader of
-    Nothing -> throwError err401 {Servant.errBody = "Missing Authorization header"}
-    Just authHeader ->
-      -- Expect header format: "Bearer <token>"
-      let authStr = unpack authHeader
-          token = case words authStr of
-            ["Bearer", t] -> t
-            [t] -> t -- fallback: accept plain token
-            _ -> authStr
-       in case JWT.decodeAndVerifySignature (JWT.toVerify (JWT.hmacSecret secret)) (pack token) of
-            Nothing -> throwError err401 {Servant.errBody = "Invalid or expired token"}
-            Just jwt ->
-              let claims = JWT.claims jwt
-                  JWT.ClaimsMap claimsMap = JWT.unregisteredClaims claims
-                  profileVal = Map.lookup "profile" claimsMap
-               in case profileVal of
-                    Just profJson ->
-                      case fromJSON profJson of
-                        Success prof -> pure prof
-                        Error msg -> throwError err500 {Servant.errBody = BL8.pack msg}
-                    Nothing -> throwError err500 {Servant.errBody = "Malformed token: no profile present"}
-
-server :: ServerT Api AppM
-server = register :<|> login :<|> profileHandler
+server :: ServerT Api App
+server = register :<|> login
 
 -- | Handler for getting the profile of the currently authenticated user.
 mkApp :: Env -> IO Application
 mkApp env = do
-  let apiApp = serve api (hoistServer api (runAppM env) server)
+  let apiApp = serve api (hoistServer api (runApp env) server)
   pure $
     cors
       ( const $
