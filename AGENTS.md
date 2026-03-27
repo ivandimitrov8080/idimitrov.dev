@@ -32,6 +32,23 @@ Welcome agentic coding agents! This repository follows strict functional, static
 
 ## 🧑‍💻 Code Style Guidelines
 
+### General
+
+- **Haskell:**
+  - Write and use pure functions; avoid IO as much as possible
+  - Use functions that are as general as possible, e.g. use traverse instead of mapM
+  - Use pattern matching instead of equality checks
+  - Use guards instead of if-then-else expressions
+  - Parse, don't validate; avoid boolean blindness
+  - Prefer where over let
+  - Make your functions as polymorphic as possible and get theorems for free
+  - Write type signatures for all top-level definitions
+  - Employ algebra-driven design and denotational design (basically the same thing)
+  - Use dumb reusable data
+  - Make your intent clear in your types and use types that are as precise as possible, e.g. use natural numbers and not integers if you are talking about the length of a list (there are no lists with negative length)
+  - Write total functional programs; avoid partial functions
+  - Use combinators like map and foldr instead of manual recursion
+
 ### Imports
 
 - **Haskell:**
