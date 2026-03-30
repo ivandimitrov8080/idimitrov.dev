@@ -183,7 +183,7 @@ update msg model =
                 acc =
                     model.account
             in
-            ( { model | account = { acc | accountEmail = n } }, Cmd.none )
+            ( { model | account = { acc | accountName = n } }, Cmd.none )
 
         AccountPasswordChanged p ->
             let
@@ -225,7 +225,7 @@ view model =
             , shapes [ fill particleColor ] (List.map drawPoint model.pts)
             ]
         , Cube.view model.cubeTheta
-        , div [] [ Html.text model.account.accountEmail ]
+        , div [] [ Html.text model.account.accountName ]
         , div []
             [ div []
                 [ label [ for "username" ] [ Html.text "Username" ]
@@ -233,7 +233,7 @@ view model =
                     [ id "username"
                     , type_ "text"
                     , placeholder "your username"
-                    , value model.account.accountEmail
+                    , value model.account.accountName
                     , onInput AccountNameChanged
                     ]
                     []
