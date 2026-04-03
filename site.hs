@@ -2,6 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 import Data.List (nub)
+import Data.Text qualified as T
 import Debug.Trace (trace)
 import GHC.Internal.Data.Proxy (Proxy)
 import Hakyll
@@ -12,6 +13,7 @@ import System.FilePath (dropExtension, splitDirectories, takeDirectory, (</>))
 import System.IO.Temp (withTempDirectory)
 import System.Process (callProcess)
 import Text.Pandoc (Block (CodeBlock), Pandoc, WriterOptions (writerHighlightStyle))
+import Text.Pandoc.Definition (Inline (Link))
 import Text.Pandoc.Options (Extension (Ext_link_attributes), ReaderOptions (readerExtensions), extensionsFromList)
 import Text.Pandoc.Walk (walk)
 
@@ -26,6 +28,9 @@ cfg =
   where
     dirsToIgnore = ["elm-stuff", "servant", "bin", "Generated", "server", ".devenv", ".direnv", ".git"]
     ignoreFile' p = ignoreFile defaultConfiguration p || (any (`elem` splitDirectories p) dirsToIgnore)
+
+siteHost :: T.Text
+siteHost = "idimitrov.dev"
 
 --------------------------------------------------------------------------------
 -- Hakyll config
@@ -44,6 +49,27 @@ addNumberLines = walk go
     go (CodeBlock (ident, classes, attrs) code) =
       CodeBlock (ident, nub ("numberLines" : classes), attrs) code
     go x = x
+
+addNewtabExternalLinks :: Pandoc -> Pandoc
+addNewtabExternalLinks = walk go
+  where
+    go (Link (ident, classes, kvs) label (url, title))
+      | notCurrentHost url =
+          Link
+            ( ident,
+              classes,
+              ("target", "_blank")
+                : ("rel", "noopener noreferrer")
+                : filter (\(k, _) -> k /= "target" && k /= "rel") kvs
+            )
+            label
+            (url, title)
+    go x = x
+    notCurrentHost u =
+      not $ ("http://" <> siteHost) `T.isPrefixOf` u || ("https://" <> siteHost) `T.isPrefixOf` u
+
+myTransformOptions :: Pandoc -> Pandoc
+myTransformOptions = addNumberLines . addNewtabExternalLinks
 
 myReaderOptions :: ReaderOptions
 myReaderOptions =
@@ -87,7 +113,7 @@ main = hakyllWith cfg $ do
   match "posts/**.md" $ do
     route $ setExtension "html"
     compile $
-      pandocCompilerWithTransform myReaderOptions myWriterOptions addNumberLines
+      pandocCompilerWithTransform myReaderOptions myWriterOptions myTransformOptions
         >>= loadAndApplyTemplate "templates/post.html" postCtx
         >>= loadAndApplyTemplate "templates/default.html" postCtx
         >>= relativizeUrls
