@@ -12,6 +12,7 @@ import System.FilePath (dropExtension, splitDirectories, takeDirectory, (</>))
 import System.IO.Temp (withTempDirectory)
 import System.Process (callProcess)
 import Text.Pandoc (Block (CodeBlock), Pandoc, WriterOptions (writerHighlightStyle))
+import Text.Pandoc.Options (Extension (Ext_link_attributes), ReaderOptions (readerExtensions), extensionsFromList)
 import Text.Pandoc.Walk (walk)
 
 --------------------------------------------------------------------------------
@@ -44,6 +45,14 @@ addNumberLines = walk go
       CodeBlock (ident, nub ("numberLines" : classes), attrs) code
     go x = x
 
+myReaderOptions :: ReaderOptions
+myReaderOptions =
+  defaultHakyllReaderOptions
+    { readerExtensions =
+        readerExtensions defaultHakyllReaderOptions
+          <> extensionsFromList [Ext_link_attributes]
+    }
+
 myWriterOptions :: WriterOptions
 myWriterOptions = defaultHakyllWriterOptions {writerHighlightStyle = Just codeStyle}
 
@@ -71,14 +80,14 @@ main = hakyllWith cfg $ do
   match (fromList ["about.rst", "contact.markdown"]) $ do
     route $ setExtension "html"
     compile $
-      pandocCompiler
+      pandocCompilerWith myReaderOptions myWriterOptions
         >>= loadAndApplyTemplate "templates/default.html" defaultContext
         >>= relativizeUrls
 
   match "posts/**.md" $ do
     route $ setExtension "html"
     compile $
-      pandocCompilerWithTransform defaultHakyllReaderOptions myWriterOptions addNumberLines
+      pandocCompilerWithTransform myReaderOptions myWriterOptions addNumberLines
         >>= loadAndApplyTemplate "templates/post.html" postCtx
         >>= loadAndApplyTemplate "templates/default.html" postCtx
         >>= relativizeUrls
