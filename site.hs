@@ -58,13 +58,15 @@ addNewtabExternalLinks = walk go
           Link
             ( ident,
               classes,
-              ("target", "_blank")
-                : ("rel", "noopener noreferrer")
-                : filter (\(k, _) -> k /= "target" && k /= "rel") kvs
+              addTargetAndRel kvs
             )
             label
             (url, title)
     go x = x
+    addTargetAndRel kvs = kvs ++ [target, rel]
+      where
+        target = ("target", "_blank")
+        rel = ("rel", "noopener noreferrer")
     notCurrentHost u =
       not $ ("http://" <> siteHost) `T.isPrefixOf` u || ("https://" <> siteHost) `T.isPrefixOf` u
 
