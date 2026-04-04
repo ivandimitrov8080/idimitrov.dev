@@ -4,6 +4,7 @@ module Generated.Api exposing (..)
 
 import Dict exposing (Dict)
 import Http
+import Iso8601
 import Json.Decode
 import Json.Encode exposing (Value)
 import Json.Helpers exposing (..)
@@ -15,12 +16,12 @@ import Url.Builder
 
 jsonDecPosix : Json.Decode.Decoder Posix
 jsonDecPosix =
-    Json.Decode.int |> Json.Decode.map Time.millisToPosix
+    Iso8601.decoder
 
 
 jsonEncPosix : Posix -> Value
 jsonEncPosix posix =
-    Json.Encode.int (Time.posixToMillis posix)
+    Iso8601.encode posix
 
 
 type alias Account =

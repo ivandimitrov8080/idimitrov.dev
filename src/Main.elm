@@ -1,8 +1,6 @@
 module Main exposing (main)
 
 import Browser
-import Canvas exposing (..)
-import Canvas.Settings exposing (..)
 import Generated.Api exposing (Account, LoginResponse, Profile, getProfile, postLogin, postRegister)
 import Html exposing (..)
 import Html.Attributes exposing (..)

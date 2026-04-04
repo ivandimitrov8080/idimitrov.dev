@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 
 module Main (IO, Main.main) where
 
@@ -14,6 +15,7 @@ import Servant.Elm
     generateElmModuleWith,
   )
 import Server
+import Text.RawString.QQ (r)
 
 --------------------------------------------------------------------------------
 -- Generate client lib
@@ -23,15 +25,18 @@ import Server
 elmImportsWithPosix :: Text
 elmImportsWithPosix =
   defElmImports
-    <> "\nimport Time exposing (Posix)\n\
-       \\n\
-       \jsonDecPosix : Json.Decode.Decoder Posix\n\
-       \jsonDecPosix =\n\
-       \    Json.Decode.int |> Json.Decode.map Time.millisToPosix\n\
-       \\n\
-       \jsonEncPosix : Posix -> Value\n\
-       \jsonEncPosix posix =\n\
-       \    Json.Encode.int (Time.posixToMillis posix)\n"
+    <> [r|
+import Time exposing (Posix)
+import Iso8601
+
+jsonDecPosix : Json.Decode.Decoder Posix
+jsonDecPosix =
+   Iso8601.decoder
+
+jsonEncPosix : Posix -> Value
+jsonEncPosix posix =
+   Iso8601.encode posix
+    |]
 
 main :: IO ()
 main = generateElm

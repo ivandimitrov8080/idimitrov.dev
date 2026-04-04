@@ -127,6 +127,7 @@
                         tuple
                         password
                         jwt
+                        raw-strings-qq
                       ]
                     );
                     lsp.enable = true;

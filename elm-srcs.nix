@@ -50,6 +50,11 @@
     version = "1.0.0";
   };
 
+  "rtfeldman/elm-iso8601-date-strings" = {
+    sha256 = "1ah491kgyicgvy1c9myylqvhzb7ya9kgmn0hcsv23ymvqgaf6b1a";
+    version = "1.1.4";
+  };
+
   "elm/bytes" = {
     sha256 = "02ywbf52akvxclpxwj9n04jydajcbsbcbsnjs53yjc5lwck3abwj";
     version = "1.0.8";
@@ -58,6 +63,11 @@
   "elm/file" = {
     sha256 = "1rljcb41dl97myidyjih2yliyzddkr2m7n74x7gg46rcw4jl0ny8";
     version = "1.0.5";
+  };
+
+  "elm/parser" = {
+    sha256 = "0a3cxrvbm7mwg9ykynhp7vjid58zsw03r63qxipxp3z09qks7512";
+    version = "1.1.0";
   };
 
   "elm/virtual-dom" = {
