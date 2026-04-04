@@ -6,14 +6,9 @@
 
 module Server (main, Account, Profile, LoginResponse, Api) where
 
---------------------------------------------------------------------------------
--- SECTION: Imports
---------------------------------------------------------------------------------
-
--- External, unqualified
+import Config
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Reader (ReaderT, ask, runReaderT)
--- External, qualified
 import Data.ByteString.Lazy.Char8 qualified as BL8
 import Data.Int (Int64)
 import Data.Map.Strict qualified as Map
@@ -33,7 +28,7 @@ import Hasql.Session qualified as Session
 import Hasql.TH qualified as TH
 import Network.Wai (Application)
 import Network.Wai.Handler.Warp (defaultSettings, runSettings, setBeforeMainLoop, setPort)
-import Network.Wai.Middleware.Cors (CorsResourcePolicy (corsMethods, corsRequestHeaders), cors, simpleCorsResourcePolicy)
+import Network.Wai.Middleware.Cors (CorsResourcePolicy (corsMethods, corsOrigins, corsRequestHeaders), cors, simpleCorsResourcePolicy)
 import Servant (Handler, Proxy (..), Raw, ServerT, err400, err401, err409, err500, errBody, hoistServer, serve, serveDirectoryFileServer, throwError, (:<|>) (..))
 import Servant.API (Get, Header, JSON, Post, ReqBody, (:>))
 import System.Environment (getEnv, lookupEnv)
@@ -42,11 +37,6 @@ import Text.Read (readMaybe)
 import Web.JWT (stringOrURIToText)
 import Web.JWT qualified as JWT
 
---------------------------------------------------------------------------------
--- SECTION: Types and API
---------------------------------------------------------------------------------
-
--- | A user account with optional ID and profile
 data Account = Account
   { accountId :: Maybe Int64,
     accountName :: Text,
@@ -55,21 +45,18 @@ data Account = Account
   }
   deriving (Eq, Show, Generic)
 
--- | A user profile with display name and creation timestamp
 data Profile = Profile
   { profileName :: Text,
     profileCreatedAt :: UTCTime
   }
   deriving (Eq, Show, Generic)
 
--- | Response returned after successful authentication, containing a JWT and optional profile
 data LoginResponse = LoginResponse
   { token :: Text,
     responseProfile :: Maybe Profile
   }
   deriving (Eq, Show, Generic)
 
--- Compile-time Elm/JSON derives
 $(deriveBoth defaultOptions ''Profile)
 $(deriveBoth defaultOptions ''Account)
 $(deriveBoth defaultOptions ''LoginResponse)
@@ -84,46 +71,6 @@ type AppApi = Api :<|> Raw
 api :: Proxy AppApi
 api = Proxy
 
---------------------------------------------------------------------------------
--- SECTION: config
---------------------------------------------------------------------------------
-
-data Env = Env
-  { envConfig :: Config,
-    envPool :: Pool
-  }
-
-data Config = Config
-  { cfgPgHost :: Text,
-    cfgPgPoolSize :: Int,
-    cfgPort :: Int,
-    cfgJwtSecret :: Text
-  }
-  deriving (Show, Eq)
-
-defaultPort :: Int
-defaultPort = 1337
-
-defaultPoolSize :: Int
-defaultPoolSize = 10
-
-defaultJwtExpiry :: NominalDiffTime
-defaultJwtExpiry = 3600
-
--- | Read server configuration from environment variables
-readConfig :: IO Config
-readConfig = do
-  host <- pack <$> getEnv "PGHOST"
-  mPoolSz <- lookupEnv "PGPOOLSIZE"
-  jwtSecret <- pack <$> getEnv "JWT_SECRET"
-  let poolSz = maybe defaultPoolSize (fromMaybe defaultPoolSize . readMaybe) mPoolSz
-  pure Config {cfgPgHost = host, cfgPgPoolSize = poolSz, cfgPort = defaultPort, cfgJwtSecret = jwtSecret}
-
---------------------------------------------------------------------------------
--- SECTION: DB
---------------------------------------------------------------------------------
-
--- | Create a connection pool from config and pass it to the given action
 withPool :: Config -> (Pool -> IO a) -> IO a
 withPool cfg action = do
   pool <- acquire poolConfig
@@ -202,7 +149,6 @@ profileSession accountName = do
 logDbError :: UsageError -> App ()
 logDbError err = liftIO $ hPutStrLn stderr ("DB UsageError: " ++ show err)
 
--- | Optionally handle UsageError specially, e.g. for unique constraint
 runDbSession :: (Pool -> IO (Either UsageError a)) -> (a -> App b) -> Maybe (UsageError -> App b) -> App b
 runDbSession action onSuccess mErrHandler = do
   env <- ask
@@ -216,10 +162,6 @@ runDbSession action onSuccess mErrHandler = do
         Nothing -> throwError err500
     Right val -> onSuccess val
 
---------------------------------------------------------------------------------
--- SECTION: AppM and Handlers
----------------------------------------------------------------------------------
-
 type App = ReaderT Env Handler
 
 runApp :: Env -> App a -> Handler a
@@ -231,7 +173,6 @@ validatePassword input dbHash =
     PasswordCheckSuccess -> True
     _ -> False
 
--- | Build JWT claims for a user (pure)
 mkJWTClaims :: Text -> JWT.NumericDate -> Maybe JWT.NumericDate -> JWT.JWTClaimsSet
 mkJWTClaims accountName iatVal mExpVal =
   JWT.JWTClaimsSet
@@ -245,7 +186,6 @@ mkJWTClaims accountName iatVal mExpVal =
       JWT.unregisteredClaims = JWT.ClaimsMap $ Map.fromList []
     }
 
--- | Generate a signed JWT token with claims for the given account
 mkAuthToken :: Text -> Text -> JWT.NumericDate -> Maybe JWT.NumericDate -> Text
 mkAuthToken secret accountName iatVal mExpVal =
   pureJWTToken secret (mkJWTClaims accountName iatVal mExpVal)
@@ -263,7 +203,6 @@ pureJWTToken secret claims = JWT.encodeSigned (JWT.hmacSecret secret) mempty cla
 pureLoginResponse :: Text -> LoginResponse
 pureLoginResponse token = LoginResponse {token = token, responseProfile = Nothing}
 
--- | Validate account registration input
 validateRegisterInput :: Account -> Either Text Account
 validateRegisterInput acc
   | Data.Text.null (accountName acc) = Left "Missing or empty accountName"
@@ -271,7 +210,6 @@ validateRegisterInput acc
   | Data.Text.length (accountPassword acc) < 8 = Left "Password must be at least 8 characters"
   | otherwise = Right acc
 
--- | Handle user registration, creating an account and issuing a JWT
 register :: Account -> App LoginResponse
 register account =
   case validateRegisterInput account of
@@ -291,22 +229,19 @@ register account =
         )
         (Just handleRegisterDbError)
 
--- | Custom handler for register DB errors, matching on unique constraint violations
 handleRegisterDbError :: UsageError -> App LoginResponse
 handleRegisterDbError (SessionUsageError (QueryError _ _ (ResultError (Session.ServerError "23505" _ _ _ _)))) =
   throwError err409 {errBody = BL8.pack "Username already exists"}
 handleRegisterDbError _ = throwError err500
 
--- | Validate account login input
 validateLoginInput :: Account -> Either Text Account
 validateLoginInput acc
   | Data.Text.null (accountName acc) = Left "Missing or empty accountName"
   | Data.Text.null (accountPassword acc) = Left "Missing or empty accountPassword"
   | otherwise = Right acc
 
--- | Handle user login, verifying credentials and issuing a JWT
 login :: Account -> App LoginResponse
-login account =
+login account = do
   case validateLoginInput account of
     Left errMsg -> throwError err400 {errBody = BL8.pack (unpack errMsg)}
     Right validAcc ->
@@ -318,10 +253,12 @@ login account =
               | validatePassword (accountPassword validAcc) (accountPassword dbAccount) -> do
                   env <- ask
                   now <- liftIO getCurrentTime
-                  let secret = cfgJwtSecret (envConfig env)
+                  let cfg = envConfig env
+                      secret = cfgJwtSecret cfg
+                      jwtExpiry = cfgJwtExpiry cfg
                   case JWT.numericDate (utcTimeToPOSIXSeconds now) of
                     Just iatVal -> do
-                      let expiry = JWT.numericDate (utcTimeToPOSIXSeconds now + defaultJwtExpiry)
+                      let expiry = JWT.numericDate (utcTimeToPOSIXSeconds now + (jwtExpiry))
                       pure $ mkAuthResponse secret (accountName validAcc) iatVal expiry
                     Nothing -> throwError err500 {errBody = BL8.pack "Failed to generate JWT iat"}
               | otherwise -> throwError err401 {errBody = BL8.pack "Invalid login or password"}
@@ -348,7 +285,6 @@ profile (Just authHeader) = do
         )
         Nothing
 
--- | Extract a bearer token from an Authorization header value
 extractToken :: Text -> Text
 extractToken header =
   case splitOn " " (strip header) of
@@ -359,25 +295,25 @@ extractToken header =
 server :: ServerT AppApi App
 server = (register :<|> login :<|> profile) :<|> serveDirectoryFileServer "/home/ivand/src/idimitrov.dev/_site"
 
--- | Build the WAI application with CORS middleware
 mkApp :: Env -> IO Application
-mkApp env =
+mkApp env = do
   pure $
     cors
-      ( const $
-          Just
-            simpleCorsResourcePolicy
-              { corsRequestHeaders = ["Content-Type", "Authorization"],
-                corsMethods = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
-              }
-      )
+      (const $ corsPolicy)
       apiApp
   where
     apiApp = serve api (hoistServer api (runApp env) server)
-
---------------------------------------------------------------------------------
--- SECTION: Main
---------------------------------------------------------------------------------
+    cfg = envConfig env
+    corsPolicy =
+      case cfgEnvironment cfg of
+        Development ->
+          Just
+            simpleCorsResourcePolicy
+              { corsRequestHeaders = ["Content-Type", "Authorization"],
+                corsMethods = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+                corsOrigins = Nothing
+              }
+        Production -> Just simpleCorsResourcePolicy
 
 main :: IO ()
 main = do

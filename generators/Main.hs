@@ -17,11 +17,6 @@ import Servant.Elm
 import Server
 import Text.RawString.QQ (r)
 
---------------------------------------------------------------------------------
--- Generate client lib
---------------------------------------------------------------------------------
-
--- | Extra Elm imports and helpers for UTCTime <-> Posix mapping
 elmImportsWithPosix :: Text
 elmImportsWithPosix =
   defElmImports

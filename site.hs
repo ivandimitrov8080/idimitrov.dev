@@ -1,6 +1,7 @@
 --------------------------------------------------------------------------------
 {-# LANGUAGE OverloadedStrings #-}
 
+import Config (Config (cfgHost), readConfig)
 import Data.List (nub)
 import Data.Text qualified as T
 import Debug.Trace (trace)
@@ -17,9 +18,6 @@ import Text.Pandoc.Definition (Inline (Link))
 import Text.Pandoc.Options (Extension (Ext_link_attributes), ReaderOptions (readerExtensions), extensionsFromList)
 import Text.Pandoc.Walk (walk)
 
---------------------------------------------------------------------------------
--- Hakyll config
---------------------------------------------------------------------------------
 cfg :: Configuration
 cfg =
   defaultConfiguration
@@ -28,17 +26,6 @@ cfg =
   where
     dirsToIgnore = ["elm-stuff", "servant", "bin", "Generated", "server", ".devenv", ".direnv", ".git"]
     ignoreFile' p = ignoreFile defaultConfiguration p || (any (`elem` splitDirectories p) dirsToIgnore)
-
-siteHost :: T.Text
-siteHost = "idimitrov.dev"
-
---------------------------------------------------------------------------------
--- Hakyll config
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- Render options
---------------------------------------------------------------------------------
 
 codeStyle :: Style
 codeStyle = zenburn
@@ -50,8 +37,8 @@ addNumberLines = walk go
       CodeBlock (ident, nub ("numberLines" : classes), attrs) code
     go x = x
 
-addNewtabExternalLinks :: Pandoc -> Pandoc
-addNewtabExternalLinks = walk go
+addNewtabExternalLinks :: Config -> Pandoc -> Pandoc
+addNewtabExternalLinks cfg = walk go
   where
     go (Link (ident, classes, kvs) label (url, title))
       | notCurrentHost url =
@@ -69,9 +56,10 @@ addNewtabExternalLinks = walk go
         rel = ("rel", "noopener noreferrer")
     notCurrentHost u =
       not $ ("http://" <> siteHost) `T.isPrefixOf` u || ("https://" <> siteHost) `T.isPrefixOf` u
+    siteHost = cfgHost cfg
 
-myTransformOptions :: Pandoc -> Pandoc
-myTransformOptions = addNumberLines . addNewtabExternalLinks
+myTransformOptions :: Config -> Pandoc -> Pandoc
+myTransformOptions cfg = addNumberLines . addNewtabExternalLinks cfg
 
 myReaderOptions :: ReaderOptions
 myReaderOptions =
@@ -93,6 +81,7 @@ myWriterOptions = defaultHakyllWriterOptions {writerHighlightStyle = Just codeSt
 --------------------------------------------------------------------------------
 main :: IO ()
 main = hakyllWith cfg $ do
+  config <- preprocess readConfig
   match "images/*" $ do
     route idRoute
     compile copyFileCompiler
@@ -115,7 +104,7 @@ main = hakyllWith cfg $ do
   match "posts/**.md" $ do
     route $ setExtension "html"
     compile $
-      pandocCompilerWithTransform myReaderOptions myWriterOptions myTransformOptions
+      pandocCompilerWithTransform myReaderOptions myWriterOptions (myTransformOptions config)
         >>= loadAndApplyTemplate "templates/post.html" postCtx
         >>= loadAndApplyTemplate "templates/default.html" postCtx
         >>= relativizeUrls
