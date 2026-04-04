@@ -151,8 +151,6 @@
                       sqls.enable = true;
                     };
                   })
-                  python3Packages.livereload
-                  watchexec
                 ];
                 services = {
                   postgres = {
@@ -170,31 +168,29 @@
                 };
                 processes =
                   let
+                    inherit (pkgs.writers) writeNu;
+                    watcher =
+                      writeNu "watcher"
+                        # nu
+                        ''
+                          watch . --glob=**/*.hs {|op, path, newpath|
+                            process-compose process restart server
+                            if ($path | str contains "Server.hs") {
+                              devenv tasks run build:library --mode before
+                            }
+                            if ($path | str contains "elm.json") {
+                              elm2nix convert | nixfmt -f elm-srcs.nix | save elm-srcs.nix -f
+                              elm2nix snapshot
+                            }
+                          }
+                        '';
                     siteWatch = "bin/site watch";
                     server = "bin/server";
-                    livereload = "livereload --host localhost --port 3000 -o 1 -t _site _site";
-                    serverWatcher = "watchexec -w server --exts hs -- process-compose process restart server";
-                    apiWatcher = "watchexec -w server -f Api.hs -- devenv tasks run build:library --mode before";
-                    syncElmDeps =
-                      pkgs.writers.writeBash "sync_elm_deps"
-                        # bash
-                        ''
-                          elm2nix convert | ${pkgs.nixfmt}/bin/nixfmt -f elm-srcs.nix > elm-srcs.nix
-                          elm2nix snapshot
-                        '';
-                    elm2nixWatcher =
-                      # bash
-                      ''
-                        watchexec -f elm.json -- ${syncElmDeps}
-                      '';
                   in
                   {
                     site.exec = siteWatch;
                     server.exec = server;
-                    livereload.exec = livereload;
-                    elm-watcher.exec = elm2nixWatcher;
-                    server-watcher.exec = serverWatcher;
-                    api-watcher.exec = apiWatcher;
+                    watcher.exec = "${watcher}";
                   };
                 tasks = {
                   "clean:site" = {
@@ -248,11 +244,6 @@
                       ghc -outputdir _cache/generators generators/Main.hs -iserver -o bin/gen
                     '';
                     before = [ "build:library" ];
-                  };
-                  "livereload:reload" = {
-                    exec = "touch _site/index.html";
-                    before = [ "devenv:processes:server" ];
-                    after = [ "build:server" ];
                   };
                   "test:server" = {
                     exec = "hurl test/server/login.hurl";

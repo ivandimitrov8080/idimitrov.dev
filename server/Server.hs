@@ -34,7 +34,7 @@ import Hasql.TH qualified as TH
 import Network.Wai (Application)
 import Network.Wai.Handler.Warp (defaultSettings, runSettings, setBeforeMainLoop, setPort)
 import Network.Wai.Middleware.Cors (CorsResourcePolicy (corsMethods, corsRequestHeaders), cors, simpleCorsResourcePolicy)
-import Servant (Handler, Proxy (..), ServerT, err400, err401, err409, err500, errBody, hoistServer, serve, throwError, (:<|>) (..))
+import Servant (Handler, Proxy (..), Raw, ServerT, err400, err401, err409, err500, errBody, hoistServer, serve, serveDirectoryFileServer, throwError, (:<|>) (..))
 import Servant.API (Get, Header, JSON, Post, ReqBody, (:>))
 import System.Environment (getEnv, lookupEnv)
 import System.IO (hPutStrLn, stderr)
@@ -79,7 +79,9 @@ type Api =
     :<|> "login" :> ReqBody '[JSON] Account :> Post '[JSON] LoginResponse
     :<|> "profile" :> Header "Authorization" Text :> Get '[JSON] Profile
 
-api :: Proxy Api
+type AppApi = Api :<|> Raw
+
+api :: Proxy AppApi
 api = Proxy
 
 --------------------------------------------------------------------------------
@@ -354,8 +356,8 @@ extractToken header =
     [t] -> t
     _ -> header
 
-server :: ServerT Api App
-server = register :<|> login :<|> profile
+server :: ServerT AppApi App
+server = (register :<|> login :<|> profile) :<|> serveDirectoryFileServer "/home/ivand/src/idimitrov.dev/_site"
 
 -- | Build the WAI application with CORS middleware
 mkApp :: Env -> IO Application
