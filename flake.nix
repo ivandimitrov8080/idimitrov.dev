@@ -151,6 +151,7 @@
                       sqls.enable = true;
                     };
                   })
+                  browser-sync
                 ];
                 services = {
                   postgres = {
@@ -174,7 +175,9 @@
                         # nu
                         ''
                           watch . --glob=**/*.hs {|op, path, newpath|
-                            process-compose process restart server
+                            if ($path | str contains "Server.hs") {
+                              process-compose process restart server
+                            }
                             if ($path | str contains "Server.hs") {
                               devenv tasks run build:library --mode before
                             }
@@ -184,13 +187,12 @@
                             }
                           }
                         '';
-                    siteWatch = "bin/site watch";
-                    server = "bin/server";
                   in
                   {
-                    site.exec = siteWatch;
-                    server.exec = server;
+                    site.exec = "bin/site watch";
+                    server.exec = "bin/server";
                     watcher.exec = "${watcher}";
+                    browser-sync.exec = "browser-sync start --proxy localhost:1337 --files '_site/**/*'";
                   };
                 tasks = {
                   "clean:site" = {
@@ -244,6 +246,13 @@
                       ghc -outputdir _cache/generators generators/Main.hs -iserver -o bin/gen
                     '';
                     before = [ "build:library" ];
+                  };
+                  "browsersync:reload" = {
+                    exec = ''
+                      browser-sync reload
+                    '';
+                    before = [ "devenv:processes:server" ];
+                    after = [ "build:server" ];
                   };
                   "test:server" = {
                     exec = "hurl test/server/login.hurl";
