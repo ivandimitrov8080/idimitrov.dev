@@ -2,7 +2,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 import Config (Config (cfgHost), readConfig)
-import Data.List (nub)
+import Data.Char (toUpper)
+import Data.List (intercalate, nub)
 import Data.Text qualified as T
 import Debug.Trace (trace)
 import GHC.Internal.Data.Proxy (Proxy)
@@ -13,10 +14,15 @@ import System.Directory (createDirectoryIfMissing)
 import System.FilePath (dropExtension, splitDirectories, takeDirectory, (</>))
 import System.IO.Temp (withTempDirectory)
 import System.Process (callProcess)
+import Text.Blaze.Html (toHtml, toValue, (!))
+import Text.Blaze.Html.Renderer.String (renderHtml)
+import Text.Blaze.Html5 qualified as H
+import Text.Blaze.Html5.Attributes qualified as A
 import Text.Pandoc (Block (CodeBlock), Pandoc, WriterOptions (writerHighlightStyle))
 import Text.Pandoc.Definition (Inline (Link))
 import Text.Pandoc.Options (Extension (Ext_link_attributes), ReaderOptions (readerExtensions), extensionsFromList)
 import Text.Pandoc.Walk (walk)
+import Unicode.Char (toLower)
 
 cfg :: Configuration
 cfg =
@@ -76,12 +82,28 @@ myWriterOptions = defaultHakyllWriterOptions {writerHighlightStyle = Just codeSt
 -- Render options
 --------------------------------------------------------------------------------
 
+humanizeTitle :: String -> String
+humanizeTitle = unwords . map cap . words . map (\c -> if c == '-' then ' ' else c)
+  where
+    cap "" = ""
+    cap (c : cs) = toUpper c : map toLower cs
+
+renderHumanCategoryList :: Tags -> Compiler String
+renderHumanCategoryList cats =
+  renderTags makeLink (intercalate ", ") cats
+  where
+    makeLink tag url count _min _max =
+      renderHtml $
+        H.a ! A.href (toValue url) $
+          toHtml (humanizeTitle tag ++ " (" ++ show count ++ ")")
+
 --------------------------------------------------------------------------------
 -- Site config
 --------------------------------------------------------------------------------
 main :: IO ()
 main = hakyllWith cfg $ do
   config <- preprocess readConfig
+  categories <- buildCategories "posts/**" (fromCapture "category/*.html")
   match "images/*" $ do
     route idRoute
     compile copyFileCompiler
@@ -112,7 +134,7 @@ main = hakyllWith cfg $ do
   create ["archive.html"] $ do
     route idRoute
     compile $ do
-      posts <- recentFirst =<< loadAll "posts/*"
+      posts <- recentFirst =<< loadAll "posts/**"
       let archiveCtx =
             listField "posts" postCtx (pure posts)
               <> constField "title" "Archives"
@@ -123,12 +145,28 @@ main = hakyllWith cfg $ do
         >>= loadAndApplyTemplate "templates/default.html" archiveCtx
         >>= relativizeUrls
 
+    tagsRules categories $ \cat pattern -> do
+      let title = humanizeTitle cat
+      route idRoute
+      compile $ do
+        posts <- recentFirst =<< loadAll pattern
+        let ctx =
+              constField "title" title
+                <> listField "posts" postCtx (pure posts)
+                <> defaultContext
+        makeItem ""
+          >>= loadAndApplyTemplate "templates/category.html" ctx
+          >>= loadAndApplyTemplate "templates/default.html" ctx
+          >>= relativizeUrls
+
   match "index.html" $ do
     route idRoute
     compile $ do
-      posts <- recentFirst =<< loadAll "posts/*"
+      posts <- recentFirst =<< loadAll "posts/**"
+      catList <- renderHumanCategoryList categories
       let indexCtx =
-            listField "posts" postCtx (pure posts)
+            constField "categoryList" catList
+              <> listField "posts" postCtx (pure posts)
               <> defaultContext
 
       getResourceBody

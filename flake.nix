@@ -178,6 +178,10 @@
                             if ($path | str contains "Server.hs") {
                               process-compose process restart server
                             }
+                            if ($path | str contains "site.hs") {
+                              ./bin/site clean
+                              process-compose process restart site
+                            }
                             if ($path | str contains "Server.hs") {
                               devenv tasks run build:library --mode before
                             }
@@ -189,7 +193,7 @@
                         '';
                   in
                   {
-                    site.exec = "bin/site watch";
+                    site.exec = "bin/site watch --no-server";
                     server.exec = "bin/server";
                     watcher.exec = "${watcher}";
                     browser-sync.exec = "browser-sync start --proxy localhost:1337 --files '_site/**/*'";
