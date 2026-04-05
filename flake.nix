@@ -194,9 +194,15 @@
                   in
                   {
                     site.exec = "bin/site watch --no-server";
-                    server.exec = "bin/server";
+                    server = {
+                      exec = "bin/server";
+                      ready.http.get.port = 1337;
+                    };
                     watcher.exec = "${watcher}";
-                    browser-sync.exec = "browser-sync start --proxy localhost:1337 --files '_site/**/*'";
+                    browser-sync = {
+                      exec = "browser-sync start --proxy localhost:1337 --files '_site/**/*'";
+                      after = [ "devenv:processes:server" ];
+                    };
                   };
                 tasks = {
                   "clean:site" = {
