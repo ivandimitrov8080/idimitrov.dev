@@ -12,3 +12,4 @@ elm-stuff
 server/**/*.hi
 server/**/*.o
 bin/**
+jwt.key

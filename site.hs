@@ -3,8 +3,7 @@
 
 import Config (Config (cfgDefaultDescription, cfgHost), readConfig)
 import Data.Char (toUpper)
-import Data.List (intercalate, nub)
-import Data.List.Compat (sortOn)
+import Data.List (intercalate, nub, sortOn)
 import Data.Ord (Down (..))
 import Data.Text qualified as T
 import Debug.Trace (trace)

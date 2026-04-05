@@ -112,7 +112,7 @@ HTTP/1.1 401
 
 GET http://localhost:1337/profile
 Content-Type: application/json
-Authorization: {{TOKEN}}
+Authorization: Bearer {{TOKEN}}
 HTTP/1.1 200
 [Asserts]
 jsonpath "$.profileName" == "newuser"
@@ -120,10 +120,10 @@ jsonpath "$.profileName" == "newuser"
 GET http://localhost:1337/profile
 Content-Type: application/json
 HTTP/1.1 401
-`Missing Authorization header`
+`Invalid or expired token`
 
 GET http://localhost:1337/profile
 Content-Type: application/json
-Authorization: wrong token
+Authorization: Bearer wrongtoken
 HTTP/1.1 401
 `Invalid or expired token`

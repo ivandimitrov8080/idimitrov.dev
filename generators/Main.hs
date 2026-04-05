@@ -1,21 +1,43 @@
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE UndecidableInstances #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Main (IO, Main.main) where
 
+import Data.Proxy (Proxy (..))
 import Data.Text (Text)
-import GHC.Internal.Data.Proxy (Proxy)
+import Servant.API (Header, (:>))
+import Servant.Auth (Auth)
 import Servant.Elm
   ( DefineElm (DefineElm),
     ElmOptions (urlPrefix),
-    Proxy (Proxy),
     UrlPrefix (Static),
     defElmImports,
     defElmOptions,
     generateElmModuleWith,
   )
+import Servant.Elm.Internal.Foreign (LangElm)
+import Servant.Foreign (Foreign, GenerateList, HasForeign (..), HasForeignType)
 import Server
 import Text.RawString.QQ (r)
+
+-- | Orphan instance: make servant-elm treat @Auth auths val :> api@
+--   as @Header "Authorization" Text :> api@ for Elm code generation.
+instance
+  (HasForeign LangElm ftype api, HasForeignType LangElm ftype Text, HasForeignType LangElm ftype (Maybe Text)) =>
+  HasForeign LangElm ftype (Auth auths val :> api)
+  where
+  type Foreign ftype (Auth auths val :> api) = Foreign ftype (Header "Authorization" Text :> api)
+  foreignFor lang ftype Proxy req =
+    foreignFor lang ftype (Proxy :: Proxy (Header "Authorization" Text :> api)) req
 
 elmImportsWithPosix :: Text
 elmImportsWithPosix =

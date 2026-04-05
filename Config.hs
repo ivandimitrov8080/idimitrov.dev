@@ -7,7 +7,7 @@ import Data.Text (Text, pack, strip, toLower, unpack)
 import Data.Time (NominalDiffTime)
 import GHC.Internal.System.Environment.Blank (getEnvDefault)
 import System.Directory (getCurrentDirectory)
-import System.Environment (getEnv, lookupEnv)
+import System.Environment (lookupEnv)
 import Text.Read (readMaybe)
 
 data Environment = Development | Production
@@ -18,7 +18,7 @@ data Config = Config
     cfgPgPoolSize :: Int,
     cfgHost :: Text,
     cfgPort :: Int,
-    cfgJwtSecret :: Text,
+    cfgJwtKeyFile :: FilePath,
     cfgEnvironment :: Environment,
     cfgStaticFiles :: FilePath,
     cfgDefaultDescription :: Text,
@@ -41,7 +41,7 @@ readConfig :: IO Config
 readConfig = do
   currentDir <- getCurrentDirectory
   host <- pack <$> getEnvDefault "PGHOST" "localhost"
-  jwtSecret <- pack <$> getEnvDefault "JWT_SECRET" "changeme"
+  jwtKeyFile <- getEnvDefault "JWT_KEY_FILE" "jwt.key"
   glueHost <- pack <$> getEnvDefault "GLUE_HOST" "idimitrov.dev"
   environment <- pack <$> getEnvDefault "GLUE_ENV" "production"
   staticFiles <- pack <$> getEnvDefault "GLUE_STATIC" (currentDir ++ "/_site")
@@ -58,7 +58,7 @@ readConfig = do
         cfgPgPoolSize = poolSz,
         cfgHost = glueHost,
         cfgPort = port,
-        cfgJwtSecret = jwtSecret,
+        cfgJwtKeyFile = jwtKeyFile,
         cfgJwtExpiry = expiry,
         cfgEnvironment = parseEnvironment environment,
         cfgStaticFiles = unpack staticFiles,

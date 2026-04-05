@@ -1,22 +1,30 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeOperators #-}
 
-module Server (main, Account, Profile, LoginResponse, Api) where
+module Server (main, Account, Profile, LoginResponse, AuthUser, Api) where
 
 import Config
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Reader (ReaderT, ask, runReaderT)
+import Crypto.JOSE.JWK (JWK)
+import Data.Aeson (FromJSON, ToJSON)
+import Data.ByteString.Lazy qualified as BL
 import Data.ByteString.Lazy.Char8 qualified as BL8
 import Data.Int (Int64)
-import Data.Map.Strict qualified as Map
-import Data.Maybe (fromMaybe)
 import Data.Password.Argon2 (PasswordCheck (..), PasswordHash (..), checkPassword, hashPassword, mkPassword)
-import Data.Text (Text, length, null, pack, splitOn, strip, unpack)
-import Data.Time.Clock (NominalDiffTime, UTCTime, getCurrentTime)
-import Data.Time.Clock.POSIX (utcTimeToPOSIXSeconds)
+import Data.Text (Text, length, null, pack, unpack)
+import Data.Text.Encoding (decodeUtf8)
+import Data.Time.Clock (UTCTime, addUTCTime, getCurrentTime)
 import Elm.Derive (defaultOptions, deriveBoth)
 import GHC.Generics (Generic)
 import Hasql.Connection.Setting qualified as ConnectionSetting
@@ -29,17 +37,33 @@ import Hasql.TH qualified as TH
 import Network.Wai (Application)
 import Network.Wai.Handler.Warp (defaultSettings, runSettings, setBeforeMainLoop, setPort)
 import Network.Wai.Middleware.Cors (CorsResourcePolicy (corsMethods, corsOrigins, corsRequestHeaders), cors, simpleCorsResourcePolicy)
-import Servant (Handler, Proxy (..), Raw, ServerT, err400, err401, err409, err500, errBody, hoistServer, serve, serveDirectoryFileServer, throwError, (:<|>) (..))
-import Servant.API (Get, Header, JSON, Post, ReqBody, (:>))
-import System.Environment (getEnv, lookupEnv)
+import Servant (Context (..), Handler, Proxy (..), Raw, ServerT, err400, err401, err409, err500, errBody, hoistServerWithContext, serveDirectoryFileServer, serveWithContext, throwError, (:<|>) (..))
+import Servant.API (Get, JSON, Post, ReqBody, (:>))
+import Servant.Auth (Auth, JWT)
+import Servant.Auth.Server (AuthResult (..), CookieSettings (..), FromJWT, IsSecure (..), JWTSettings, ToJWT, defaultCookieSettings, defaultJWTSettings, makeJWT, readKey, writeKey)
+import Servant.Auth.Server qualified as SAS
+import System.Directory (doesFileExist)
 import System.IO (hPutStrLn, stderr)
-import Text.Read (readMaybe)
-import Web.JWT (stringOrURIToText)
-import Web.JWT qualified as JWT
+
+-- | Authenticated user payload embedded in JWT claims
+data AuthUser = AuthUser
+  { authUserName :: Text
+  }
+  deriving (Eq, Show, Generic)
+
+instance FromJSON AuthUser
+
+instance ToJSON AuthUser
+
+instance FromJWT AuthUser
+
+instance ToJWT AuthUser
 
 data Env = Env
   { envConfig :: Config,
-    envPool :: Pool
+    envPool :: Pool,
+    envJwtSettings :: JWTSettings,
+    envCookieSettings :: CookieSettings
   }
 
 data Account = Account
@@ -69,12 +93,17 @@ $(deriveBoth defaultOptions ''LoginResponse)
 type Api =
   "register" :> ReqBody '[JSON] Account :> Post '[JSON] LoginResponse
     :<|> "login" :> ReqBody '[JSON] Account :> Post '[JSON] LoginResponse
-    :<|> "profile" :> Header "Authorization" Text :> Get '[JSON] Profile
+    :<|> "profile" :> Auth '[JWT] AuthUser :> Get '[JSON] Profile
 
 type AppApi = Api :<|> Raw
 
 api :: Proxy AppApi
 api = Proxy
+
+type CtxTypes = '[CookieSettings, JWTSettings]
+
+ctxProxy :: Proxy CtxTypes
+ctxProxy = Proxy
 
 withPool :: Config -> (Pool -> IO a) -> IO a
 withPool cfg action = do
@@ -140,9 +169,9 @@ accountLoginSession acc =
               }
 
 profileSession :: Text -> Session (Maybe Profile)
-profileSession accountName = do
+profileSession aName = do
   Session.statement
-    accountName
+    aName
     [TH.maybeStatement|
       SELECT name :: text, created_at :: timestamptz FROM profile WHERE account_id = (SELECT id FROM account WHERE name = $1 :: text)
     |]
@@ -178,35 +207,13 @@ validatePassword input dbHash =
     PasswordCheckSuccess -> True
     _ -> False
 
-mkJWTClaims :: Text -> JWT.NumericDate -> Maybe JWT.NumericDate -> JWT.JWTClaimsSet
-mkJWTClaims accountName iatVal mExpVal =
-  JWT.JWTClaimsSet
-    { JWT.sub = JWT.stringOrURI accountName,
-      JWT.iat = Just iatVal,
-      JWT.exp = mExpVal,
-      JWT.nbf = Nothing,
-      JWT.iss = Nothing,
-      JWT.aud = Nothing,
-      JWT.jti = Nothing,
-      JWT.unregisteredClaims = JWT.ClaimsMap $ Map.fromList []
-    }
-
-mkAuthToken :: Text -> Text -> JWT.NumericDate -> Maybe JWT.NumericDate -> Text
-mkAuthToken secret accountName iatVal mExpVal =
-  pureJWTToken secret (mkJWTClaims accountName iatVal mExpVal)
-
-mkAuthResponse :: Text -> Text -> JWT.NumericDate -> Maybe JWT.NumericDate -> LoginResponse
-mkAuthResponse secret accountName iatVal mExpVal =
-  pureLoginResponse (mkAuthToken secret accountName iatVal mExpVal)
-
-mkLoginResponse :: Text -> Maybe Profile -> LoginResponse
-mkLoginResponse token profile = LoginResponse {token = token, responseProfile = profile}
-
-pureJWTToken :: Text -> JWT.JWTClaimsSet -> Text
-pureJWTToken secret claims = JWT.encodeSigned (JWT.hmacSecret secret) mempty claims
-
-pureLoginResponse :: Text -> LoginResponse
-pureLoginResponse token = LoginResponse {token = token, responseProfile = Nothing}
+-- | Create a JWT token for the given user
+createToken :: JWTSettings -> AuthUser -> Maybe UTCTime -> App Text
+createToken jwtCfg user mExpiry = do
+  eToken <- liftIO $ makeJWT user jwtCfg mExpiry
+  case eToken of
+    Left _err -> throwError err500 {errBody = "Failed to create JWT"}
+    Right tokenBS -> pure $ decodeUtf8 (BL.toStrict tokenBS)
 
 validateRegisterInput :: Account -> Either Text Account
 validateRegisterInput acc
@@ -225,12 +232,12 @@ register account =
         ( \_ -> do
             env <- ask
             now <- liftIO getCurrentTime
-            let secret = cfgJwtSecret (envConfig env)
-            case JWT.numericDate (utcTimeToPOSIXSeconds now) of
-              Just iatVal -> do
-                let expiry = JWT.numericDate (utcTimeToPOSIXSeconds now + 3600)
-                pure $ mkAuthResponse secret (accountName validAcc) iatVal expiry
-              Nothing -> throwError err500 {errBody = BL8.pack "Failed to generate JWT iat"}
+            let jwtCfg = envJwtSettings env
+                expiry = cfgJwtExpiry (envConfig env)
+                expiryTime = Just $ addUTCTime expiry now
+                authUser = AuthUser (accountName validAcc)
+            t <- createToken jwtCfg authUser expiryTime
+            pure $ LoginResponse {token = t, responseProfile = Nothing}
         )
         (Just handleRegisterDbError)
 
@@ -258,57 +265,54 @@ login account = do
               | validatePassword (accountPassword validAcc) (accountPassword dbAccount) -> do
                   env <- ask
                   now <- liftIO getCurrentTime
-                  let cfg = envConfig env
-                      secret = cfgJwtSecret cfg
-                      jwtExpiry = cfgJwtExpiry cfg
-                  case JWT.numericDate (utcTimeToPOSIXSeconds now) of
-                    Just iatVal -> do
-                      let expiry = JWT.numericDate (utcTimeToPOSIXSeconds now + (jwtExpiry))
-                      pure $ mkAuthResponse secret (accountName validAcc) iatVal expiry
-                    Nothing -> throwError err500 {errBody = BL8.pack "Failed to generate JWT iat"}
+                  let jwtCfg = envJwtSettings env
+                      expiry = cfgJwtExpiry (envConfig env)
+                      expiryTime = Just $ addUTCTime expiry now
+                      authUser = AuthUser (accountName validAcc)
+                  t <- createToken jwtCfg authUser expiryTime
+                  pure $ LoginResponse {token = t, responseProfile = accountProfile dbAccount}
               | otherwise -> throwError err401 {errBody = BL8.pack "Invalid login or password"}
         )
         Nothing
 
 -- | Retrieve the profile of the currently authenticated user via JWT
-profile :: Maybe Text -> App Profile
-profile Nothing = throwError err401 {errBody = "Missing Authorization header"}
-profile (Just authHeader) = do
-  env <- ask
-  let secret = cfgJwtSecret (envConfig env)
-  case JWT.decodeAndVerifySignature (JWT.toVerify (JWT.hmacSecret secret)) (extractToken authHeader) of
-    Nothing -> throwError err401 {errBody = "Invalid or expired token"}
-    Just jwt -> do
-      aName <- case stringOrURIToText <$> JWT.sub (JWT.claims jwt) of
-        Nothing -> throwError err401 {errBody = ""}
-        Just n -> pure n
-      runDbSession
-        (\pool -> use pool (profileSession aName))
-        ( \case
-            Nothing -> throwError err401 {errBody = BL8.pack "Profile not found"}
-            Just p -> pure p
-        )
-        Nothing
-
-extractToken :: Text -> Text
-extractToken header =
-  case splitOn " " (strip header) of
-    ["Bearer", t] -> t
-    [t] -> t
-    _ -> header
+profile :: AuthResult AuthUser -> App Profile
+profile (Authenticated user) =
+  runDbSession
+    (\pool -> use pool (profileSession (authUserName user)))
+    ( \case
+        Nothing -> throwError err401 {errBody = BL8.pack "Profile not found"}
+        Just p -> pure p
+    )
+    Nothing
+profile _ = throwError err401 {errBody = "Invalid or expired token"}
 
 server :: Config -> ServerT AppApi App
 server cfg = (register :<|> login :<|> profile) :<|> (serveDirectoryFileServer $ cfgStaticFiles cfg)
+
+-- | Load a JWK from file, or generate and persist a new one
+loadOrCreateKey :: FilePath -> IO JWK
+loadOrCreateKey keyFile = do
+  exists <- doesFileExist keyFile
+  if exists
+    then readKey keyFile
+    else do
+      hPutStrLn stderr $ "No JWT key found at " ++ keyFile ++ ", generating new key..."
+      writeKey keyFile
+      readKey keyFile
 
 mkApp :: Env -> IO Application
 mkApp env = do
   pure $
     cors
-      (const $ corsPolicy)
+      (const corsPolicy)
       apiApp
   where
     cfg = envConfig env
-    apiApp = serve api (hoistServer api (runApp env) $ server cfg)
+    jwtCfg = envJwtSettings env
+    cookieCfg = envCookieSettings env
+    ctx = cookieCfg :. jwtCfg :. EmptyContext
+    apiApp = serveWithContext api ctx (hoistServerWithContext api ctxProxy (runApp env) $ server cfg)
     corsPolicy =
       case cfgEnvironment cfg of
         Development ->
@@ -328,7 +332,19 @@ main = do
         setPort port $
           setBeforeMainLoop (hPutStrLn stderr ("listening on port " ++ show port)) $
             defaultSettings
+  jwk <- loadOrCreateKey (cfgJwtKeyFile config)
+  let jwtCfg = defaultJWTSettings jwk
+      cookieCfg =
+        case cfgEnvironment config of
+          Development -> defaultCookieSettings {SAS.cookieIsSecure = SAS.NotSecure}
+          Production -> defaultCookieSettings
   withPool config $ \pool -> do
-    let env = Env {envConfig = config, envPool = pool}
+    let env =
+          Env
+            { envConfig = config,
+              envPool = pool,
+              envJwtSettings = jwtCfg,
+              envCookieSettings = cookieCfg
+            }
     app <- mkApp env
     runSettings settings app
