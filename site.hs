@@ -78,10 +78,6 @@ myReaderOptions =
 myWriterOptions :: WriterOptions
 myWriterOptions = defaultHakyllWriterOptions {writerHighlightStyle = Just codeStyle}
 
---------------------------------------------------------------------------------
--- Render options
---------------------------------------------------------------------------------
-
 humanizeTitle :: String -> String
 humanizeTitle = unwords . map cap . words . map (\c -> if c == '-' then ' ' else c)
   where
@@ -97,9 +93,24 @@ renderHumanCategoryList cats =
         H.a ! A.href (toValue url) $
           toHtml (humanizeTitle tag ++ " (" ++ show count ++ ")")
 
---------------------------------------------------------------------------------
--- Site config
---------------------------------------------------------------------------------
+postCtx :: Context String
+postCtx =
+  dateField "date" "%B %e, %Y"
+    <> defaultContext
+
+elmMakeCompiler :: [String] -> Compiler (Item String)
+elmMakeCompiler extraElmArgs = do
+  entry <- getResourceFilePath
+  js <- unsafeCompiler $ do
+    let tmp = (tmpDirectory cfg)
+    createDirectoryIfMissing True tmp
+    withTempDirectory tmp "hakyll-elm" $ \dir -> do
+      let out = trace dir $ dir </> "elm.js"
+      callProcess "elm" $
+        ["make", entry, "--output", out] ++ extraElmArgs
+      readFile out
+  makeItem js
+
 main :: IO ()
 main = hakyllWith cfg $ do
   config <- preprocess readConfig
@@ -197,39 +208,3 @@ main = hakyllWith cfg $ do
     match "src/Main.elm" $ do
       route $ constRoute "js/app.js"
       compile $ elmMakeCompiler ["--optimize"]
-
---------------------------------------------------------------------------------
--- Site config
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- Context
---------------------------------------------------------------------------------
-postCtx :: Context String
-postCtx =
-  dateField "date" "%B %e, %Y"
-    <> defaultContext
-
---------------------------------------------------------------------------------
--- Context
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- Compilers
---------------------------------------------------------------------------------
-elmMakeCompiler :: [String] -> Compiler (Item String)
-elmMakeCompiler extraElmArgs = do
-  entry <- getResourceFilePath
-  js <- unsafeCompiler $ do
-    let tmp = (tmpDirectory cfg)
-    createDirectoryIfMissing True tmp
-    withTempDirectory tmp "hakyll-elm" $ \dir -> do
-      let out = trace dir $ dir </> "elm.js"
-      callProcess "elm" $
-        ["make", entry, "--output", out] ++ extraElmArgs
-      readFile out
-  makeItem js
-
---------------------------------------------------------------------------------
--- Compilers
---------------------------------------------------------------------------------
