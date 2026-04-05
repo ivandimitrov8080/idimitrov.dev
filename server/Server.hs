@@ -11,7 +11,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
 
-module Server (main, Account, Profile, LoginResponse, AuthUser, Api) where
+module Server (main, Account, Profile, LoginResponse, AuthUser, Protected, Unprotected, Api) where
 
 import Config
 import Control.Monad.IO.Class (liftIO)
@@ -40,7 +40,7 @@ import Network.Wai.Middleware.Cors (CorsResourcePolicy (corsMethods, corsOrigins
 import Servant (Context (..), Handler, Proxy (..), Raw, ServerT, err400, err401, err409, err500, errBody, hoistServerWithContext, serveDirectoryFileServer, serveWithContext, throwError, (:<|>) (..))
 import Servant.API (Get, JSON, Post, ReqBody, (:>))
 import Servant.Auth (Auth, JWT)
-import Servant.Auth.Server (AuthResult (..), CookieSettings (..), FromJWT, IsSecure (..), JWTSettings, ToJWT, defaultCookieSettings, defaultJWTSettings, makeJWT, readKey, writeKey)
+import Servant.Auth.Server (AuthResult (..), CookieSettings (..), FromJWT, IsSecure (..), JWTSettings, ToJWT, defaultCookieSettings, defaultJWTSettings, makeJWT, readKey, throwAll, writeKey)
 import Servant.Auth.Server qualified as SAS
 import System.Directory (doesFileExist)
 import System.IO (hPutStrLn, stderr)
@@ -90,12 +90,19 @@ $(deriveBoth defaultOptions ''Profile)
 $(deriveBoth defaultOptions ''Account)
 $(deriveBoth defaultOptions ''LoginResponse)
 
-type Api =
+-- | Routes that require JWT authentication
+type Protected =
+  "profile" :> Get '[JSON] Profile
+
+-- | Routes that do not require authentication
+type Unprotected =
   "register" :> ReqBody '[JSON] Account :> Post '[JSON] LoginResponse
     :<|> "login" :> ReqBody '[JSON] Account :> Post '[JSON] LoginResponse
-    :<|> "profile" :> Auth '[JWT] AuthUser :> Get '[JSON] Profile
 
-type AppApi = Api :<|> Raw
+-- | Full API parameterised over authentication methods
+type Api auths = (Auth auths AuthUser :> Protected) :<|> Unprotected
+
+type AppApi = Api '[JWT] :<|> Raw
 
 api :: Proxy AppApi
 api = Proxy
@@ -276,8 +283,8 @@ login account = do
         Nothing
 
 -- | Retrieve the profile of the currently authenticated user via JWT
-profile :: AuthResult AuthUser -> App Profile
-profile (Authenticated user) =
+profile :: AuthUser -> App Profile
+profile user =
   runDbSession
     (\pool -> use pool (profileSession (authUserName user)))
     ( \case
@@ -285,10 +292,18 @@ profile (Authenticated user) =
         Just p -> pure p
     )
     Nothing
-profile _ = throwError err401 {errBody = "Invalid or expired token"}
+
+-- | Handler for protected routes; rejects unauthenticated requests
+protected :: AuthResult AuthUser -> ServerT Protected App
+protected (Authenticated user) = profile user
+protected _ = throwAll err401
+
+-- | Handler for unprotected (public) routes
+unprotected :: ServerT Unprotected App
+unprotected = register :<|> login
 
 server :: Config -> ServerT AppApi App
-server cfg = (register :<|> login :<|> profile) :<|> (serveDirectoryFileServer $ cfgStaticFiles cfg)
+server cfg = (protected :<|> unprotected) :<|> serveDirectoryFileServer (cfgStaticFiles cfg)
 
 -- | Load a JWK from file, or generate and persist a new one
 loadOrCreateKey :: FilePath -> IO JWK
