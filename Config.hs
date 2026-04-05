@@ -1,19 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Config (Config (..), Env (..), Environment (..), readConfig) where
+module Config (Config (..), Environment (..), readConfig) where
 
 import Data.Maybe (fromMaybe)
 import Data.Text (Text, pack, strip, toLower, unpack)
 import Data.Time (NominalDiffTime)
 import GHC.Internal.System.Environment.Blank (getEnvDefault)
-import Hasql.Pool (Pool)
 import System.Environment (getEnv, lookupEnv)
 import Text.Read (readMaybe)
-
-data Env = Env
-  { envConfig :: Config,
-    envPool :: Pool
-  }
 
 data Environment = Development | Production
   deriving (Show, Eq)

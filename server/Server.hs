@@ -37,6 +37,11 @@ import Text.Read (readMaybe)
 import Web.JWT (stringOrURIToText)
 import Web.JWT qualified as JWT
 
+data Env = Env
+  { envConfig :: Config,
+    envPool :: Pool
+  }
+
 data Account = Account
   { accountId :: Maybe Int64,
     accountName :: Text,
