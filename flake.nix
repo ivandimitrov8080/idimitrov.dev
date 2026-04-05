@@ -116,6 +116,7 @@
                         servant-server
                         servant-auth
                         servant-auth-server
+                        servant-auth-swagger
                         servant-elm
                         hspec
                         http-client
