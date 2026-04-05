@@ -296,7 +296,7 @@ profile user =
 -- | Handler for protected routes; rejects unauthenticated requests
 protected :: AuthResult AuthUser -> ServerT Protected App
 protected (Authenticated user) = profile user
-protected _ = throwAll err401
+protected _ = throwAll err401 {errBody = "Invalid or expired token"}
 
 -- | Handler for unprotected (public) routes
 unprotected :: ServerT Unprotected App
