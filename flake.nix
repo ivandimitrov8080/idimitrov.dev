@@ -148,8 +148,13 @@
                   (nixvim.web.extend {
                     lsp.servers = {
                       elmls.enable = true;
-                      hls.enable = true;
                       sqls.enable = true;
+                    };
+                    plugins = {
+                      haskell-tools = {
+                        enable = true;
+                        enableTelescope = true;
+                      };
                     };
                   })
                   browser-sync
