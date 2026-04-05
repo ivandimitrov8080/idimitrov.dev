@@ -297,8 +297,8 @@ extractToken header =
     [t] -> t
     _ -> header
 
-server :: ServerT AppApi App
-server = (register :<|> login :<|> profile) :<|> serveDirectoryFileServer "/home/ivand/src/idimitrov.dev/_site"
+server :: Config -> ServerT AppApi App
+server cfg = (register :<|> login :<|> profile) :<|> (serveDirectoryFileServer $ cfgStaticFiles cfg)
 
 mkApp :: Env -> IO Application
 mkApp env = do
@@ -307,8 +307,8 @@ mkApp env = do
       (const $ corsPolicy)
       apiApp
   where
-    apiApp = serve api (hoistServer api (runApp env) server)
     cfg = envConfig env
+    apiApp = serve api (hoistServer api (runApp env) $ server cfg)
     corsPolicy =
       case cfgEnvironment cfg of
         Development ->

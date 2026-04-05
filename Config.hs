@@ -6,6 +6,7 @@ import Data.Maybe (fromMaybe)
 import Data.Text (Text, pack, strip, toLower, unpack)
 import Data.Time (NominalDiffTime)
 import GHC.Internal.System.Environment.Blank (getEnvDefault)
+import System.Directory (getCurrentDirectory)
 import System.Environment (getEnv, lookupEnv)
 import Text.Read (readMaybe)
 
@@ -19,6 +20,7 @@ data Config = Config
     cfgPort :: Int,
     cfgJwtSecret :: Text,
     cfgEnvironment :: Environment,
+    cfgStaticFiles :: FilePath,
     cfgJwtExpiry :: NominalDiffTime
   }
   deriving (Show, Eq)
@@ -36,10 +38,12 @@ parseEnvironment t =
 
 readConfig :: IO Config
 readConfig = do
+  currentDir <- getCurrentDirectory
   host <- pack <$> getEnvDefault "PGHOST" "localhost"
   jwtSecret <- pack <$> getEnvDefault "JWT_SECRET" "changeme"
   glueHost <- pack <$> getEnvDefault "GLUE_HOST" "idimitrov.dev"
   environment <- pack <$> getEnvDefault "GLUE_ENV" "production"
+  staticFiles <- pack <$> getEnvDefault "GLUE_STATIC" (currentDir ++ "/_site")
   mPoolSz <- lookupEnv "PGPOOLSIZE"
   jwtExpiry <- lookupEnv "JWT_EXPIRY"
   gluePort <- lookupEnv "GLUE_PORT"
@@ -54,7 +58,8 @@ readConfig = do
         cfgPort = port,
         cfgJwtSecret = jwtSecret,
         cfgJwtExpiry = expiry,
-        cfgEnvironment = parseEnvironment environment
+        cfgEnvironment = parseEnvironment environment,
+        cfgStaticFiles = unpack staticFiles
       }
   where
     p = 1337
