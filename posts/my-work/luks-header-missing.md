@@ -2,6 +2,7 @@
 title: LUKS encrypted drive stopped working on a server
 date: Sep 21, 2023
 author: Ivan Dimitrov
+description: How to restore a corrupted encrypted drive on linux
 ---
 
 [LUKS](https://en.wikipedia.org/wiki/Linux_Unified_Key_Setup) is an encryption specifications for Linux used to encrypt disk partitions. The

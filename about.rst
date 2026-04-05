@@ -1,5 +1,6 @@
 ---
 title: About
+description: idimitrov.dev | Personal website built with purely functional programming languages
 ---
 
 This site is built using only purely functional programming languages (excluding non-programming languages like HTML,

@@ -2,6 +2,7 @@
 title: Parcel Lab integration into international eCommerce app
 date: Jan 01, 2022
 author: Ivan Dimitrov
+description: How to integrate ParcelLab into eCommerce app
 ---
 
 > parcelLab is the only truly global enterprise post-purchase software provider, enabling brands to increase top-line revenue, decrease operational costs, and optimize the customer

@@ -21,6 +21,7 @@ data Config = Config
     cfgJwtSecret :: Text,
     cfgEnvironment :: Environment,
     cfgStaticFiles :: FilePath,
+    cfgDefaultDescription :: Text,
     cfgJwtExpiry :: NominalDiffTime
   }
   deriving (Show, Eq)
@@ -44,6 +45,7 @@ readConfig = do
   glueHost <- pack <$> getEnvDefault "GLUE_HOST" "idimitrov.dev"
   environment <- pack <$> getEnvDefault "GLUE_ENV" "production"
   staticFiles <- pack <$> getEnvDefault "GLUE_STATIC" (currentDir ++ "/_site")
+  defaultDescription <- pack <$> getEnvDefault "GLUE_DEFAULT_DESCRIPTON" "Software Development journal with logs on Java, TypeScript, NixOS, Haskell, Elm..."
   mPoolSz <- lookupEnv "PGPOOLSIZE"
   jwtExpiry <- lookupEnv "JWT_EXPIRY"
   gluePort <- lookupEnv "GLUE_PORT"
@@ -59,7 +61,8 @@ readConfig = do
         cfgJwtSecret = jwtSecret,
         cfgJwtExpiry = expiry,
         cfgEnvironment = parseEnvironment environment,
-        cfgStaticFiles = unpack staticFiles
+        cfgStaticFiles = unpack staticFiles,
+        cfgDefaultDescription = defaultDescription
       }
   where
     p = 1337

@@ -1,7 +1,7 @@
 --------------------------------------------------------------------------------
 {-# LANGUAGE OverloadedStrings #-}
 
-import Config (Config (cfgHost), readConfig)
+import Config (Config (cfgDefaultDescription, cfgHost), readConfig)
 import Data.Char (toUpper)
 import Data.List (intercalate, nub)
 import Data.List.Compat (sortOn)
@@ -132,7 +132,7 @@ elmMakeCompiler extraElmArgs = do
 
 main :: IO ()
 main = hakyllWith cfg $ do
-  config <- preprocess readConfig
+  cfg <- preprocess readConfig
   categories <- buildCategories "posts/**" (fromCapture "category/*.html")
   match "images/*" $ do
     route idRoute
@@ -156,7 +156,7 @@ main = hakyllWith cfg $ do
   match "posts/**.md" $ do
     route $ setExtension "html"
     compile $
-      pandocCompilerWithTransform myReaderOptions myWriterOptions (myTransformOptions config)
+      pandocCompilerWithTransform myReaderOptions myWriterOptions (myTransformOptions cfg)
         >>= loadAndApplyTemplate "templates/post.html" postCtx
         >>= loadAndApplyTemplate "templates/default.html" postCtx
         >>= relativizeUrls
@@ -170,6 +170,7 @@ main = hakyllWith cfg $ do
             listField "posts" postCtx (pure posts)
               <> listField "categories" (categoryCtx categories) (pure categoryItems)
               <> constField "title" "Archives"
+              <> constField "description" (T.unpack $ cfgDefaultDescription cfg)
               <> defaultContext
 
       makeItem ""
@@ -185,6 +186,7 @@ main = hakyllWith cfg $ do
         let ctx =
               constField "title" title
                 <> listField "posts" postCtx (pure posts)
+                <> constField "description" (T.unpack $ cfgDefaultDescription cfg)
                 <> defaultContext
         makeItem ""
           >>= loadAndApplyTemplate "templates/category.html" ctx
@@ -208,10 +210,10 @@ main = hakyllWith cfg $ do
 
   match "templates/*" $ compile templateBodyCompiler
 
-  match "room.html" $ do
-    route idRoute
+  match "room.md" $ do
+    route $ setExtension "html"
     compile $ do
-      getResourceBody
+      pandocCompilerWithTransform myReaderOptions myWriterOptions (myTransformOptions cfg)
         >>= loadAndApplyTemplate "templates/default.html" defaultContext
         >>= relativizeUrls
 

@@ -2,6 +2,7 @@
 title: Wells Fargo Open Banking APIs integration
 date: Feb 01, 2021
 author: Ivan Dimitrov
+description: How to integrate Wells Fargo Open Banking APIs into eCommerce app
 ---
 
 [Wells Fargo](https://www.wellsfargo.com/) is a US based international financial institution operating in 35 countries and serving over 70 million people worldwide.

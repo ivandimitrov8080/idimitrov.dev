@@ -2,6 +2,7 @@
 title: Remotely profiling a Tomcat process serving a Java app
 date: Nov 12, 2023
 author: Ivan Dimitrov
+description: How to monitor and profile a Tomcat server process or Java app
 ---
 
 [VisualVM](https://visualvm.github.io/) is a FOSS Java profiler used to monitor the resource usage of an app. It can be very useful when you want to diagnose problems with your
