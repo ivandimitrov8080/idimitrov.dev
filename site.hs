@@ -4,6 +4,8 @@
 import Config (Config (cfgHost), readConfig)
 import Data.Char (toUpper)
 import Data.List (intercalate, nub)
+import Data.List.Compat (sortOn)
+import Data.Ord (Down (..))
 import Data.Text qualified as T
 import Debug.Trace (trace)
 import GHC.Internal.Data.Proxy (Proxy)
@@ -78,25 +80,42 @@ myReaderOptions =
 myWriterOptions :: WriterOptions
 myWriterOptions = defaultHakyllWriterOptions {writerHighlightStyle = Just codeStyle}
 
-humanizeTitle :: String -> String
-humanizeTitle = unwords . map cap . words . map (\c -> if c == '-' then ' ' else c)
+humanizeSlug :: String -> String
+humanizeSlug = unwords . map cap . words . map (\c -> if c == '-' then ' ' else c)
   where
     cap "" = ""
     cap (c : cs) = toUpper c : map toLower cs
-
-renderHumanCategoryList :: Tags -> Compiler String
-renderHumanCategoryList cats =
-  renderTags makeLink (intercalate ", ") cats
-  where
-    makeLink tag url count _min _max =
-      renderHtml $
-        H.a ! A.href (toValue url) $
-          toHtml (humanizeTitle tag ++ " (" ++ show count ++ ")")
 
 postCtx :: Context String
 postCtx =
   dateField "date" "%B %e, %Y"
     <> defaultContext
+
+categoryCtx :: Tags -> Context String
+categoryCtx categories =
+  field "title" (\i -> pure $ humanizeSlug (itemBody i))
+    <> field "slug" (\i -> pure $ itemBody i)
+    <> field "url" (\i -> pure . toUrl . toFilePath $ tagsMakeId categories (itemBody i))
+    <> field "count" (\i -> pure (show $ maybe 0 length (lookup (itemBody i) (tagsMap categories))))
+    <> defaultContext
+
+makeCategories :: Tags -> [String]
+makeCategories categories = (map fst (pinnedPart ++ restSorted))
+  where
+    pinned :: [String]
+    pinned = ["my-work"]
+
+    categoriesWithCounts :: [(String, Int)]
+    categoriesWithCounts = [(slug, length ids) | (slug, ids) <- tagsMap categories]
+
+    pinnedPart :: [(String, Int)]
+    pinnedPart = [(slug, n) | slug <- pinned, Just n <- [lookup slug categoriesWithCounts]]
+
+    restPart :: [(String, Int)]
+    restPart = [(slug, n) | (slug, n) <- categoriesWithCounts, slug `notElem` pinned]
+
+    restSorted :: [(String, Int)]
+    restSorted = sortOn (\(slug, n) -> (Down n, humanizeSlug slug)) restPart
 
 elmMakeCompiler :: [String] -> Compiler (Item String)
 elmMakeCompiler extraElmArgs = do
@@ -146,8 +165,10 @@ main = hakyllWith cfg $ do
     route idRoute
     compile $ do
       posts <- recentFirst =<< loadAll "posts/**"
+      categoryItems <- traverse makeItem (makeCategories categories)
       let archiveCtx =
             listField "posts" postCtx (pure posts)
+              <> listField "categories" (categoryCtx categories) (pure categoryItems)
               <> constField "title" "Archives"
               <> defaultContext
 
@@ -157,7 +178,7 @@ main = hakyllWith cfg $ do
         >>= relativizeUrls
 
     tagsRules categories $ \cat pattern -> do
-      let title = humanizeTitle cat
+      let title = humanizeSlug cat
       route idRoute
       compile $ do
         posts <- recentFirst =<< loadAll pattern
@@ -174,10 +195,10 @@ main = hakyllWith cfg $ do
     route idRoute
     compile $ do
       posts <- recentFirst =<< loadAll "posts/**"
-      catList <- renderHumanCategoryList categories
+      categoryItems <- traverse makeItem (makeCategories categories)
       let indexCtx =
-            constField "categoryList" catList
-              <> listField "posts" postCtx (pure posts)
+            listField "posts" postCtx (pure posts)
+              <> listField "categories" (categoryCtx categories) (pure categoryItems)
               <> defaultContext
 
       getResourceBody
