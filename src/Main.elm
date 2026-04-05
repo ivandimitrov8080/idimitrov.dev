@@ -1,11 +1,26 @@
 module Main exposing (main)
 
 import Browser
-import Generated.Api exposing (Account, LoginResponse, Profile, getProfile, postLogin, postRegister)
+import Generated.Api
+    exposing
+        ( Account
+        , LoginResponse
+        , Profile
+        , clearToken
+        , getProfileAuth
+        , onTokenLoaded
+        , postLogin
+        , postRegister
+        , storeLoginToken
+        )
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
 import Http exposing (Error(..))
+
+
+type alias Flags =
+    Maybe String
 
 
 type alias Model =
@@ -24,26 +39,32 @@ type Msg
     | FetchProfile (Result Http.Error Profile)
     | AccountNameChanged String
     | AccountPasswordChanged String
+    | TokenLoaded (Maybe String)
 
 
-main : Program () Model Msg
+main : Program Flags Model Msg
 main =
     Browser.element { init = init, update = update, subscriptions = subscriptions, view = view }
 
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    Sub.none
+    onTokenLoaded TokenLoaded
 
 
-init : () -> ( Model, Cmd Msg )
-init () =
+init : Flags -> ( Model, Cmd Msg )
+init maybeToken =
     ( { errors = []
-      , account = Account Nothing "anon" "" Nothing
-      , token = Nothing
+      , account = Account Nothing "" "" Nothing
+      , token = maybeToken
       , profile = Nothing
       }
-    , Cmd.none
+    , case maybeToken of
+        Just token ->
+            getProfileAuth token FetchProfile
+
+        Nothing ->
+            Cmd.none
     )
 
 
@@ -55,9 +76,12 @@ update msg model =
 
         RegisterSuccess result ->
             case result of
-                Ok _ ->
-                    ( model
-                    , Cmd.none
+                Ok loginResponse ->
+                    ( { model | token = Just loginResponse.token }
+                    , Cmd.batch
+                        [ storeLoginToken loginResponse
+                        , getProfileAuth loginResponse.token FetchProfile
+                        ]
                     )
 
                 Err err ->
@@ -69,7 +93,10 @@ update msg model =
             case result of
                 Ok loginResponse ->
                     ( { model | token = Just loginResponse.token }
-                    , getProfile (Just loginResponse.token) FetchProfile
+                    , Cmd.batch
+                        [ storeLoginToken loginResponse
+                        , getProfileAuth loginResponse.token FetchProfile
+                        ]
                     )
 
                 Err err ->
@@ -106,6 +133,18 @@ update msg model =
         Login account ->
             ( model, postLogin account LoginSuccess )
 
+        TokenLoaded maybeToken ->
+            case maybeToken of
+                Just token ->
+                    ( { model | token = Just token }
+                    , getProfileAuth token FetchProfile
+                    )
+
+                Nothing ->
+                    ( { model | token = Nothing, profile = Nothing }
+                    , clearToken ()
+                    )
+
 
 errorToString : Error -> String
 errorToString e =
@@ -129,7 +168,7 @@ errorToString e =
 view : Model -> Html Msg
 view model =
     div []
-        [ div [] [ Html.text model.account.accountName ]
+        [ div [] [ Html.text (Maybe.withDefault "" (Maybe.map .accountName (Just model.account))) ]
         , div []
             [ div []
                 [ label [ for "username" ] [ Html.text "Username" ]
