@@ -36,8 +36,8 @@ parseEnvironment t =
 
 readConfig :: IO Config
 readConfig = do
-  host <- pack <$> getEnv "PGHOST"
-  jwtSecret <- pack <$> getEnv "JWT_SECRET"
+  host <- pack <$> getEnvDefault "PGHOST" "localhost"
+  jwtSecret <- pack <$> getEnvDefault "JWT_SECRET" "changeme"
   glueHost <- pack <$> getEnvDefault "GLUE_HOST" "idimitrov.dev"
   environment <- pack <$> getEnvDefault "GLUE_ENV" "production"
   mPoolSz <- lookupEnv "PGPOOLSIZE"
