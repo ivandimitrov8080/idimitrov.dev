@@ -18,7 +18,7 @@ import Data.Text (Text)
 import Data.Text qualified as T
 import Data.Text.IO qualified as TIO
 import Servant.API (Header, (:>))
-import Servant.Auth (Auth)
+import Servant.Auth (Auth, JWT)
 import Servant.Elm
   ( DefineElm (DefineElm),
     ElmOptions (urlPrefix),
@@ -230,5 +230,5 @@ generateElm = do
       DefineElm (Proxy :: Proxy Profile),
       DefineElm (Proxy :: Proxy LoginResponse)
     ]
-    (Proxy :: Proxy Api)
+    (Proxy :: Proxy (Api '[JWT]))
   postProcessModule
