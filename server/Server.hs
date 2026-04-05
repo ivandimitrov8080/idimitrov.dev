@@ -222,30 +222,33 @@ createToken jwtCfg user mExpiry = do
     Left _err -> throwError err500 {errBody = "Failed to create JWT"}
     Right tokenBS -> pure $ decodeUtf8 (BL.toStrict tokenBS)
 
-validateRegisterInput :: Account -> Either Text Account
-validateRegisterInput acc
+-- | Build a LoginResponse by minting a JWT for the given account name
+issueLoginResponse :: Text -> Maybe Profile -> App LoginResponse
+issueLoginResponse name mProfile = do
+  env <- ask
+  now <- liftIO getCurrentTime
+  let jwtCfg = envJwtSettings env
+      expiry = cfgJwtExpiry (envConfig env)
+      expiryTime = Just $ addUTCTime expiry now
+      authUser = AuthUser name
+  t <- createToken jwtCfg authUser expiryTime
+  pure $ LoginResponse {token = t, responseProfile = mProfile}
+
+-- | Validate that account name and password are non-empty
+validateAccountInput :: Account -> Either Text Account
+validateAccountInput acc
   | Data.Text.null (accountName acc) = Left "Missing or empty accountName"
   | Data.Text.null (accountPassword acc) = Left "Missing or empty accountPassword"
-  | Data.Text.length (accountPassword acc) < 8 = Left "Password must be at least 8 characters"
   | otherwise = Right acc
 
 register :: Account -> App LoginResponse
 register account =
-  case validateRegisterInput account of
+  case validateAccountInput account of
     Left errMsg -> throwError err400 {errBody = BL8.pack (unpack errMsg)}
     Right validAcc ->
       runDbSession
         (\pool -> use pool (accountRegisterSession validAcc))
-        ( \_ -> do
-            env <- ask
-            now <- liftIO getCurrentTime
-            let jwtCfg = envJwtSettings env
-                expiry = cfgJwtExpiry (envConfig env)
-                expiryTime = Just $ addUTCTime expiry now
-                authUser = AuthUser (accountName validAcc)
-            t <- createToken jwtCfg authUser expiryTime
-            pure $ LoginResponse {token = t, responseProfile = Nothing}
-        )
+        (\_ -> issueLoginResponse (accountName validAcc) Nothing)
         (Just handleRegisterDbError)
 
 handleRegisterDbError :: UsageError -> App LoginResponse
@@ -253,15 +256,9 @@ handleRegisterDbError (SessionUsageError (QueryError _ _ (ResultError (Session.S
   throwError err409 {errBody = BL8.pack "Username already exists"}
 handleRegisterDbError _ = throwError err500
 
-validateLoginInput :: Account -> Either Text Account
-validateLoginInput acc
-  | Data.Text.null (accountName acc) = Left "Missing or empty accountName"
-  | Data.Text.null (accountPassword acc) = Left "Missing or empty accountPassword"
-  | otherwise = Right acc
-
 login :: Account -> App LoginResponse
 login account = do
-  case validateLoginInput account of
+  case validateAccountInput account of
     Left errMsg -> throwError err400 {errBody = BL8.pack (unpack errMsg)}
     Right validAcc ->
       runDbSession
@@ -269,15 +266,8 @@ login account = do
         ( \case
             Nothing -> throwError err401 {errBody = BL8.pack "Invalid login or password"}
             Just dbAccount
-              | validatePassword (accountPassword validAcc) (accountPassword dbAccount) -> do
-                  env <- ask
-                  now <- liftIO getCurrentTime
-                  let jwtCfg = envJwtSettings env
-                      expiry = cfgJwtExpiry (envConfig env)
-                      expiryTime = Just $ addUTCTime expiry now
-                      authUser = AuthUser (accountName validAcc)
-                  t <- createToken jwtCfg authUser expiryTime
-                  pure $ LoginResponse {token = t, responseProfile = accountProfile dbAccount}
+              | validatePassword (accountPassword validAcc) (accountPassword dbAccount) ->
+                  issueLoginResponse (accountName validAcc) (accountProfile dbAccount)
               | otherwise -> throwError err401 {errBody = BL8.pack "Invalid login or password"}
         )
         Nothing
