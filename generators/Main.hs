@@ -14,7 +14,7 @@ module Main (IO, Main.main) where
 
 import Data.Maybe (mapMaybe)
 import Data.Proxy (Proxy (..))
-import Data.Text (Text)
+import Data.Text (Text, pack, split, unpack)
 import Data.Text qualified as T
 import Data.Text.IO qualified as TIO
 import Servant.API (Header, (:>))
@@ -32,8 +32,9 @@ import Servant.Foreign (Foreign, GenerateList, HasForeign (..), HasForeignType)
 import Server
 import Text.RawString.QQ (r)
 
--- | Orphan instance: make servant-elm treat @Auth auths val :> api@
---   as @Header "Authorization" Text :> api@ for Elm code generation.
+generatedModulePath :: FilePath
+generatedModulePath = "src/Generated/Api"
+
 instance
   (HasForeign LangElm ftype api, HasForeignType LangElm ftype Text, HasForeignType LangElm ftype (Maybe Text)) =>
   HasForeign LangElm ftype (Auth auths val :> api)
@@ -58,7 +59,6 @@ jsonEncPosix posix =
    Iso8601.encode posix
     |]
 
--- | Static port declarations and helpers appended to every generated module
 elmPorts :: Text
 elmPorts =
   [r|
@@ -93,15 +93,6 @@ storeLoginToken response =
     storeToken response.token
 |]
 
--- | Detect authenticated functions and generate Auth wrappers.
---
---   An authenticated function is identified by consecutive lines:
---     1. Type signature: @fnName : Maybe String -> rest@
---     2. Implementation:  @fnName header_Authorization ...@
---
---   For each match, generates:
---     @fnNameAuth : String -> rest@
---     @fnNameAuth token ... = fnName (bearerToken token) ...@
 generateAuthWrappers :: Text -> Text
 generateAuthWrappers content =
   case wrappers of
@@ -114,13 +105,9 @@ generateAuthWrappers content =
     pairs = zip ls (drop 1 ls)
     wrappers = mapMaybe (uncurry mkWrapper) pairs
 
--- | Try to build an Auth wrapper from a type-signature line and the
---   implementation line that follows it.
 mkWrapper :: Text -> Text -> Maybe Text
 mkWrapper sigLine implLine = do
-  -- Type signature must match: "fnName : Maybe String -> rest"
   (fnName, restSig) <- parseAuthSig sigLine
-  -- Implementation must match: "fnName header_Authorization args..."
   args <- parseAuthImpl fnName implLine
   let wrapperName = fnName <> "Auth"
       wrapperSig = wrapperName <> " : String -> " <> restSig
@@ -140,9 +127,6 @@ mkWrapper sigLine implLine = do
       <> wrapperImpl
       <> "\n"
 
--- | Parse a type signature of the form @fnName : Maybe String -> rest@
---   or @fnName : (Maybe String) -> rest@.
---   Returns @Just (fnName, rest)@ on success.
 parseAuthSig :: Text -> Maybe (Text, Text)
 parseAuthSig line = do
   let stripped = T.stripStart line
@@ -151,8 +135,6 @@ parseAuthSig line = do
   guard (not (T.null before) && not (T.null rest))
   pure (before, T.strip rest)
 
--- | Try stripping the leading @Maybe String ->@ or @(Maybe String) ->@
---   from a type signature, accounting for varied whitespace.
 tryStripAuthParam :: Text -> Maybe Text
 tryStripAuthParam t =
   let s = T.stripStart t
@@ -168,8 +150,6 @@ tryStripAuthParam t =
                 Just r -> T.stripPrefix "->" (T.stripStart r)
                 Nothing -> Nothing
 
--- | Parse an implementation line of the form @fnName header_Authorization args...@.
---   Returns @Just [arg1, arg2, ...]@ (the args after header_Authorization) on success.
 parseAuthImpl :: Text -> Text -> Maybe [Text]
 parseAuthImpl fnName line = do
   let stripped = T.stripStart line
@@ -184,51 +164,43 @@ parseAuthImpl fnName line = do
       pure cleanArgs
     _ -> Nothing
 
--- | Split text on the first occurrence of a separator.
 splitOn2 :: Text -> Text -> Maybe (Text, Text)
 splitOn2 sep txt =
   case T.breakOn sep txt of
     (_, "") -> Nothing
     (before, after) -> Just (before, T.drop (T.length sep) after)
 
--- | guard for Maybe
 guard :: Bool -> Maybe ()
 guard True = Just ()
 guard False = Nothing
 
--- | Path to the generated Elm module
-generatedModulePath :: FilePath
-generatedModulePath = "src/Generated/Api.elm"
-
--- | Post-process the generated Elm module:
---   1. Replace @module@ with @port module@
---   2. Append port declarations and static helpers
---   3. Auto-generate Auth wrappers for all authenticated endpoints
 postProcessModule :: IO ()
 postProcessModule = do
-  content <- TIO.readFile generatedModulePath
+  let mpath = generatedModulePath ++ ".elm"
+  content <- TIO.readFile mpath
   let withPorts =
         T.replace "module Generated.Api" "port module Generated.Api" content
           <> elmPorts
       authWrappers = generateAuthWrappers content
       patched = withPorts <> authWrappers
-  TIO.writeFile generatedModulePath patched
+  TIO.writeFile mpath patched
 
 main :: IO ()
 main = generateElm
 
 generateElm :: IO ()
 generateElm = do
-  generateElmModuleWith
-    (defElmOptions {urlPrefix = Static "http://localhost:1337"})
-    [ "Generated",
-      "Api"
-    ]
-    elmImportsWithPosix
-    "src"
-    [ DefineElm (Proxy :: Proxy Account),
-      DefineElm (Proxy :: Proxy Profile),
-      DefineElm (Proxy :: Proxy LoginResponse)
-    ]
-    (Proxy :: Proxy (Api '[JWT]))
-  postProcessModule
+  let p = unpack <$> (split (== '/') $ pack generatedModulePath)
+  case p of
+    out : parts -> do
+      generateElmModuleWith
+        (defElmOptions {urlPrefix = Static "http://localhost:1337"})
+        parts
+        elmImportsWithPosix
+        out
+        [ DefineElm (Proxy :: Proxy Account),
+          DefineElm (Proxy :: Proxy Profile),
+          DefineElm (Proxy :: Proxy LoginResponse)
+        ]
+        (Proxy :: Proxy (Api '[JWT]))
+      postProcessModule
