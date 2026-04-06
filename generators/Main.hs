@@ -69,9 +69,9 @@ port clearToken : () -> Cmd msg
 
 port onTokenLoaded : (Maybe String -> msg) -> Sub msg
 
-bearerToken : String -> Maybe String
+bearerToken : Maybe String -> Maybe String
 bearerToken token =
-    Just ("Bearer " ++ token)
+    Maybe.map (\t -> "Bearer " ++ t) token
 
 
 storeLoginToken : LoginResponse -> Cmd msg
@@ -84,7 +84,8 @@ postProcessModule = do
   let mpath = generatedModulePath ++ ".elm"
   content <- TIO.readFile mpath
   let withPorts =
-        T.replace "module Generated.Api" "port module Generated.Api" content
+        T.replace "module Generated.Api" "port module Generated.Api" $
+          T.replace "Maybe.map (Http.header \"Authorization\") header_Authorization" "Maybe.map (Http.header \"Authorization\") (bearerToken header_Authorization)" content
   TIO.writeFile mpath withPorts
 
 main :: IO ()
