@@ -7,7 +7,7 @@ import Generated.Api
         , LoginResponse
         , Profile
         , clearToken
-        , getProfileAuth
+        , getProfile
         , onTokenLoaded
         , postLogin
         , postRegister
@@ -61,7 +61,7 @@ init maybeToken =
       }
     , case maybeToken of
         Just token ->
-            getProfileAuth token FetchProfile
+            getProfile (Just token) FetchProfile
 
         Nothing ->
             Cmd.none
@@ -80,7 +80,7 @@ update msg model =
                     ( { model | token = Just loginResponse.token }
                     , Cmd.batch
                         [ storeLoginToken loginResponse
-                        , getProfileAuth loginResponse.token FetchProfile
+                        , getProfile (Just loginResponse.token) FetchProfile
                         ]
                     )
 
@@ -95,7 +95,7 @@ update msg model =
                     ( { model | token = Just loginResponse.token }
                     , Cmd.batch
                         [ storeLoginToken loginResponse
-                        , getProfileAuth loginResponse.token FetchProfile
+                        , getProfile (Just loginResponse.token) FetchProfile
                         ]
                     )
 
@@ -137,7 +137,7 @@ update msg model =
             case maybeToken of
                 Just token ->
                     ( { model | token = Just token }
-                    , getProfileAuth token FetchProfile
+                    , getProfile (Just token) FetchProfile
                     )
 
                 Nothing ->

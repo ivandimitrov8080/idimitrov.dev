@@ -24,6 +24,25 @@ jsonEncPosix posix =
     Iso8601.encode posix
 
 
+port storeToken : String -> Cmd msg
+
+
+port clearToken : () -> Cmd msg
+
+
+port onTokenLoaded : (Maybe String -> msg) -> Sub msg
+
+
+bearerToken : String -> Maybe String
+bearerToken token =
+    Just ("Bearer " ++ token)
+
+
+storeLoginToken : LoginResponse -> Cmd msg
+storeLoginToken response =
+    storeToken response.token
+
+
 type alias Account =
     { accountId : Maybe Int
     , accountName : String
@@ -183,44 +202,3 @@ postLogin body toMsg =
         , tracker =
             Nothing
         }
-
-
-
--- Ports for JWT token persistence via localStorage
-
-
-port storeToken : String -> Cmd msg
-
-
-port clearToken : () -> Cmd msg
-
-
-port onTokenLoaded : (Maybe String -> msg) -> Sub msg
-
-
-
--- Auth helpers
-
-
-{-| Create an Authorization header value with Bearer prefix
--}
-bearerToken : String -> Maybe String
-bearerToken token =
-    Just ("Bearer " ++ token)
-
-
-{-| Store a token from a LoginResponse and return the token string.
-Usage: after login/register success, call storeLoginToken to persist it.
--}
-storeLoginToken : LoginResponse -> Cmd msg
-storeLoginToken response =
-    storeToken response.token
-
-
-
--- Auto-generated Auth wrappers
-
-
-getProfileAuth : String -> (Result Http.Error Profile -> msg) -> Cmd msg
-getProfileAuth token toMsg =
-    getProfile (bearerToken token) toMsg

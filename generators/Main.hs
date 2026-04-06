@@ -25,8 +25,11 @@ import Servant.Elm
     UrlPrefix (Static),
     defElmImports,
     defElmOptions,
+    defaultTypeAlterations,
+    elmAlterations,
     generateElmModuleWith,
   )
+import Servant.Elm qualified as Elm
 import Servant.Elm.Internal.Foreign (LangElm)
 import Servant.Foreign (Foreign, GenerateList, HasForeign (..), HasForeignType)
 import Server
@@ -57,15 +60,6 @@ jsonDecPosix =
 jsonEncPosix : Posix -> Value
 jsonEncPosix posix =
    Iso8601.encode posix
-    |]
-
-elmPorts :: Text
-elmPorts =
-  [r|
-
-
--- Ports for JWT token persistence via localStorage
-
 
 port storeToken : String -> Cmd msg
 
@@ -75,104 +69,15 @@ port clearToken : () -> Cmd msg
 
 port onTokenLoaded : (Maybe String -> msg) -> Sub msg
 
-
--- Auth helpers
-
-
-{-| Create an Authorization header value with Bearer prefix -}
 bearerToken : String -> Maybe String
 bearerToken token =
     Just ("Bearer " ++ token)
 
 
-{-| Store a token from a LoginResponse and return the token string.
-    Usage: after login/register success, call storeLoginToken to persist it.
--}
 storeLoginToken : LoginResponse -> Cmd msg
 storeLoginToken response =
     storeToken response.token
-|]
-
-generateAuthWrappers :: Text -> Text
-generateAuthWrappers content =
-  case wrappers of
-    [] -> ""
-    ws ->
-      "\n\n-- Auto-generated Auth wrappers\n"
-        <> T.concat ws
-  where
-    ls = T.lines content
-    pairs = zip ls (drop 1 ls)
-    wrappers = mapMaybe (uncurry mkWrapper) pairs
-
-mkWrapper :: Text -> Text -> Maybe Text
-mkWrapper sigLine implLine = do
-  (fnName, restSig) <- parseAuthSig sigLine
-  args <- parseAuthImpl fnName implLine
-  let wrapperName = fnName <> "Auth"
-      wrapperSig = wrapperName <> " : String -> " <> restSig
-      argList = T.unwords args
-      wrapperImpl =
-        wrapperName
-          <> " token "
-          <> argList
-          <> " =\n    "
-          <> fnName
-          <> " (bearerToken token) "
-          <> argList
-  pure $
-    "\n\n"
-      <> wrapperSig
-      <> "\n"
-      <> wrapperImpl
-      <> "\n"
-
-parseAuthSig :: Text -> Maybe (Text, Text)
-parseAuthSig line = do
-  let stripped = T.stripStart line
-  (before, after) <- splitOn2 " : " stripped
-  rest <- tryStripAuthParam after
-  guard (not (T.null before) && not (T.null rest))
-  pure (before, T.strip rest)
-
-tryStripAuthParam :: Text -> Maybe Text
-tryStripAuthParam t =
-  let s = T.stripStart t
-   in case T.stripPrefix "Maybe String -> " s of
-        Just r -> Just r
-        Nothing -> case T.stripPrefix "Maybe String ->" s of
-          Just r -> Just r
-          Nothing -> case T.stripPrefix "(Maybe String) -> " s of
-            Just r -> Just r
-            Nothing -> case T.stripPrefix "(Maybe String) ->" s of
-              Just r -> Just r
-              Nothing -> case T.stripPrefix "(Maybe String)" s of
-                Just r -> T.stripPrefix "->" (T.stripStart r)
-                Nothing -> Nothing
-
-parseAuthImpl :: Text -> Text -> Maybe [Text]
-parseAuthImpl fnName line = do
-  let stripped = T.stripStart line
-  rest <- T.stripPrefix (fnName <> " ") stripped
-  let parts = T.words rest
-  case parts of
-    ("header_Authorization" : args) -> do
-      -- Drop the trailing "=" from the last arg
-      let cleanArgs = case reverse args of
-            ("=" : as') -> reverse as'
-            _ -> args
-      pure cleanArgs
-    _ -> Nothing
-
-splitOn2 :: Text -> Text -> Maybe (Text, Text)
-splitOn2 sep txt =
-  case T.breakOn sep txt of
-    (_, "") -> Nothing
-    (before, after) -> Just (before, T.drop (T.length sep) after)
-
-guard :: Bool -> Maybe ()
-guard True = Just ()
-guard False = Nothing
+    |]
 
 postProcessModule :: IO ()
 postProcessModule = do
@@ -180,10 +85,7 @@ postProcessModule = do
   content <- TIO.readFile mpath
   let withPorts =
         T.replace "module Generated.Api" "port module Generated.Api" content
-          <> elmPorts
-      authWrappers = generateAuthWrappers content
-      patched = withPorts <> authWrappers
-  TIO.writeFile mpath patched
+  TIO.writeFile mpath withPorts
 
 main :: IO ()
 main = generateElm
@@ -194,7 +96,10 @@ generateElm = do
   case p of
     out : parts -> do
       generateElmModuleWith
-        (defElmOptions {urlPrefix = Static "http://localhost:1337"})
+        ( defElmOptions
+            { urlPrefix = Static "http://localhost:1337"
+            }
+        )
         parts
         elmImportsWithPosix
         out
