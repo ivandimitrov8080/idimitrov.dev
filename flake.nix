@@ -202,7 +202,15 @@
                     site.exec = "bin/site watch --no-server";
                     server = {
                       exec = "bin/server";
-                      ready.http.get.port = 1337;
+                      ready = {
+                        http.get = {
+                          port = 1337;
+                          path = "/";
+                        };
+                        period = 1;
+                        timeout = 10;
+                        initial_delay = 0;
+                      };
                     };
                     watcher.exec = "${watcher}";
                     browser-sync = {
