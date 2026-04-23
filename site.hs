@@ -6,6 +6,9 @@ import Data.Char (toUpper)
 import Data.List (intercalate, nub, sortOn)
 import Data.Ord (Down (..))
 import Data.Text qualified as T
+import Data.Time.Calendar (addGregorianYearsClip, toGregorian)
+import Data.Time.Clock (getCurrentTime, utctDay)
+import Data.Time.Format (defaultTimeLocale, formatTime)
 import Debug.Trace (trace)
 import GHC.Internal.Data.Proxy (Proxy)
 import Hakyll
@@ -129,10 +132,97 @@ elmMakeCompiler extraElmArgs = do
       readFile out
   makeItem js
 
+-- | Generate sitemap XML for all pages
+sitemapContext :: Config -> Context String
+sitemapContext cfg =
+  field "siteRoot" (\_ -> pure $ "https://" <> T.unpack (cfgHost cfg))
+    <> defaultContext
+
+-- | Get current ISO 8601 date
+currentDate :: IO String
+currentDate = formatTime defaultTimeLocale "%Y-%m-%d" <$> getCurrentTime
+
+-- | Get expiry date (1 year from now) in ISO 8601 format
+expiryDate :: IO String
+expiryDate = do
+  now <- getCurrentTime
+  let day = utctDay now
+      (y, m, d) = toGregorian day
+      expiry = addGregorianYearsClip 1 day
+  pure $ formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S%z" (now {utctDay = expiry})
+
 main :: IO ()
 main = hakyllWith cfg $ do
   cfg <- preprocess readConfig
   categories <- buildCategories "posts/**" (fromCapture "category/*.html")
+
+  -- Robots.txt with dynamic host
+  create ["robots.txt"] $ do
+    route idRoute
+    compile $ do
+      let host = T.unpack (cfgHost cfg)
+          robotsContent =
+            "User-agent: *\n\
+            \Allow: /\n\
+            \\n\
+            \Sitemap: https://"
+              <> host
+              <> "/sitemap.xml\n"
+      makeItem robotsContent
+
+  -- Humans.txt with current date
+  create ["humans.txt"] $ do
+    route idRoute
+    compile $ do
+      date <- unsafeCompiler currentDate
+      let humansContent =
+            "/* TEAM */\n\
+            \Developer: Ivan Dimitrov\n\
+            \Site: https://idimitrov.dev\n\
+            \Location: Bulgaria\n\
+            \\n\
+            \/* THANKS */\n\
+            \Hakyll: Static site generation\n\
+            \Elm: Frontend architecture\n\
+            \Nix: Reproducible builds\n\
+            \\n\
+            \/* SITE */\n\
+            \Last update: "
+              <> date
+              <> "\n\
+                 \Standards: HTML5, CSS3\n\
+                 \Components: Hakyll, Elm, Servant, PostgreSQL\n\
+                 \Software: Haskell, Elm, Nix\n"
+      makeItem humansContent
+
+  -- Security.txt with expiry date
+  create [".well-known/security.txt"] $ do
+    route idRoute
+    compile $ do
+      expires <- unsafeCompiler expiryDate
+      let securityContent =
+            "Contact: mailto:ivan@idimitrov.dev\n\
+            \Expires: "
+              <> expires
+              <> "\n\
+                 \Preferred-Languages: en, bg\n\
+                 \Canonical: https://idimitrov.dev/.well-known/security.txt\n"
+      makeItem securityContent
+
+  -- Sitemap.xml
+  create ["sitemap.xml"] $ do
+    route idRoute
+    compile $ do
+      posts <- recentFirst =<< loadAll ("posts/**" .&&. hasNoVersion)
+      pages <- loadAll (fromList ["about.rst", "contact.markdown", "room.md"] .&&. hasNoVersion)
+      let siteCtx = sitemapContext cfg
+          allPages = posts <> pages
+          sitemapCtx =
+            listField "pages" (siteCtx <> postCtx) (pure allPages)
+              <> siteCtx
+      makeItem ""
+        >>= loadAndApplyTemplate "templates/sitemap.xml" sitemapCtx
+
   match "images/*" $ do
     route idRoute
     compile copyFileCompiler
