@@ -283,18 +283,6 @@
                     exec = "hurl test/server/login.hurl";
                   };
                 };
-                git-hooks.hooks = {
-                  nixfmt.enable = true;
-                  prettier.enable = true;
-                  prettier.package = pkgs.prettier;
-                  elm-format.enable = true;
-                  deadnix.enable = true;
-                  statix.enable = true;
-                  ormolu.enable = true;
-                  ormolu.settings.defaultExtensions = [
-                    "ImportQualifiedPost"
-                  ];
-                };
               }
             ];
           };
