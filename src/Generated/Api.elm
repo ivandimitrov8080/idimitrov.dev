@@ -53,7 +53,7 @@ type alias Account =
 
 jsonDecAccount : Json.Decode.Decoder Account
 jsonDecAccount =
-    Json.Decode.succeed (\paccountId paccountName paccountPassword paccountProfile -> { accountId = paccountId, accountName = paccountName, accountPassword = paccountPassword, accountProfile = paccountProfile })
+    Json.Decode.succeed Account
         |> fnullable "accountId" Json.Decode.int
         |> required "accountName" Json.Decode.string
         |> required "accountPassword" Json.Decode.string
@@ -78,7 +78,7 @@ type alias Profile =
 
 jsonDecProfile : Json.Decode.Decoder Profile
 jsonDecProfile =
-    Json.Decode.succeed (\pprofileName pprofileCreatedAt -> { profileName = pprofileName, profileCreatedAt = pprofileCreatedAt })
+    Json.Decode.succeed Profile
         |> required "profileName" Json.Decode.string
         |> required "profileCreatedAt" jsonDecPosix
 
@@ -99,7 +99,7 @@ type alias LoginResponse =
 
 jsonDecLoginResponse : Json.Decode.Decoder LoginResponse
 jsonDecLoginResponse =
-    Json.Decode.succeed (\ptoken presponseProfile -> { token = ptoken, responseProfile = presponseProfile })
+    Json.Decode.succeed LoginResponse
         |> required "token" Json.Decode.string
         |> fnullable "responseProfile" jsonDecProfile
 
