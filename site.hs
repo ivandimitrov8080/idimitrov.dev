@@ -238,7 +238,7 @@ main = hakyllWith cfg $ do
   match (fromList ["about.rst", "contact.markdown"]) $ do
     route $ setExtension "html"
     compile $
-      pandocCompilerWith myReaderOptions myWriterOptions
+      pandocCompilerWithTransform myReaderOptions myWriterOptions (myTransformOptions cfg)
         >>= loadAndApplyTemplate "templates/default.html" defaultContext
         >>= relativizeUrls
 
