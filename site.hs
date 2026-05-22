@@ -12,6 +12,7 @@ import Data.Time.Format (defaultTimeLocale, formatTime)
 import Debug.Trace (trace)
 import GHC.Internal.Data.Proxy (Proxy)
 import Hakyll
+import Hakyll.Core.Dependencies (DependencyKind (KindContent))
 import Skylighting (Style, monochrome, styleToCss, zenburn)
 import Skylighting.Styles (kate, monochrome, pygments, zenburn)
 import System.Directory (createDirectoryIfMissing)
@@ -314,7 +315,7 @@ main = hakyllWith cfg $ do
     route idRoute
     compile $ copyFileCompiler
 
-  elmDeps <- makePatternDependency ("src/**.elm" .||. "elm.json")
+  elmDeps <- makePatternDependency KindContent ("src/**.elm" .||. "elm.json")
 
   rulesExtraDependencies [elmDeps] $ do
     match "src/Main.elm" $ do

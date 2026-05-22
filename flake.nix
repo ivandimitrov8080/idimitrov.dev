@@ -1,6 +1,6 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     configuration.url = "github:ivandimitrov8080/configuration.nix";
     systems.url = "github:nix-systems/default";
     # nvim config helper
