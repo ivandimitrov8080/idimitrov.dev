@@ -35,7 +35,8 @@ hiding the password.
 3. The html comment reads **No more information leaks!! Not even Google will find it this time...**
 so we check /robots.txt, which disallows /s3cr3t/. Visiting that dir reveals users.txt hiding the password.
 `natas4:JDrPnuZAKyl6MkiqQGFIddrqpvgOASth`
-4. The page gives a hint that the page is only accessible from natas5 virtual host when we are using natas4.
+4. The page gives a hint that it is only accessible from natas5 virtual host. Clicking on the **Refresh page** link sets
+the Referer header which changes the page to say that we are on natas4 virtual host.
 We can use mitmproxy to set the Referer header to what is expected. Resending the modified request gives the password.
 `natas5:e4z2Noy3oqwPJUWzJH0dseN67Cn1sy2M`
 
