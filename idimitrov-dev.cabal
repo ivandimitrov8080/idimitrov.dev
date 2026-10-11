@@ -1,0 +1,107 @@
+cabal-version: 3.0
+
+-- Single source of truth for the Haskell dependencies. cabal resolves every
+-- direct and transitive dependency to the newest version allowed by the
+-- `index-state` in cabal.project.
+name: idimitrov-dev
+version: 1.0.0
+synopsis: Personal website: Hakyll site generator and Servant backend
+description:
+  Static site generation with Hakyll, an Elm frontend and a Servant/Hasql JSON
+  API, plus the servant-elm client generator.
+category: Web
+author: Ivan Dimitrov
+maintainer: ivan@idimitrov.dev
+license: MIT
+build-type: Simple
+
+common warnings
+  default-language: Haskell2010
+  default-extensions:
+    ImportQualifiedPost
+  ghc-options:
+    -Wall
+    -Wcompat
+    -Wincomplete-record-updates
+    -Wincomplete-uni-patterns
+    -Wmissing-export-lists
+    -Wpartial-fields
+    -Wredundant-constraints
+
+-- | The backend. Config.hs lives at the repository root, the rest in server/.
+library
+  import: warnings
+  hs-source-dirs: ., server
+  exposed-modules:
+    Config
+    Server
+  build-depends:
+      aeson
+    , base
+    , bytestring
+    , directory
+    , elm-bridge
+    , hasql
+    , hasql-pool
+    , hasql-th
+    , jose
+    , mtl
+    , password
+    , pqi-native
+    , servant
+    , servant-auth
+    , servant-auth-server
+    , servant-server
+    , template-haskell
+    , text
+    , time
+    , wai
+    , wai-cors
+    , warp
+
+-- | The Hakyll site generator: `site build`, `site watch`, `site clean`.
+executable site
+  import: warnings
+  hs-source-dirs: .
+  main-is: site.hs
+  other-modules:
+    Config
+  build-depends:
+      base
+    , blaze-html
+    , directory
+    , filepath
+    , hakyll
+    , idimitrov-dev
+    , pandoc
+    , pandoc-types
+    , process
+    , skylighting
+    , temporary
+    , text
+    , time
+    , unicode-data
+
+-- | The Servant API server.
+executable server
+  import: warnings
+  hs-source-dirs: .
+  main-is: server/Main.hs
+  build-depends:
+      base
+    , idimitrov-dev
+
+-- | The servant-elm client generator.
+executable gen
+  import: warnings
+  hs-source-dirs: generators
+  main-is: Main.hs
+  build-depends:
+      base
+    , idimitrov-dev
+    , raw-strings-qq
+    , servant
+    , servant-auth
+    , servant-elm
+    , servant-foreign
+    , text

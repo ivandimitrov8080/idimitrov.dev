@@ -3,34 +3,28 @@
 
 import Config (Config (cfgDefaultDescription, cfgHost), readConfig)
 import Data.Char (toUpper)
-import Data.List (intercalate, nub, sortOn)
+import Data.List (nub, sortOn)
 import Data.Ord (Down (..))
 import Data.Text qualified as T
-import Data.Time.Calendar (addGregorianYearsClip, toGregorian)
+import Data.Time.Calendar (addGregorianYearsClip)
 import Data.Time.Clock (getCurrentTime, utctDay)
 import Data.Time.Format (defaultTimeLocale, formatTime)
 import Debug.Trace (trace)
-import GHC.Internal.Data.Proxy (Proxy)
 import Hakyll
 import Hakyll.Core.Dependencies (DependencyKind (KindContent))
-import Skylighting (Style, monochrome, styleToCss, zenburn)
-import Skylighting.Styles (kate, monochrome, pygments, zenburn)
+import Skylighting (Style, styleToCss, zenburn)
 import System.Directory (createDirectoryIfMissing)
-import System.FilePath (dropExtension, splitDirectories, takeDirectory, (</>))
+import System.FilePath (splitDirectories, (</>))
 import System.IO.Temp (withTempDirectory)
 import System.Process (callProcess)
-import Text.Blaze.Html (toHtml, toValue, (!))
-import Text.Blaze.Html.Renderer.String (renderHtml)
-import Text.Blaze.Html5 qualified as H
-import Text.Blaze.Html5.Attributes qualified as A
-import Text.Pandoc (Block (CodeBlock), Pandoc, WriterOptions (writerHighlightStyle))
+import Text.Pandoc (Block (CodeBlock), Pandoc, WriterOptions (writerHighlightMethod))
 import Text.Pandoc.Definition (Inline (Link))
-import Text.Pandoc.Options (Extension (Ext_link_attributes), ReaderOptions (readerExtensions), extensionsFromList)
+import Text.Pandoc.Options (Extension (Ext_link_attributes), HighlightMethod (Skylighting), ReaderOptions (readerExtensions), extensionsFromList)
 import Text.Pandoc.Walk (walk)
 import Unicode.Char (toLower)
 
-cfg :: Configuration
-cfg =
+hakyllConfig :: Configuration
+hakyllConfig =
   defaultConfiguration
     { ignoreFile = ignoreFile'
     }
@@ -81,7 +75,7 @@ myReaderOptions =
     }
 
 myWriterOptions :: WriterOptions
-myWriterOptions = defaultHakyllWriterOptions {writerHighlightStyle = Just codeStyle}
+myWriterOptions = defaultHakyllWriterOptions {writerHighlightMethod = Skylighting codeStyle}
 
 humanizeSlug :: String -> String
 humanizeSlug = unwords . map cap . words . map (\c -> if c == '-' then ' ' else c)
@@ -124,7 +118,7 @@ elmMakeCompiler :: [String] -> Compiler (Item String)
 elmMakeCompiler extraElmArgs = do
   entry <- getResourceFilePath
   js <- unsafeCompiler $ do
-    let tmp = (tmpDirectory cfg)
+    let tmp = (tmpDirectory hakyllConfig)
     createDirectoryIfMissing True tmp
     withTempDirectory tmp "hakyll-elm" $ \dir -> do
       let out = trace dir $ dir </> "elm.js"
@@ -148,12 +142,11 @@ expiryDate :: IO String
 expiryDate = do
   now <- getCurrentTime
   let day = utctDay now
-      (y, m, d) = toGregorian day
       expiry = addGregorianYearsClip 1 day
   pure $ formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S%z" (now {utctDay = expiry})
 
 main :: IO ()
-main = hakyllWith cfg $ do
+main = hakyllWith hakyllConfig $ do
   cfg <- preprocess readConfig
   categories <- buildCategories "posts/**" (fromCapture "category/*.html")
 
@@ -161,13 +154,13 @@ main = hakyllWith cfg $ do
   create ["robots.txt"] $ do
     route idRoute
     compile $ do
-      let host = T.unpack (cfgHost cfg)
+      let siteHost = T.unpack (cfgHost cfg)
           robotsContent =
             "User-agent: *\n\
             \Allow: /\n\
             \\n\
             \Sitemap: https://"
-              <> host
+              <> siteHost
               <> "/sitemap.xml\n"
       makeItem robotsContent
 

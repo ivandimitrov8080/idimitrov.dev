@@ -21,11 +21,11 @@
         system:
         let
           pkgs = mkPkgs system;
-          inherit (pkgs) stdenv writers;
+          inherit (pkgs) elmPackages stdenv writers;
           # to update -> elm2nix --help
-          fetchElmDeps = pkgs.elmPackages.fetchElmDeps {
+          fetchElmDeps = elmPackages.fetchElmDeps {
             elmPackages = import ./elm-srcs.nix;
-            elmVersion = pkgs.elmPackages.elm.version;
+            elmVersion = elmPackages.elm.version;
             registryDat = ./registry.dat;
           };
         in
@@ -34,11 +34,25 @@
             name = "idimitrov.dev";
             version = "1.0";
             src = ./.;
-            nativeBuildInputs = with pkgs; [
-              (ghc.withPackages (p: with p; [ hakyll ]))
+            # The deployment artifact uses the package set pinned by nixpkgs:
+            # a Nix build has no network, so cabal cannot resolve dependencies
+            # from Hackage inside the sandbox. Keep this list in sync with the
+            # imports of site.hs and the `executable site` stanza of
+            # idimitrov-dev.cabal.
+            nativeBuildInputs = [
+              (pkgs.ghc.withPackages (
+                p: with p; [
+                  blaze-html
+                  hakyll
+                  pandoc
+                  skylighting
+                  temporary
+                  unicode-data
+                ]
+              ))
               elmPackages.elm
             ];
-            env = {
+            env = pkgs.lib.optionalAttrs stdenv.hostPlatform.isLinux {
               LOCALE_ARCHIVE = "${pkgs.glibcLocales}/lib/locale/locale-archive";
               LANG = "en_US.UTF-8";
             };
@@ -54,8 +68,7 @@
               runHook preInstall
 
               mkdir -p $out/
-              cp -r _site/* $out/
-              cp -r _site/.* $out/
+              cp -r _site/. $out/
 
               runHook postInstall
             '';
@@ -78,9 +91,7 @@
       devShells = eachSystem (
         system:
         let
-          pkgs = import nixpkgs {
-            inherit system;
-          };
+          pkgs = mkPkgs system;
         in
         {
           default = devenv.lib.mkShell {
@@ -89,45 +100,24 @@
               {
                 devenv.root = "/home/ivand/src/idimitrov.dev";
                 languages = {
+                  # Dependencies are resolved by cabal from Hackage (see
+                  # cabal.project), so the shell only needs a plain GHC.
                   haskell = {
                     enable = true;
-                    package = pkgs.ghc.withPackages (
-                      p: with p; [
-                        hakyll
-                        servant
-                        servant-server
-                        servant-auth
-                        servant-auth-server
-                        servant-auth-swagger
-                        servant-elm
-                        hspec
-                        http-client
-                        http-types
-                        wai-cors
-                        hasql
-                        hasql-th
-                        hasql-pool
-                        tuple
-                        password
-                        jwt
-                        raw-strings-qq
-                      ]
-                    );
                     lsp.enable = true;
-                    cabal.enable = false;
+                    cabal.enable = true;
                     stack.enable = false;
                   };
                   elm.enable = true;
                   nix.enable = true;
                 };
                 packages = with pkgs; [
-                  haskellPackages.hakyll
+                  browser-sync
+                  elm2nix
                   elmPackages.elm
                   elmPackages.elm-format
                   elmPackages.elm-json
-                  elm2nix
                   hurl
-                  browser-sync
                 ];
                 services = {
                   postgres = {
@@ -155,30 +145,30 @@
                               process-compose process restart server
                             }
                             if ($path | str contains "site.hs") {
-                              ./bin/site clean
+                              cabal run -v0 site -- clean
                               process-compose process restart site
                             }
                             if ($path | str contains "Server.hs") {
                               devenv tasks run build:library --mode before
                             }
                             if ($path | str contains "elm.json") {
-                              elm2nix convert | nixfmt -f elm-srcs.nix | save elm-srcs.nix -f
+                              elm2nix convert | nixfmt -f elm-srcs.nix | save -f elm-srcs.nix
                               elm2nix snapshot
                             }
                           }
                         '';
                   in
                   {
-                    site.exec = "bin/site watch --no-server";
+                    site.exec = "cabal run -v0 site -- watch --no-server";
                     server = {
-                      exec = "bin/server";
+                      exec = "cabal run -v0 server";
                       ready = {
                         http.get = {
                           port = 1337;
                           path = "/";
                         };
-                        period = 1;
-                        timeout = 10;
+                        period = 30;
+                        timeout = 1;
                         initial_delay = 0;
                       };
                     };
@@ -189,8 +179,14 @@
                     };
                   };
                 tasks = {
+                  # Resolve the newest Hackage versions allowed by the
+                  # `index-state` in cabal.project (writes ~/.cabal, not the
+                  # repository).
+                  "cabal:update" = {
+                    exec = "cabal update";
+                  };
                   "clean:site" = {
-                    exec = "rm -rf bin _site _cache";
+                    exec = "rm -rf _site _cache dist-newstyle";
                   };
                   "db:clean" = {
                     exec = ''
@@ -206,47 +202,50 @@
                   };
                   "build:init" = {
                     exec = ''
-                      mkdir -p bin/
                       mkdir -p _cache/{tmp,site,server,generators}
                     '';
+                    before = [ "build:haskell" ];
+                  };
+                  # One command builds the library and all three executables
+                  # (site, server, gen) that used to be three `ghc`
+                  # invocations.
+                  "build:haskell" = {
+                    exec = "cabal build all";
                     before = [
-                      "build:server"
-                      "build:site"
-                      "build:generators"
+                      "build:frontend"
+                      "build:library"
+                      "devenv:processes:server"
                     ];
-                  };
-                  "build:server" = {
-                    exec = "ghc -threaded -outputdir _cache/server server/Main.hs -iserver -o bin/server";
-                    before = [ "devenv:processes:server" ];
-                  };
-                  "build:frontend" = {
-                    exec = "bin/site build";
-                    after = [ "build:site" ];
-                    before = [ "devenv:processes:site" ];
-                  };
-                  "build:site" = {
-                    exec = "ghc -outputdir _cache/site site.hs -o bin/site";
-                    before = [ "build:frontend" ];
                   };
                   "build:library" = {
                     exec = ''
-                      bin/gen
+                      cabal run -v0 gen
                       elm-format --yes src/Generated/Api.elm
                     '';
-                    before = [ "build:site" ];
+                    after = [ "build:haskell" ];
+                    before = [ "build:frontend" ];
                   };
-                  "build:generators" = {
-                    exec = ''
-                      ghc -outputdir _cache/generators generators/Main.hs -iserver -o bin/gen
-                    '';
-                    before = [ "build:library" ];
+                  "build:frontend" = {
+                    exec = "cabal run -v0 site -- build";
+                    after = [
+                      "build:haskell"
+                      "build:library"
+                    ];
+                    before = [ "devenv:processes:site" ];
+                  };
+                  "build:all" = {
+                    exec = "cabal build all";
+                    after = [
+                      "build:frontend"
+                      "build:init"
+                    ];
                   };
                   "browsersync:reload" = {
                     exec = ''
                       browser-sync reload
                     '';
                     before = [ "devenv:processes:server" ];
-                    after = [ "build:server" ];
+                    after = [ "build:haskell" ];
                   };
                   "test:server" = {
                     exec = "hurl test/server/login.hurl";

@@ -1,5 +1,12 @@
 cradle:
-  direct:
-    arguments:
-      - -i.
-      - -iserver
+  cabal:
+    - path: "./server/Main.hs"
+      component: "exe:server"
+    - path: "./generators"
+      component: "exe:gen"
+    - path: "./site.hs"
+      component: "exe:site"
+    - path: "./Config.hs"
+      component: "lib:idimitrov-dev"
+    - path: "./server"
+      component: "lib:idimitrov-dev"

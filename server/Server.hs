@@ -22,25 +22,25 @@ import Data.ByteString.Lazy qualified as BL
 import Data.ByteString.Lazy.Char8 qualified as BL8
 import Data.Int (Int64)
 import Data.Password.Argon2 (PasswordCheck (..), PasswordHash (..), checkPassword, hashPassword, mkPassword)
-import Data.Text (Text, length, null, pack, unpack)
+import Data.Text (Text, null, unpack)
 import Data.Text.Encoding (decodeUtf8)
 import Data.Time.Clock (UTCTime, addUTCTime, getCurrentTime)
 import Elm.Derive (defaultOptions, deriveBoth)
 import GHC.Generics (Generic)
-import Hasql.Connection.Setting qualified as ConnectionSetting
-import Hasql.Connection.Setting.Connection qualified as ConnectionSettingConnection
+import Hasql.Connection.Settings qualified as ConnectionSetting
+import Hasql.Errors (IsError (toSqlState))
 import Hasql.Pool (Pool, UsageError (SessionUsageError), acquire, use)
 import Hasql.Pool.Config qualified as PoolConfig
-import Hasql.Session (CommandError (..), ResultError (..), Session, SessionError (..))
-import Hasql.Session qualified as Session
+import Hasql.Session
 import Hasql.TH qualified as TH
 import Network.Wai (Application)
 import Network.Wai.Handler.Warp (defaultSettings, runSettings, setBeforeMainLoop, setPort)
 import Network.Wai.Middleware.Cors (CorsResourcePolicy (corsMethods, corsOrigins, corsRequestHeaders), cors, simpleCorsResourcePolicy)
+import Pqi.Native qualified as Pqi
 import Servant (Context (..), Handler, Proxy (..), Raw, ServerT, err400, err401, err409, err500, errBody, hoistServerWithContext, serveDirectoryFileServer, serveWithContext, throwError, (:<|>) (..))
 import Servant.API (Get, JSON, Post, ReqBody, (:>))
 import Servant.Auth (Auth, JWT)
-import Servant.Auth.Server (AuthResult (..), CookieSettings (..), FromJWT, IsSecure (..), JWTSettings, ToJWT, defaultCookieSettings, defaultJWTSettings, makeJWT, readKey, throwAll, writeKey)
+import Servant.Auth.Server (AuthResult (..), CookieSettings (..), FromJWT, ToJWT, defaultCookieSettings, defaultJWTSettings, makeJWT, readKey, throwAll, writeKey)
 import Servant.Auth.Server qualified as SAS
 import System.Directory (doesFileExist)
 import System.IO (hPutStrLn, stderr)
@@ -62,7 +62,7 @@ instance ToJWT AuthUser
 data Env = Env
   { envConfig :: Config,
     envPool :: Pool,
-    envJwtSettings :: JWTSettings,
+    envJwtSettings :: SAS.JWTSettings,
     envCookieSettings :: CookieSettings
   }
 
@@ -107,28 +107,28 @@ type AppApi = Api '[JWT] :<|> Raw
 api :: Proxy AppApi
 api = Proxy
 
-type CtxTypes = '[CookieSettings, JWTSettings]
+type CtxTypes = '[CookieSettings, SAS.JWTSettings]
 
 ctxProxy :: Proxy CtxTypes
 ctxProxy = Proxy
 
 withPool :: Config -> (Pool -> IO a) -> IO a
 withPool cfg action = do
-  pool <- acquire poolConfig
+  pool <- acquire Pqi.adapter poolConfig
   action pool
   where
     pstr = "host=" <> cfgPgHost cfg <> " dbname=app user=app port=5432"
     poolConfig =
       PoolConfig.settings
         [ PoolConfig.size (cfgPgPoolSize cfg),
-          PoolConfig.staticConnectionSettings [ConnectionSetting.connection $ ConnectionSettingConnection.string pstr]
+          PoolConfig.staticConnectionSettings (ConnectionSetting.connectionString pstr)
         ]
 
 accountRegisterSession :: Account -> Session Account
 accountRegisterSession (Account _ email password mProfile) = do
   hashed <- hashPassword $ mkPassword password
   aid <-
-    Session.statement
+    statement
       (email, unPasswordHash hashed)
       [TH.singletonStatement|
       INSERT INTO account (name, password)
@@ -137,7 +137,7 @@ accountRegisterSession (Account _ email password mProfile) = do
     |]
   let profileName' = maybe email profileName mProfile
   (pName, pCreatedAt) <-
-    Session.statement
+    statement
       (aid, profileName')
       [TH.singletonStatement|
       INSERT INTO profile (account_id, name)
@@ -154,7 +154,7 @@ accountRegisterSession (Account _ email password mProfile) = do
 
 accountLoginSession :: Account -> Session (Maybe Account)
 accountLoginSession acc =
-  Session.statement
+  statement
     (accountName acc)
     [TH.maybeStatement|
       SELECT a.id :: int8, a.name :: text, a.password :: text,
@@ -177,7 +177,7 @@ accountLoginSession acc =
 
 profileSession :: Text -> Session (Maybe Profile)
 profileSession aName = do
-  Session.statement
+  statement
     aName
     [TH.maybeStatement|
       SELECT name :: text, created_at :: timestamptz FROM profile WHERE account_id = (SELECT id FROM account WHERE name = $1 :: text)
@@ -215,7 +215,7 @@ validatePassword input dbHash =
     _ -> False
 
 -- | Create a JWT token for the given user
-createToken :: JWTSettings -> AuthUser -> Maybe UTCTime -> App Text
+createToken :: SAS.JWTSettings -> AuthUser -> Maybe UTCTime -> App Text
 createToken jwtCfg user mExpiry = do
   eToken <- liftIO $ makeJWT user jwtCfg mExpiry
   case eToken of
@@ -252,8 +252,9 @@ register account =
         (Just handleRegisterDbError)
 
 handleRegisterDbError :: UsageError -> App LoginResponse
-handleRegisterDbError (SessionUsageError (QueryError _ _ (ResultError (Session.ServerError "23505" _ _ _ _)))) =
-  throwError err409 {errBody = BL8.pack "Username already exists"}
+handleRegisterDbError (SessionUsageError se)
+  | toSqlState se == Just "23505" =
+      throwError err409 {errBody = BL8.pack "Username already exists"}
 handleRegisterDbError _ = throwError err500
 
 login :: Account -> App LoginResponse

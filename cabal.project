@@ -1,0 +1,8 @@
+packages: .
+
+-- Every dependency (direct and transitive) is resolved from Hackage as it was
+-- at this timestamp. Bump the date to move the whole project forward.
+index-state: 2026-10-09T00:00:00Z
+
+-- Keep the working tree free of ambient .ghc.environment.* files.
+write-ghc-environment-files: never

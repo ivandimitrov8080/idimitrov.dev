@@ -5,9 +5,9 @@ module Config (Config (..), Environment (..), readConfig) where
 import Data.Maybe (fromMaybe)
 import Data.Text (Text, pack, strip, toLower, unpack)
 import Data.Time (NominalDiffTime)
-import GHC.Internal.System.Environment.Blank (getEnvDefault)
 import System.Directory (getCurrentDirectory)
 import System.Environment (lookupEnv)
+import System.Environment.Blank (getEnvDefault)
 import Text.Read (readMaybe)
 
 data Environment = Development | Production

@@ -1,6 +1,7 @@
 _site
 _cache
 dist
+dist-newstyle
 node_modules
 .env
 .devenv
@@ -9,7 +10,5 @@ node_modules
 result
 elm-stuff
 .pre-commit-config.yaml
-server/**/*.hi
-server/**/*.o
 bin/**
 jwt.key

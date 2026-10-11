@@ -8,17 +8,28 @@ Welcome agentic coding agents! This repository follows strict functional, static
 
 ### Build
 
-- **Haskell Site Generator:**
-  - Compile: `devenv tasks run build:site --mode before`
-  - Build static site: `devenv tasks run build:frontend --mode before`
-- **Elm Frontend:**
-  - Compile: `devenv tasks run build:frontend --mode before`
-- **Backend/Generators:**
-  - Server: `devenv tasks run build:server --mode before`
-  - Generators: `devenv tasks run build:generators --mode before`
-  - API Elm Library: `devenv tasks run build:library --mode before`
-- **Combined via Nix/Devenv:**
-  - Build everything: `devenv tasks run build`
+Haskell is built with cabal. `cabal build all` builds the library and all
+three executables (`site`, `server`, `gen`) that used to be three separate
+`ghc` invocations. Dependencies and their versions live in
+`idimitrov-dev.cabal` (declarations) and `cabal.project` (bump `index-state`
+there to update every dependency, direct and transitive).
+
+In a fresh shell run `cabal update` once (or `devenv tasks run cabal:update`),
+so cabal has the Hackage index.
+
+- **Haskell (all targets):** `cabal build all`
+- **Hakyll site generator:** `cabal run site -- build` / `cabal build site`
+- **Servant backend:** `cabal run server` / `cabal build server`
+- **Elm API generator:** `cabal run gen` / `cabal build gen`
+- **Elm frontend:** `cabal run site -- build` (the site generator drives `elm make`)
+- **Combined via Devenv:** `devenv tasks run build:all`
+
+The devenv tasks wrap the same commands and wire them into the process
+dependencies:
+
+- `devenv tasks run build:haskell --mode before` — `cabal build all`
+- `devenv tasks run build:library --mode before` — regenerate the Elm API client
+- `devenv tasks run build:frontend --mode before` — `cabal run site -- build`
 
 ### Lint / Format
 
@@ -148,7 +159,7 @@ _No Cursor or Copilot rules are present; update this section if .cursor/rules/ o
 
 ## TL;DR (Quick Reference for Agents)
 
-- Build: `devenv tasks run build`, then run build commands as above
+- Build: `devenv tasks run build:all`, then run build commands as above
 - Format before commit: `nix fmt`
 - Test: no tests for now
 - All code must pass pre-commit hooks before merge

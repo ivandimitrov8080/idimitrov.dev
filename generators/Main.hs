@@ -12,7 +12,6 @@
 
 module Main (IO, Main.main) where
 
-import Data.Maybe (mapMaybe)
 import Data.Proxy (Proxy (..))
 import Data.Text (Text, pack, split, unpack)
 import Data.Text qualified as T
@@ -25,13 +24,10 @@ import Servant.Elm
     UrlPrefix (Static),
     defElmImports,
     defElmOptions,
-    defaultTypeAlterations,
-    elmAlterations,
     generateElmModuleWith,
   )
-import Servant.Elm qualified as Elm
 import Servant.Elm.Internal.Foreign (LangElm)
-import Servant.Foreign (Foreign, GenerateList, HasForeign (..), HasForeignType)
+import Servant.Foreign (Foreign, HasForeign (..), HasForeignType)
 import Server
 import Text.RawString.QQ (r)
 
@@ -39,7 +35,7 @@ generatedModulePath :: FilePath
 generatedModulePath = "src/Generated/Api"
 
 instance
-  (HasForeign LangElm ftype api, HasForeignType LangElm ftype Text, HasForeignType LangElm ftype (Maybe Text)) =>
+  (HasForeign LangElm ftype api, HasForeignType LangElm ftype (Maybe Text)) =>
   HasForeign LangElm ftype (Auth auths val :> api)
   where
   type Foreign ftype (Auth auths val :> api) = Foreign ftype (Header "Authorization" Text :> api)
@@ -95,6 +91,7 @@ generateElm :: IO ()
 generateElm = do
   let p = unpack <$> (split (== '/') $ pack generatedModulePath)
   case p of
+    [] -> pure ()
     out : parts -> do
       generateElmModuleWith
         ( defElmOptions
