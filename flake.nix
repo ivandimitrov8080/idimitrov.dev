@@ -5,13 +5,17 @@
     devenv.url = "github:cachix/devenv";
     devenv.inputs.nixpkgs.follows = "nixpkgs";
     treefmt-nix.url = "github:numtide/treefmt-nix";
+    haskellNix.url = "github:input-output-hk/haskell.nix";
+    nixpkgsHaskell.follows = "haskellNix/nixpkgs-unstable";
   };
   outputs =
     inputs@{
       nixpkgs,
+      nixpkgsHaskell,
       systems,
       devenv,
       treefmt-nix,
+      haskellNix,
       ...
     }:
     let
@@ -21,8 +25,20 @@
         system:
         let
           pkgs = mkPkgs system;
-          inherit (pkgs) elmPackages stdenv writers;
-          # to update -> elm2nix --help
+          inherit (pkgs) lib writers;
+          haskellPkgs = import nixpkgsHaskell {
+            inherit system;
+            inherit (haskellNix) config;
+            overlays = [ haskellNix.overlay ];
+          };
+          inherit (haskellPkgs) elmPackages;
+          project = haskellPkgs.haskell-nix.cabalProject' {
+            src = ./.;
+            compiler-nix-name = "ghc910";
+            # Keep in sync with `index-state` in cabal.project.
+            index-state = "2026-10-09T00:00:00Z";
+          };
+          site = (project.getPackage "idimitrov-dev").components.exes.site;
           fetchElmDeps = elmPackages.fetchElmDeps {
             elmPackages = import ./elm-srcs.nix;
             elmVersion = elmPackages.elm.version;
@@ -30,37 +46,25 @@
           };
         in
         {
-          default = stdenv.mkDerivation {
+          inherit project;
+          default = haskellPkgs.stdenv.mkDerivation {
             name = "idimitrov.dev";
             version = "1.0";
             src = ./.;
-            # The deployment artifact uses the package set pinned by nixpkgs:
-            # a Nix build has no network, so cabal cannot resolve dependencies
-            # from Hackage inside the sandbox. Keep this list in sync with the
-            # imports of site.hs and the `executable site` stanza of
-            # idimitrov-dev.cabal.
             nativeBuildInputs = [
-              (pkgs.ghc.withPackages (
-                p: with p; [
-                  blaze-html
-                  hakyll
-                  pandoc
-                  skylighting
-                  temporary
-                  unicode-data
-                ]
-              ))
+              pkgs.ghc
+              site
               elmPackages.elm
             ];
-            env = pkgs.lib.optionalAttrs stdenv.hostPlatform.isLinux {
-              LOCALE_ARCHIVE = "${pkgs.glibcLocales}/lib/locale/locale-archive";
+            env = lib.optionalAttrs haskellPkgs.stdenv.hostPlatform.isLinux {
+              LOCALE_ARCHIVE = "${haskellPkgs.glibcLocales}/lib/locale/locale-archive";
               LANG = "en_US.UTF-8";
             };
             postConfigure = fetchElmDeps;
             buildPhase = ''
               runHook preBuild
 
-              runghc ./site.hs build
+              site build
 
               runHook postBuild
             '';
@@ -306,5 +310,12 @@
         packages
         templates
         ;
+      nixConfig = {
+        extra-substituters = [ "https://cache.iog.io" ];
+        extra-trusted-public-keys = [
+          "hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ="
+        ];
+        allow-import-from-derivation = "true";
+      };
     };
 }
