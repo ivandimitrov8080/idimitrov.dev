@@ -25,7 +25,7 @@ import Text.Blaze.Html5 qualified as H
 import Text.Blaze.Html5.Attributes qualified as A
 import Text.Pandoc (Block (CodeBlock), Pandoc, WriterOptions (writerHighlightStyle))
 import Text.Pandoc.Definition (Inline (Link))
-import Text.Pandoc.Options (Extension (Ext_link_attributes), ReaderOptions (readerExtensions), extensionsFromList)
+import Text.Pandoc.Options (Extension (Ext_autolink_bare_uris, Ext_link_attributes), ReaderOptions (readerExtensions), extensionsFromList)
 import Text.Pandoc.Walk (walk)
 import Unicode.Char (toLower)
 
@@ -77,7 +77,7 @@ myReaderOptions =
   defaultHakyllReaderOptions
     { readerExtensions =
         readerExtensions defaultHakyllReaderOptions
-          <> extensionsFromList [Ext_link_attributes]
+          <> extensionsFromList [Ext_autolink_bare_uris, Ext_link_attributes]
     }
 
 myWriterOptions :: WriterOptions
